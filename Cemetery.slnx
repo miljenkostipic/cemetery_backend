@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Cemetery.Api/Cemetery.Api.csproj" />
+    <Project Path="src/Cemetery.Application/Cemetery.Application.csproj" />
+    <Project Path="src/Cemetery.Domain/Cemetery.Domain.csproj" />
+    <Project Path="src/Cemetery.Infrastructure/Cemetery.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Cemetery.Api.IntegrationTests/Cemetery.Api.IntegrationTests.csproj" />
+    <Project Path="tests/Cemetery.Application.Tests/Cemetery.Application.Tests.csproj" />
+    <Project Path="tests/Cemetery.Architecture.Tests/Cemetery.Architecture.Tests.csproj" />
+    <Project Path="tests/Cemetery.Domain.Tests/Cemetery.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
