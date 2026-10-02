@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IMembershipRepository, MembershipRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
+        services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<IUserAccountGateway, UserAccountGateway>();
         services.AddScoped<IPasswordSignIn, PasswordSignInGateway>();
         services.AddSingleton<IInvitationTokenFactory, InvitationTokenFactory>();

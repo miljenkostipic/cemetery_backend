@@ -86,7 +86,7 @@ public sealed class DashboardAndInviteTests
     [Fact]
     public async Task Dashboard_fails_closed_without_a_tenant()
     {
-        var handler = new GetDashboardHandler(new FakeTenant(), Substitute.For<IOrganizationRepository>());
+        var handler = new GetDashboardHandler(new FakeTenant(), Substitute.For<IOrganizationRepository>(), Substitute.For<ILayoutRepository>());
 
         var error = await Assert.ThrowsAsync<ForbiddenException>(() => handler.Handle(new GetDashboard(), CancellationToken.None));
 
@@ -101,12 +101,14 @@ public sealed class DashboardAndInviteTests
         tenant.Use(organization.Id);
         var organizations = Substitute.For<IOrganizationRepository>();
         organizations.FindAsync(organization.Id, Arg.Any<CancellationToken>()).Returns(organization);
-        var handler = new GetDashboardHandler(tenant, organizations);
+        var layouts = Substitute.For<ILayoutRepository>();
+        layouts.CountGraveSitesAsync(Arg.Any<CancellationToken>()).Returns(0);
+        var handler = new GetDashboardHandler(tenant, organizations, layouts);
 
         var dashboard = await handler.Handle(new GetDashboard(), CancellationToken.None);
 
         Assert.Equal(organization.Id, dashboard.OrganizationId);
-        Assert.Equal(GetDashboardHandler.EmptyGraveSiteCount, dashboard.GraveSiteCount);
+        Assert.Equal(0, dashboard.GraveSiteCount);
     }
 
     [Fact]

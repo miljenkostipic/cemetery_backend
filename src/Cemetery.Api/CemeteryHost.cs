@@ -88,7 +88,7 @@ public static class CemeteryHost
         if (app.Environment.IsDevelopment())
             ConfigureApiDocUis(app);
 
-        app.MapGroup("/api/v1").MapAuthEndpoints().MapOrganizationEndpoints();
+        app.MapGroup("/api/v1").MapAuthEndpoints().MapOrganizationEndpoints().MapLayoutEndpoints();
     }
 
     private static void ConfigureApiDocUis(WebApplication app)

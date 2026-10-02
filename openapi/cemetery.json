@@ -349,6 +349,545 @@
           }
         }
       }
+    },
+    "/api/v1/cemeteries": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenCemetery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CemeteryView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CemeteryView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}": {
+      "get": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CemeteryView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/plan": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CemeteryView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/sections": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SectionView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/grave-sites": {
+      "get": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GraveSiteView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sections/{sectionId}/outline": {
+      "put": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "sectionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutlineBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sections/{sectionId}/rows": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "sectionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RowBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveRowView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "sectionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GraveRowView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sections/{sectionId}/grave-sites": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "sectionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GraveSiteView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/merge": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeGraveSites"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}": {
+      "get": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/outline": {
+      "put": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutlineBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/split": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GraveSiteView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/close": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -361,6 +900,40 @@
         "properties": {
           "token": {
             "type": "string"
+          }
+        }
+      },
+      "CemeteryView": {
+        "required": [
+          "id",
+          "name",
+          "schematic",
+          "planImageUrl",
+          "planBounds"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "schematic": {
+            "type": "boolean"
+          },
+          "planImageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "planBounds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
           }
         }
       },
@@ -401,6 +974,193 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "GenerateBody": {
+        "required": [
+          "kind",
+          "rows",
+          "columns",
+          "originLongitude",
+          "originLatitude",
+          "widthMeters",
+          "depthMeters",
+          "gapMeters",
+          "rotationDegrees"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "rows": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "columns": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "originLongitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "originLatitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "widthMeters": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "depthMeters": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "gapMeters": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "rotationDegrees": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "GeoPointView": {
+        "required": [
+          "longitude",
+          "latitude"
+        ],
+        "type": "object",
+        "properties": {
+          "longitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "latitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "GraveRowView": {
+        "required": [
+          "id",
+          "sectionId",
+          "label"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sectionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "GraveSiteView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "sectionId",
+          "rowId",
+          "code",
+          "kind",
+          "capacity",
+          "status",
+          "outline"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sectionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rowId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "capacity": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "status": {
+            "type": "string"
+          },
+          "outline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
           }
         }
       },
@@ -461,6 +1221,38 @@
           }
         }
       },
+      "MergeGraveSites": {
+        "required": [
+          "leftId",
+          "rightId"
+        ],
+        "type": "object",
+        "properties": {
+          "leftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rightId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "OpenCemetery": {
+        "required": [
+          "name",
+          "schematic"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "schematic": {
+            "type": "boolean"
+          }
+        }
+      },
       "OrganizationCreated": {
         "required": [
           "id",
@@ -509,6 +1301,20 @@
           }
         }
       },
+      "OutlineBody": {
+        "required": [
+          "outline"
+        ],
+        "type": "object",
+        "properties": {
+          "outline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
+          }
+        }
+      },
       "PasskeyCredential": {
         "required": [
           "credentialJson"
@@ -517,6 +1323,24 @@
         "properties": {
           "credentialJson": {
             "type": "string"
+          }
+        }
+      },
+      "PlanBody": {
+        "required": [
+          "planImageUrl",
+          "planBounds"
+        ],
+        "type": "object",
+        "properties": {
+          "planImageUrl": {
+            "type": "string"
+          },
+          "planBounds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
           }
         }
       },
@@ -536,6 +1360,74 @@
           },
           "displayName": {
             "type": "string"
+          }
+        }
+      },
+      "RowBody": {
+        "required": [
+          "label"
+        ],
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "SectionBody": {
+        "required": [
+          "name",
+          "code",
+          "outline"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "outline": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
+          }
+        }
+      },
+      "SectionView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "name",
+          "code",
+          "outline"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "outline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
           }
         }
       },
@@ -624,6 +1516,9 @@
     },
     {
       "name": "OrganizationEndpoints"
+    },
+    {
+      "name": "LayoutEndpoints"
     }
   ]
 }
