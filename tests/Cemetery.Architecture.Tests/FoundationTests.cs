@@ -68,7 +68,12 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.memberships", RowLevelSecurity.Up, StringComparison.Ordinal);
         Assert.Contains("cemetery.invitations", RowLevelSecurity.Up, StringComparison.Ordinal);
         Assert.Contains("cemetery.organizations", RowLevelSecurity.Up, StringComparison.Ordinal);
+        Assert.Contains("cemetery.cemeteries", RowLevelSecurity.Layout, StringComparison.Ordinal);
+        Assert.Contains("cemetery.sections", RowLevelSecurity.Layout, StringComparison.Ordinal);
+        Assert.Contains("cemetery.grave_rows", RowLevelSecurity.Layout, StringComparison.Ordinal);
+        Assert.Contains("cemetery.grave_sites", RowLevelSecurity.Layout, StringComparison.Ordinal);
         Assert.Contains("FORCE ROW LEVEL SECURITY", RowLevelSecurity.Up, StringComparison.Ordinal);
+        Assert.Contains("ST_Intersection", GraveSiteGeometry.Up, StringComparison.Ordinal);
     }
 }
 
@@ -142,6 +147,22 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["POST /api/v1/organizations/invitations"] = "tenant",
         ["POST /api/v1/invitations/accept"] = "authenticated",
         ["GET /api/v1/dashboard"] = "tenant",
+        ["POST /api/v1/cemeteries"] = "tenant",
+        ["GET /api/v1/cemeteries"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/plan"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/sections"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/sections"] = "tenant",
+        ["PUT /api/v1/sections/{sectionId}/outline"] = "tenant",
+        ["POST /api/v1/sections/{sectionId}/rows"] = "tenant",
+        ["GET /api/v1/sections/{sectionId}/rows"] = "tenant",
+        ["POST /api/v1/sections/{sectionId}/grave-sites"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/grave-sites"] = "tenant",
+        ["GET /api/v1/grave-sites/{graveSiteId}"] = "tenant",
+        ["PUT /api/v1/grave-sites/{graveSiteId}/outline"] = "tenant",
+        ["POST /api/v1/grave-sites/{graveSiteId}/split"] = "tenant",
+        ["POST /api/v1/grave-sites/merge"] = "tenant",
+        ["POST /api/v1/grave-sites/{graveSiteId}/close"] = "tenant",
     };
 }
 

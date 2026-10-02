@@ -31,4 +31,8 @@ tests/Cemetery.Architecture.Tests/
 - Nullable reference types on. Warnings are errors. Methods ≤ 20 lines. No boolean flag parameters, no magic numbers.
 - Tests ship with the feature. xUnit v3, AwesomeAssertions, NSubstitute, Bogus, injected `TimeProvider`. 100% line and branch on Domain and Application. Integration tests use Testcontainers + Respawn: happy path, refusal, and cross-tenant (tenant B never sees tenant A) for every endpoint. ≥ 90% line on Api and Infrastructure. A bug fix starts with a failing test. CI must be green to merge.
 
+## Local machine
+
+Docker is not installed. PostgreSQL runs as a Windows service (PostgreSQL 18 with PostGIS), database `cemetery`, port 5432. Do not start `docker-compose` or Testcontainers for local work. `ConnectionStrings:Owner` and `ConnectionStrings:App` for this machine live in .NET user secrets (`Cemetery.Api`); do not put the owner password in `appsettings`. CI still uses the PostGIS container from the plan. The cross-tenant integration test skips when Docker is absent.
+
 Domain language, phases, and frontend rules are in [plan.md](plan.md). Current milestone is Phase 0 (walking skeleton): this solution first, CI, multitenancy, organizations and sign-in.

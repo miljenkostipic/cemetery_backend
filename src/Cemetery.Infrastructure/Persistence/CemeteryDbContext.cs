@@ -1,10 +1,12 @@
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Identity;
+using Cemetery.Domain.Layout;
 using Cemetery.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using CemeteryPlace = Cemetery.Domain.Layout.Cemetery;
 
 namespace Cemetery.Infrastructure.Persistence;
 
@@ -19,6 +21,14 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
 
     public DbSet<Invitation> Invitations => Set<Invitation>();
 
+    public DbSet<CemeteryPlace> Cemeteries => Set<CemeteryPlace>();
+
+    public DbSet<Section> Sections => Set<Section>();
+
+    public DbSet<GraveRow> GraveRows => Set<GraveRow>();
+
+    public DbSet<GraveSite> GraveSites => Set<GraveSite>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("cemetery");
@@ -27,6 +37,10 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.Entity<Membership>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<Invitation>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<Organization>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.Id == CurrentTenant);
+        builder.Entity<CemeteryPlace>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<Section>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<GraveRow>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<GraveSite>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
     }
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken) => SaveChangesAsync(cancellationToken);

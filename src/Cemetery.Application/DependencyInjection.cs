@@ -1,6 +1,7 @@
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Auth;
 using Cemetery.Application.Dashboard;
+using Cemetery.Application.Layout;
 using Cemetery.Application.Organizations;
 using Cemetery.Application.Validation;
 using FluentValidation;
@@ -23,6 +24,22 @@ public static class DependencyInjection
         services.AddScoped<IQueryHandler<ListMyOrganizations, IReadOnlyList<OrganizationSummary>>, ListMyOrganizationsHandler>();
         services.AddScoped<IQueryHandler<GetDashboard, DashboardView>, GetDashboardHandler>();
         services.AddScoped<IQueryHandler<GetSession, SessionView>, GetSessionHandler>();
+        Register<OpenCemetery, CemeteryView, OpenCemeteryHandler>(services);
+        Register<SetCemeteryPlan, CemeteryView, SetCemeteryPlanHandler>(services);
+        Register<AddSection, SectionView, AddSectionHandler>(services);
+        Register<ReplaceSectionOutline, SectionView, ReplaceSectionOutlineHandler>(services);
+        Register<AddGraveRow, GraveRowView, AddGraveRowHandler>(services);
+        Register<GenerateGraveSites, IReadOnlyList<GraveSiteView>, GenerateGraveSitesHandler>(services);
+        Register<ReplaceGraveSiteOutline, GraveSiteView, ReplaceGraveSiteOutlineHandler>(services);
+        Register<SplitGraveSite, IReadOnlyList<GraveSiteView>, SplitGraveSiteHandler>(services);
+        Register<MergeGraveSites, GraveSiteView, MergeGraveSitesHandler>(services);
+        Register<CloseGraveSite, GraveSiteView, CloseGraveSiteHandler>(services);
+        services.AddScoped<IQueryHandler<ListCemeteries, IReadOnlyList<CemeteryView>>, ListCemeteriesHandler>();
+        services.AddScoped<IQueryHandler<GetCemetery, CemeteryView>, GetCemeteryHandler>();
+        services.AddScoped<IQueryHandler<ListSections, IReadOnlyList<SectionView>>, ListSectionsHandler>();
+        services.AddScoped<IQueryHandler<ListGraveRows, IReadOnlyList<GraveRowView>>, ListGraveRowsHandler>();
+        services.AddScoped<IQueryHandler<ListGraveSites, IReadOnlyList<GraveSiteView>>, ListGraveSitesHandler>();
+        services.AddScoped<IQueryHandler<GetGraveSite, GraveSiteView>, GetGraveSiteHandler>();
         return services;
     }
 
