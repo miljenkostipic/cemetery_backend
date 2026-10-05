@@ -47,6 +47,10 @@ public interface ILayoutRepository
 
     Task<bool> SectionCodeExistsAsync(Guid cemeteryId, string code, CancellationToken cancellationToken);
 
+    Task<bool> SectionHasClosedSiteAsync(Guid sectionId, CancellationToken cancellationToken);
+
+    Task RemoveSectionAsync(Section section, CancellationToken cancellationToken);
+
     Task AddRowAsync(GraveRow row, CancellationToken cancellationToken);
 
     Task<int> CountRowsAsync(Guid sectionId, CancellationToken cancellationToken);
@@ -56,6 +60,8 @@ public interface ILayoutRepository
     Task AddGraveSiteAsync(GraveSite site, CancellationToken cancellationToken);
 
     Task<GraveSite?> FindGraveSiteAsync(Guid id, CancellationToken cancellationToken);
+
+    Task RemoveGraveSitesAsync(IReadOnlyList<GraveSite> sites, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<GraveSite>> ListByCemeteryAsync(Guid cemeteryId, CancellationToken cancellationToken);
 

@@ -88,6 +88,28 @@ public sealed class LayoutRulesTests
     }
 
     [Fact]
+    public void A_closed_site_can_be_reopened()
+    {
+        var site = GraveSite.Place(Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), null, "A-0001", GraveSiteKind.SingleGrave, Rectangle(16, 16.001, 45, 45.001));
+        site.Close();
+
+        site.Reopen();
+
+        Assert.False(site.Closed);
+        Assert.Equal(GraveSiteStatus.Available, site.Status);
+    }
+
+    [Fact]
+    public void An_open_site_cannot_be_reset()
+    {
+        var site = GraveSite.Place(Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), null, "A-0001", GraveSiteKind.SingleGrave, Rectangle(16, 16.001, 45, 45.001));
+
+        var error = Assert.Throws<DomainRuleException>(() => site.Reopen());
+
+        Assert.Equal("grave_site.reset_invalid", error.Code);
+    }
+
+    [Fact]
     public void Merge_closes_the_sources_and_sums_capacity()
     {
         var tenant = Guid.CreateVersion7();

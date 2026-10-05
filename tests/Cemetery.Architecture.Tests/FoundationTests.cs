@@ -153,6 +153,7 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["POST /api/v1/cemeteries/{cemeteryId}/plan"] = "tenant",
         ["POST /api/v1/cemeteries/{cemeteryId}/sections"] = "tenant",
         ["GET /api/v1/cemeteries/{cemeteryId}/sections"] = "tenant",
+        ["DELETE /api/v1/sections/{sectionId}"] = "tenant",
         ["PUT /api/v1/sections/{sectionId}/outline"] = "tenant",
         ["POST /api/v1/sections/{sectionId}/rows"] = "tenant",
         ["GET /api/v1/sections/{sectionId}/rows"] = "tenant",
@@ -162,7 +163,9 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["PUT /api/v1/grave-sites/{graveSiteId}/outline"] = "tenant",
         ["POST /api/v1/grave-sites/{graveSiteId}/split"] = "tenant",
         ["POST /api/v1/grave-sites/merge"] = "tenant",
+        ["POST /api/v1/grave-sites/undo-split"] = "tenant",
         ["POST /api/v1/grave-sites/{graveSiteId}/close"] = "tenant",
+        ["POST /api/v1/grave-sites/{graveSiteId}/reopen"] = "tenant",
     };
 }
 

@@ -74,6 +74,13 @@ public sealed class GraveSite : TenantEntity
 
     public void Close() => Closed = true;
 
+    public void Reopen()
+    {
+        if (!Closed)
+            throw new DomainRuleException("grave_site.reset_invalid");
+        Closed = false;
+    }
+
     public (GraveSite Left, GraveSite Right) Split(string leftCode, string rightCode)
     {
         if (Closed || Outline is null)

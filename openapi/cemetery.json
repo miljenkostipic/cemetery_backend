@@ -573,6 +573,29 @@
         }
       }
     },
+    "/api/v1/sections/{sectionId}": {
+      "delete": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "sectionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/v1/sections/{sectionId}/outline": {
       "put": {
         "tags": [
@@ -786,6 +809,35 @@
         }
       }
     },
+    "/api/v1/grave-sites/undo-split": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UndoSplitBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/grave-sites/{graveSiteId}/outline": {
       "put": {
         "tags": [
@@ -860,6 +912,36 @@
       }
     },
     "/api/v1/grave-sites/{graveSiteId}/close": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/reopen": {
       "post": {
         "tags": [
           "LayoutEndpoints"
@@ -1218,6 +1300,28 @@
           },
           "password": {
             "type": "string"
+          }
+        }
+      },
+      "UndoSplitBody": {
+        "required": [
+          "originalId",
+          "leftId",
+          "rightId"
+        ],
+        "type": "object",
+        "properties": {
+          "originalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "leftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rightId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
