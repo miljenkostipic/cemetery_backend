@@ -18,6 +18,7 @@ public static class LayoutEndpoints
         cemeteries.MapGet("/{cemeteryId}/grave-sites", ListSites);
 
         var sections = api.MapGroup("/sections").RequireAuthorization("tenant");
+        sections.MapDelete("/{sectionId}", DeleteSection);
         sections.MapPut("/{sectionId}/outline", SectionOutline);
         sections.MapPost("/{sectionId}/rows", AddRow);
         sections.MapGet("/{sectionId}/rows", ListRows);
@@ -25,10 +26,12 @@ public static class LayoutEndpoints
 
         var sites = api.MapGroup("/grave-sites").RequireAuthorization("tenant");
         sites.MapPost("/merge", Merge);
+        sites.MapPost("/undo-split", UndoSplit);
         sites.MapGet("/{graveSiteId}", GetSite);
         sites.MapPut("/{graveSiteId}/outline", SiteOutline);
         sites.MapPost("/{graveSiteId}/split", Split);
         sites.MapPost("/{graveSiteId}/close", Close);
+        sites.MapPost("/{graveSiteId}/reopen", Reopen);
         return api;
     }
 
@@ -68,6 +71,15 @@ public static class LayoutEndpoints
         IQueryHandler<ListSections, IReadOnlyList<SectionView>> handler,
         CancellationToken cancellationToken) =>
         TypedResults.Ok(await handler.Handle(new ListSections(cemeteryId), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<NoContent> DeleteSection(
+        Guid sectionId,
+        ICommandHandler<RemoveSection, bool> handler,
+        CancellationToken cancellationToken)
+    {
+        _ = await handler.Handle(new RemoveSection(sectionId), cancellationToken).ConfigureAwait(false);
+        return TypedResults.NoContent();
+    }
 
     private static async Task<Ok<SectionView>> SectionOutline(
         Guid sectionId,
@@ -132,6 +144,18 @@ public static class LayoutEndpoints
         ICommandHandler<CloseGraveSite, GraveSiteView> handler,
         CancellationToken cancellationToken) =>
         TypedResults.Ok(await handler.Handle(new CloseGraveSite(graveSiteId), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<Ok<GraveSiteView>> Reopen(
+        Guid graveSiteId,
+        ICommandHandler<ReopenGraveSite, GraveSiteView> handler,
+        CancellationToken cancellationToken) =>
+        TypedResults.Ok(await handler.Handle(new ReopenGraveSite(graveSiteId), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<Ok<GraveSiteView>> UndoSplit(
+        UndoSplitBody body,
+        ICommandHandler<UndoGraveSiteSplit, GraveSiteView> handler,
+        CancellationToken cancellationToken) =>
+        TypedResults.Ok(await handler.Handle(new UndoGraveSiteSplit(body.OriginalId, body.LeftId, body.RightId), cancellationToken).ConfigureAwait(false));
 }
 
 public sealed record PlanBody(string PlanImageUrl, IReadOnlyList<GeoPointView> PlanBounds);
@@ -141,6 +165,8 @@ public sealed record SectionBody(string Name, string Code, IReadOnlyList<GeoPoin
 public sealed record OutlineBody(IReadOnlyList<GeoPointView> Outline);
 
 public sealed record RowBody(string Label);
+
+public sealed record UndoSplitBody(Guid OriginalId, Guid LeftId, Guid RightId);
 
 public sealed record GenerateBody(
     string Kind,

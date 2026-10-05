@@ -27,6 +27,7 @@ public static class DependencyInjection
         Register<OpenCemetery, CemeteryView, OpenCemeteryHandler>(services);
         Register<SetCemeteryPlan, CemeteryView, SetCemeteryPlanHandler>(services);
         Register<AddSection, SectionView, AddSectionHandler>(services);
+        Register<RemoveSection, bool, RemoveSectionHandler>(services);
         Register<ReplaceSectionOutline, SectionView, ReplaceSectionOutlineHandler>(services);
         Register<AddGraveRow, GraveRowView, AddGraveRowHandler>(services);
         Register<GenerateGraveSites, IReadOnlyList<GraveSiteView>, GenerateGraveSitesHandler>(services);
@@ -34,6 +35,8 @@ public static class DependencyInjection
         Register<SplitGraveSite, IReadOnlyList<GraveSiteView>, SplitGraveSiteHandler>(services);
         Register<MergeGraveSites, GraveSiteView, MergeGraveSitesHandler>(services);
         Register<CloseGraveSite, GraveSiteView, CloseGraveSiteHandler>(services);
+        Register<ReopenGraveSite, GraveSiteView, ReopenGraveSiteHandler>(services);
+        Register<UndoGraveSiteSplit, GraveSiteView, UndoGraveSiteSplitHandler>(services);
         services.AddScoped<IQueryHandler<ListCemeteries, IReadOnlyList<CemeteryView>>, ListCemeteriesHandler>();
         services.AddScoped<IQueryHandler<GetCemetery, CemeteryView>, GetCemeteryHandler>();
         services.AddScoped<IQueryHandler<ListSections, IReadOnlyList<SectionView>>, ListSectionsHandler>();

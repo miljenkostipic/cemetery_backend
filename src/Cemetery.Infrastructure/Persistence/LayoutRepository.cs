@@ -34,6 +34,18 @@ internal sealed class LayoutRepository(CemeteryDbContext db) : ILayoutRepository
     public Task<bool> SectionCodeExistsAsync(Guid cemeteryId, string code, CancellationToken cancellationToken) =>
         db.Sections.AnyAsync(entity => entity.CemeteryId == cemeteryId && entity.Code == code, cancellationToken);
 
+    public Task<bool> SectionHasClosedSiteAsync(Guid sectionId, CancellationToken cancellationToken) =>
+        db.GraveSites.AnyAsync(entity => entity.SectionId == sectionId && entity.Closed, cancellationToken);
+
+    public async Task RemoveSectionAsync(Section section, CancellationToken cancellationToken)
+    {
+        var sites = await db.GraveSites.Where(entity => entity.SectionId == section.Id).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var rows = await db.GraveRows.Where(entity => entity.SectionId == section.Id).ToListAsync(cancellationToken).ConfigureAwait(false);
+        db.GraveSites.RemoveRange(sites);
+        db.GraveRows.RemoveRange(rows);
+        db.Sections.Remove(section);
+    }
+
     public Task AddRowAsync(GraveRow row, CancellationToken cancellationToken)
     {
         db.GraveRows.Add(row);
@@ -54,6 +66,12 @@ internal sealed class LayoutRepository(CemeteryDbContext db) : ILayoutRepository
 
     public Task<GraveSite?> FindGraveSiteAsync(Guid id, CancellationToken cancellationToken) =>
         db.GraveSites.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public Task RemoveGraveSitesAsync(IReadOnlyList<GraveSite> sites, CancellationToken cancellationToken)
+    {
+        db.GraveSites.RemoveRange(sites);
+        return Task.CompletedTask;
+    }
 
     public async Task<IReadOnlyList<GraveSite>> ListByCemeteryAsync(Guid cemeteryId, CancellationToken cancellationToken) =>
         await db.GraveSites.Where(entity => entity.CemeteryId == cemeteryId).OrderBy(entity => entity.Code).ToListAsync(cancellationToken).ConfigureAwait(false);

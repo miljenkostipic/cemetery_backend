@@ -40,6 +40,36 @@ public sealed class AddSectionHandler(
     }
 }
 
+public sealed record RemoveSection(Guid SectionId);
+
+public sealed class RemoveSectionValidator : AbstractValidator<RemoveSection>
+{
+    public RemoveSectionValidator()
+    {
+        RuleFor(command => command.SectionId).NotEmpty().WithErrorCode("section.not_found");
+    }
+}
+
+public sealed class RemoveSectionHandler(
+    ICurrentUser current,
+    ITenantContext tenant,
+    IMembershipRepository memberships,
+    ILayoutRepository layouts,
+    IUnitOfWork unitOfWork) : ICommandHandler<RemoveSection, bool>
+{
+    public async Task<bool> Handle(RemoveSection command, CancellationToken cancellationToken)
+    {
+        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var section = await layouts.FindSectionAsync(command.SectionId, cancellationToken).ConfigureAwait(false)
+            ?? throw new NotFoundException("section.not_found");
+        if (await layouts.SectionHasClosedSiteAsync(section.Id, cancellationToken).ConfigureAwait(false))
+            throw new ConflictException("section.in_use");
+        await layouts.RemoveSectionAsync(section, cancellationToken).ConfigureAwait(false);
+        await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+}
+
 public sealed record ListSections(Guid CemeteryId);
 
 public sealed class ListSectionsHandler(
