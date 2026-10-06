@@ -1,4 +1,5 @@
 using Cemetery.Domain.Identity;
+using Cemetery.Domain.Register;
 
 namespace Cemetery.Domain.Layout;
 
@@ -27,8 +28,10 @@ public sealed class GraveSite : TenantEntity
 
     public bool Closed { get; private set; }
 
-    public GraveSiteStatus Status =>
-        GraveSiteStatuses.Derive(Closed, Outline is not null, reserved: false, occupied: 0, Capacity, reusable: false);
+    public GraveSiteStatus Status => StatusFor(new SiteUse(0, false));
+
+    public GraveSiteStatus StatusFor(SiteUse use) =>
+        GraveSiteStatuses.Derive(Closed, Outline is not null, false, use.Occupied, Capacity, use.Reusable);
 
     public static GraveSite Place(
         Guid tenantId,

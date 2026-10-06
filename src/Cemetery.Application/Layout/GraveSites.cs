@@ -1,6 +1,8 @@
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
+using Cemetery.Application.Register;
 using Cemetery.Domain.Layout;
+using Cemetery.Domain.Register;
 using FluentValidation;
 
 namespace Cemetery.Application.Layout;
@@ -11,13 +13,17 @@ public sealed class ListGraveSitesHandler(
     ICurrentUser current,
     ITenantContext tenant,
     IMembershipRepository memberships,
-    ILayoutRepository layouts) : IQueryHandler<ListGraveSites, IReadOnlyList<GraveSiteView>>
+    ILayoutRepository layouts,
+    IRegisterRepository register,
+    TimeProvider clock) : IQueryHandler<ListGraveSites, IReadOnlyList<GraveSiteView>>
 {
     public async Task<IReadOnlyList<GraveSiteView>> Handle(ListGraveSites query, CancellationToken cancellationToken)
     {
         await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
         var sites = await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        return sites.Select(LayoutMaps.ToView).ToArray();
+        var cemetery = await layouts.FindCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var interments = await register.ListIntermentsByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
+        return RegisterMaps.SiteViews(sites, interments, RestYears.Of(cemetery), RegisterClock.Today(clock));
     }
 }
 
@@ -27,14 +33,19 @@ public sealed class GetGraveSiteHandler(
     ICurrentUser current,
     ITenantContext tenant,
     IMembershipRepository memberships,
-    ILayoutRepository layouts) : IQueryHandler<GetGraveSite, GraveSiteView>
+    ILayoutRepository layouts,
+    IRegisterRepository register,
+    TimeProvider clock) : IQueryHandler<GetGraveSite, GraveSiteView>
 {
     public async Task<GraveSiteView> Handle(GetGraveSite query, CancellationToken cancellationToken)
     {
         await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
         var site = await layouts.FindGraveSiteAsync(query.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
-        return LayoutMaps.ToView(site);
+        var cemetery = await layouts.FindCemeteryAsync(site.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var interments = await register.ListIntermentsBySiteAsync(site.Id, cancellationToken).ConfigureAwait(false);
+        var use = SiteOccupancy.Summarize(site.Id, site.Capacity, interments, RegisterClock.Today(clock), RestYears.Of(cemetery));
+        return LayoutMaps.ToView(site, use);
     }
 }
 

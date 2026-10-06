@@ -249,6 +249,8 @@ Eight phases, each ending in a milestone that is shippable and demoable; the fir
 
 Phases run in order; each milestone is a gate the next phase starts from. Phases 0–3 make the first public release.
 
+Progress checked 5 Oct 2026. Phase 0 is in use: sign-in, an organization, and an empty dashboard. Phase 1 is in use on a local cemetery: sections, a grave-site grid, split, merge, close, and reset. The milestone exits below stay open until the Definition of Done is met. There is no audit log yet, CI does not enforce coverage, and there is no Playwright run.
+
 ### Definition of Done (every feature, every phase)
 
 - Domain rules covered by unit tests; endpoints covered by integration tests; coverage gates green
@@ -260,18 +262,25 @@ Phases run in order; each milestone is a gate the next phase starts from. Phases
 
 ### Phase 0 — Foundations → M0 "Walking skeleton"
 
-- Two repos (`cemetery-backend` first, then `cemetery-frontend`), solution and frontend scaffold as in Architecture; ESLint, Prettier, `.editorconfig`, analyzers with warnings as errors.
-- CI pipeline with all gates; Testcontainers working; preview environment per PR.
-- Multitenancy foundation: tenant resolution, `tenant_id` + EF query filters + PostgreSQL row-level security, an architecture test that every tenant-owned entity is filtered and has an RLS policy, cross-tenant integration tests. Organizations, users, memberships and roles, sign-in (passkey + password), invitations, organization switcher.
-- Design system: PrimeVue preset, Gold Standard docs for Forms, DataTable, Dialogs, View pages, Map page; `shared/ui` wrappers.
-- **Exit:** a user signs in, creates an organization, sees an empty dashboard and provably cannot reach another organization's data — through CI, with E2E and coverage green.
+- [x] Two repos (`cemetery-backend` first, then `cemetery-frontend`), solution and frontend scaffold as in Architecture; ESLint, Prettier, `.editorconfig`, analyzers with warnings as errors.
+- [x] CI builds and tests both repos. The PostGIS integration test exists and skips when Docker is absent.
+- [ ] Coverage gates, Playwright, and a preview environment per pull request.
+- [x] Multitenancy foundation: tenant resolution, `tenant_id` + EF query filters + PostgreSQL row-level security, an architecture test that every tenant-owned entity is filtered and has an RLS policy, and a cross-tenant integration test.
+- [x] Organizations, users, memberships and roles, sign-in (passkey + password), and an organization switcher.
+- [x] Invitations on the API.
+- [ ] Invitation screens in the app.
+- [x] PrimeVue preset, Gold Standard notes, and an empty state.
+- [ ] Gold Standard reference pages and the shared table wrappers (`ResponsiveDataView`, table-state preservation).
+- **Exit:** a user signs in, creates an organization, sees an empty dashboard, and provably cannot reach another organization's data. Sign-in, the organization, and the dashboard work. The cross-tenant proof runs in CI when Docker is present. E2E and coverage gates are still open.
 
 ### Phase 1 — Cemetery layout and map → M1 "Mapped cemetery"
 
-- Cemeteries, sections, rows, grave-site types and capacities.
-- Map editor: draw sections, generate grave-site grids, edit/split/merge, overlay a georeferenced plan; schematic mode for cemeteries without geodata.
-- Grave-site list and detail with derived status; map ↔ list sync.
-- **Exit:** a clerk maps a real cemetery (pilot) and every grave site has an ID, type, and geometry.
+- [x] Cemeteries, sections, rows, grave-site types and capacities.
+- [x] Map editor: draw a section, generate a grave-site grid (rows, columns, size, spacing, rotation), split, merge, and close. Overlay a georeferenced plan. Schematic mode for a cemetery without geodata.
+- [x] Remove a section that has no closed grave. Undo an accidental split or close.
+- [x] Grave-site list and detail with derived status; selecting a site on the map or in the list shows the same site.
+- [ ] Reshape a section or grave site after it has been saved. The API accepts a new outline; the screen does not send one yet.
+- **Exit:** a clerk maps a real cemetery (pilot) and every grave site has an ID, type, and geometry. The layout screen is in use on a local cemetery, and each saved site has an id, type, and geometry. The pilot is not signed off, and these endpoints are not all covered by integration tests.
 
 ### Phase 2 — Register → M2 "Digital register"
 

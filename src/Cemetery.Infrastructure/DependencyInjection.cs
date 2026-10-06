@@ -28,15 +28,31 @@ public static class DependencyInjection
         services.AddScoped<IMembershipRepository, MembershipRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<ILayoutRepository, LayoutRepository>();
+        services.AddScoped<IRegisterRepository, RegisterRepository>();
         services.AddScoped<IUserAccountGateway, UserAccountGateway>();
         services.AddScoped<IPasswordSignIn, PasswordSignInGateway>();
+        services.AddScoped<IPasswordReset, PasswordResetGateway>();
         services.AddSingleton<IInvitationTokenFactory, InvitationTokenFactory>();
-        services.AddScoped<IEmailSender, LoggingEmailSender>();
+        AddEmail(services, configuration);
         services.AddSingleton<IAppLinks, ConfiguredAppLinks>();
         AddIdentity(services);
         if (!headless)
             AddHangfire(services, configuration);
         return services;
+    }
+
+    private static void AddEmail(IServiceCollection services, IConfiguration configuration)
+    {
+        var account = MailgunSettings.Read(configuration);
+        if (account is null)
+        {
+            services.AddScoped<IEmailSender, LoggingEmailSender>();
+            return;
+        }
+
+        services.AddSingleton(account);
+        services.AddHttpClient<IEmailSender, MailgunEmailSender>(client => client.Timeout = TimeSpan.FromSeconds(30))
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
     }
 
     private static void ConfigureDb(IServiceProvider provider, DbContextOptionsBuilder options, IConfiguration configuration)

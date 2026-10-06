@@ -95,4 +95,43 @@ public static class RowLevelSecurity
         END
         $body$;
         """;
+
+    public const string Register = """
+        ALTER TABLE cemetery.deceased ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.deceased FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS deceased_tenant ON cemetery.deceased;
+        CREATE POLICY deceased_tenant ON cemetery.deceased
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.deceased_revisions ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.deceased_revisions FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS deceased_revisions_tenant ON cemetery.deceased_revisions;
+        CREATE POLICY deceased_revisions_tenant ON cemetery.deceased_revisions
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.interments ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.interments FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS interments_tenant ON cemetery.interments;
+        CREATE POLICY interments_tenant ON cemetery.interments
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.audit_entries ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.audit_entries FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS audit_entries_tenant ON cemetery.audit_entries;
+        CREATE POLICY audit_entries_tenant ON cemetery.audit_entries
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
 }

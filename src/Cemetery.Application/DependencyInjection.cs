@@ -3,6 +3,7 @@ using Cemetery.Application.Auth;
 using Cemetery.Application.Dashboard;
 using Cemetery.Application.Layout;
 using Cemetery.Application.Organizations;
+using Cemetery.Application.Register;
 using Cemetery.Application.Validation;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,8 @@ public static class DependencyInjection
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         Register<RegisterUser, UserProfile, RegisterUserHandler>(services);
         Register<LoginUser, UserProfile, LoginUserHandler>(services);
+        Register<RequestPasswordReset, PasswordResetDelivery, RequestPasswordResetHandler>(services);
+        Register<ConfirmPasswordReset, UserProfile, ConfirmPasswordResetHandler>(services);
         Register<CreateOrganization, OrganizationCreated, CreateOrganizationHandler>(services);
         Register<InviteMember, InvitationIssued, InviteMemberHandler>(services);
         Register<AcceptInvitation, OrganizationSummary, AcceptInvitationHandler>(services);
@@ -43,6 +46,17 @@ public static class DependencyInjection
         services.AddScoped<IQueryHandler<ListGraveRows, IReadOnlyList<GraveRowView>>, ListGraveRowsHandler>();
         services.AddScoped<IQueryHandler<ListGraveSites, IReadOnlyList<GraveSiteView>>, ListGraveSitesHandler>();
         services.AddScoped<IQueryHandler<GetGraveSite, GraveSiteView>, GetGraveSiteHandler>();
+        Register<RecordDeceased, DeceasedView, RecordDeceasedHandler>(services);
+        Register<CorrectDeceased, DeceasedView, CorrectDeceasedHandler>(services);
+        Register<RemoveDeceased, bool, RemoveDeceasedHandler>(services);
+        Register<SetRestPeriod, int, SetRestPeriodHandler>(services);
+        Register<RecordInterment, IntermentView, RecordIntermentHandler>(services);
+        Register<ExhumeInterment, IntermentView, ExhumeIntermentHandler>(services);
+        Register<TransferInterment, IntermentView, TransferIntermentHandler>(services);
+        services.AddScoped<IQueryHandler<ListDeceased, IReadOnlyList<DeceasedView>>, ListDeceasedHandler>();
+        services.AddScoped<IQueryHandler<GetDeceased, DeceasedView>, GetDeceasedHandler>();
+        services.AddScoped<IQueryHandler<ListFreePositions, IReadOnlyList<FreePositionView>>, ListFreePositionsHandler>();
+        services.AddScoped<IQueryHandler<ListSiteInterments, IReadOnlyList<IntermentView>>, ListSiteIntermentsHandler>();
         return services;
     }
 

@@ -68,6 +68,57 @@
         }
       }
     },
+    "/api/v1/auth/password-resets": {
+      "post": {
+        "tags": [
+          "AuthEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPasswordReset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password-resets/confirm": {
+      "post": {
+        "tags": [
+          "AuthEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmPasswordReset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/logout": {
       "post": {
         "tags": [
@@ -391,6 +442,68 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/CemeteryView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interments": {
+      "post": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntermentBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntermentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/interments": {
+      "get": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntermentView"
                   }
                 }
               }
@@ -779,6 +892,35 @@
         }
       }
     },
+    "/api/v1/grave-sites/undo-split": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UndoSplitBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/grave-sites/{graveSiteId}": {
       "get": {
         "tags": [
@@ -795,35 +937,6 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GraveSiteView"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/grave-sites/undo-split": {
-      "post": {
-        "tags": [
-          "LayoutEndpoints"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UndoSplitBody"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "OK",
@@ -970,6 +1083,334 @@
           }
         }
       }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/deceased": {
+      "post": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeceasedBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeceasedView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeceasedView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/rest-period": {
+      "put": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestPeriodBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "pattern": "^-?(?:0|[1-9]\\d*)$",
+                  "type": [
+                    "integer",
+                    "string"
+                  ],
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/positions": {
+      "get": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "graveSiteId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FreePositionView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/deceased/{deceasedId}": {
+      "get": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "deceasedId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeceasedView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "deceasedId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/deceased/{deceasedId}/corrections": {
+      "post": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "deceasedId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeceasedView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interments/{intermentId}/exhumations": {
+      "post": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "intermentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExhumationBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntermentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interments/{intermentId}/transfers": {
+      "post": {
+        "tags": [
+          "RegisterEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "intermentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntermentView"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -991,7 +1432,8 @@
           "name",
           "schematic",
           "planImageUrl",
-          "planBounds"
+          "planBounds",
+          "restPeriodYears"
         ],
         "type": "object",
         "properties": {
@@ -1016,6 +1458,68 @@
             "items": {
               "$ref": "#/components/schemas/GeoPointView"
             }
+          },
+          "restPeriodYears": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ConfirmPasswordReset": {
+        "required": [
+          "email",
+          "token",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "CorrectionBody": {
+        "required": [
+          "givenName",
+          "familyName",
+          "bornOn",
+          "diedOn",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "bornOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "diedOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "reason": {
+            "type": "string"
           }
         }
       },
@@ -1056,6 +1560,168 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "DeceasedBody": {
+        "required": [
+          "givenName",
+          "familyName",
+          "bornOn",
+          "diedOn"
+        ],
+        "type": "object",
+        "properties": {
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "bornOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "diedOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          }
+        }
+      },
+      "DeceasedView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "givenName",
+          "familyName",
+          "bornOn",
+          "diedOn",
+          "version",
+          "intermentId",
+          "graveSiteId",
+          "graveSiteCode",
+          "position"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "bornOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "diedOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "version": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "intermentId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "position": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ExhumationBody": {
+        "required": [
+          "on"
+        ],
+        "type": "object",
+        "properties": {
+          "on": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "FreePositionView": {
+        "required": [
+          "graveSiteId",
+          "graveSiteCode",
+          "position",
+          "state",
+          "kinds"
+        ],
+        "type": "object",
+        "properties": {
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "position": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "state": {
+            "type": "string"
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -1257,6 +1923,93 @@
           }
         }
       },
+      "IntermentBody": {
+        "required": [
+          "deceasedId",
+          "graveSiteId",
+          "position",
+          "kind",
+          "buriedOn"
+        ],
+        "type": "object",
+        "properties": {
+          "deceasedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "buriedOn": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "IntermentView": {
+        "required": [
+          "id",
+          "deceasedId",
+          "givenName",
+          "familyName",
+          "graveSiteId",
+          "graveSiteCode",
+          "position",
+          "kind",
+          "buriedOn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deceasedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "position": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "buriedOn": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
       "InvitationIssued": {
         "required": [
           "id",
@@ -1300,28 +2053,6 @@
           },
           "password": {
             "type": "string"
-          }
-        }
-      },
-      "UndoSplitBody": {
-        "required": [
-          "originalId",
-          "leftId",
-          "rightId"
-        ],
-        "type": "object",
-        "properties": {
-          "originalId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "leftId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "rightId": {
-            "type": "string",
-            "format": "uuid"
           }
         }
       },
@@ -1467,6 +2198,33 @@
           }
         }
       },
+      "RequestPasswordReset": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "RestPeriodBody": {
+        "required": [
+          "years"
+        ],
+        "type": "object",
+        "properties": {
+          "years": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "RowBody": {
         "required": [
           "label"
@@ -1589,6 +2347,54 @@
           }
         }
       },
+      "TransferBody": {
+        "required": [
+          "graveSiteId",
+          "position",
+          "on"
+        ],
+        "type": "object",
+        "properties": {
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "on": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "UndoSplitBody": {
+        "required": [
+          "originalId",
+          "leftId",
+          "rightId"
+        ],
+        "type": "object",
+        "properties": {
+          "originalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "leftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rightId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "UserProfile": {
         "required": [
           "userId",
@@ -1623,6 +2429,9 @@
     },
     {
       "name": "LayoutEndpoints"
+    },
+    {
+      "name": "RegisterEndpoints"
     }
   ]
 }

@@ -1,4 +1,5 @@
 using Cemetery.Domain.Identity;
+using Cemetery.Domain.Register;
 
 namespace Cemetery.Domain.Layout;
 
@@ -23,6 +24,8 @@ public sealed class Cemetery : TenantEntity
 
     public DateTimeOffset CreatedAt { get; private set; }
 
+    public int RestPeriodYears { get; private set; }
+
     public static bool IsValidName(string? name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -46,8 +49,11 @@ public sealed class Cemetery : TenantEntity
             Name = name.Trim(),
             Schematic = schematic,
             CreatedAt = createdAt,
+            RestPeriodYears = RestPeriod.DefaultYears,
         };
     }
+
+    public void SetRestPeriod(int years) => RestPeriodYears = RestPeriod.Require(years);
 
     public void SetPlan(string url, GeoPolygon bounds)
     {

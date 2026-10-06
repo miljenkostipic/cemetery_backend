@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cemetery.Application\Cemetery.Application.csproj" />
+    <InternalsVisibleTo Include="Cemetery.Architecture.Tests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@ using Cemetery.Application.Auth;
 using Cemetery.Infrastructure.Identity;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace Cemetery.Api.Endpoints;
 
@@ -13,6 +14,8 @@ public static class AuthEndpoints
         var auth = api.MapGroup("/auth");
         auth.MapPost("/register", Register).AllowAnonymous().RequireRateLimiting(AuthRateLimit.Policy);
         auth.MapPost("/login", Login).AllowAnonymous().RequireRateLimiting(AuthRateLimit.Policy);
+        auth.MapPost("/password-resets", RequestReset).AllowAnonymous().RequireRateLimiting(AuthRateLimit.Policy);
+        auth.MapPost("/password-resets/confirm", ConfirmReset).AllowAnonymous().RequireRateLimiting(AuthRateLimit.Policy);
         auth.MapPost("/logout", Logout).RequireAuthorization();
         auth.MapGet("/me", Me).RequireAuthorization();
         auth.MapPasskeys();
@@ -31,6 +34,34 @@ public static class AuthEndpoints
     private static async Task<Ok<UserProfile>> Login(
         LoginUser command,
         ICommandHandler<LoginUser, UserProfile> handler,
+        CancellationToken cancellationToken)
+    {
+        var profile = await handler.Handle(command, cancellationToken).ConfigureAwait(false);
+        return TypedResults.Ok(profile);
+    }
+
+    private static async Task<NoContent> RequestReset(
+        RequestPasswordReset command,
+        ICommandHandler<RequestPasswordReset, PasswordResetDelivery> handler,
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
+    {
+        var delivery = await handler.Handle(command, cancellationToken).ConfigureAwait(false);
+        LogReset(loggerFactory.CreateLogger("Cemetery.Mail"), command.Email, delivery);
+        return TypedResults.NoContent();
+    }
+
+    private static void LogReset(ILogger logger, string email, PasswordResetDelivery delivery)
+    {
+        if (!logger.IsEnabled(LogLevel.Information) || delivery != PasswordResetDelivery.Skipped)
+            return;
+
+        logger.LogInformation("Password reset not sent. No account for {Email}.", email);
+    }
+
+    private static async Task<Ok<UserProfile>> ConfirmReset(
+        ConfirmPasswordReset command,
+        ICommandHandler<ConfirmPasswordReset, UserProfile> handler,
         CancellationToken cancellationToken)
     {
         var profile = await handler.Handle(command, cancellationToken).ConfigureAwait(false);

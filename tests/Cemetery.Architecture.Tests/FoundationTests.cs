@@ -72,6 +72,10 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.sections", RowLevelSecurity.Layout, StringComparison.Ordinal);
         Assert.Contains("cemetery.grave_rows", RowLevelSecurity.Layout, StringComparison.Ordinal);
         Assert.Contains("cemetery.grave_sites", RowLevelSecurity.Layout, StringComparison.Ordinal);
+        Assert.Contains("cemetery.deceased", RowLevelSecurity.Register, StringComparison.Ordinal);
+        Assert.Contains("cemetery.deceased_revisions", RowLevelSecurity.Register, StringComparison.Ordinal);
+        Assert.Contains("cemetery.interments", RowLevelSecurity.Register, StringComparison.Ordinal);
+        Assert.Contains("cemetery.audit_entries", RowLevelSecurity.Register, StringComparison.Ordinal);
         Assert.Contains("FORCE ROW LEVEL SECURITY", RowLevelSecurity.Up, StringComparison.Ordinal);
         Assert.Contains("ST_Intersection", GraveSiteGeometry.Up, StringComparison.Ordinal);
     }
@@ -135,6 +139,8 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["GET /api/v1/health"] = "anonymous",
         ["POST /api/v1/auth/register"] = "anonymous",
         ["POST /api/v1/auth/login"] = "anonymous",
+        ["POST /api/v1/auth/password-resets"] = "anonymous",
+        ["POST /api/v1/auth/password-resets/confirm"] = "anonymous",
         ["POST /api/v1/auth/logout"] = "authenticated",
         ["GET /api/v1/auth/me"] = "authenticated",
         ["POST /api/v1/auth/passkeys/creation-options"] = "authenticated",
@@ -166,6 +172,17 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["POST /api/v1/grave-sites/undo-split"] = "tenant",
         ["POST /api/v1/grave-sites/{graveSiteId}/close"] = "tenant",
         ["POST /api/v1/grave-sites/{graveSiteId}/reopen"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/deceased"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/deceased"] = "tenant",
+        ["PUT /api/v1/cemeteries/{cemeteryId}/rest-period"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/positions"] = "tenant",
+        ["GET /api/v1/deceased/{deceasedId}"] = "tenant",
+        ["POST /api/v1/deceased/{deceasedId}/corrections"] = "tenant",
+        ["DELETE /api/v1/deceased/{deceasedId}"] = "tenant",
+        ["POST /api/v1/interments"] = "tenant",
+        ["POST /api/v1/interments/{intermentId}/exhumations"] = "tenant",
+        ["POST /api/v1/interments/{intermentId}/transfers"] = "tenant",
+        ["GET /api/v1/grave-sites/{graveSiteId}/interments"] = "tenant",
     };
 }
 

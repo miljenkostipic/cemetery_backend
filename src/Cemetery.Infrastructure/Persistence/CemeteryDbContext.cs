@@ -2,6 +2,7 @@ using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
+using Cemetery.Domain.Register;
 using Cemetery.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -29,6 +30,14 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
 
     public DbSet<GraveSite> GraveSites => Set<GraveSite>();
 
+    public DbSet<Deceased> Deceased => Set<Deceased>();
+
+    public DbSet<DeceasedRevision> DeceasedRevisions => Set<DeceasedRevision>();
+
+    public DbSet<Interment> Interments => Set<Interment>();
+
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("cemetery");
@@ -41,6 +50,10 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.Entity<Section>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<GraveRow>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<GraveSite>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<Deceased>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<DeceasedRevision>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<Interment>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<AuditEntry>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
     }
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken) => SaveChangesAsync(cancellationToken);

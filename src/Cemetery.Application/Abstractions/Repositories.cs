@@ -1,5 +1,6 @@
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
+using Cemetery.Domain.Register;
 using CemeteryPlace = Cemetery.Domain.Layout.Cemetery;
 
 namespace Cemetery.Application.Abstractions;
@@ -70,4 +71,27 @@ public interface ILayoutRepository
     Task<int> CountGraveSitesAsync(CancellationToken cancellationToken);
 
     Task<int> NextSequenceAsync(Guid cemeteryId, CancellationToken cancellationToken);
+}
+
+public interface IRegisterRepository
+{
+    Task AddDeceasedAsync(Deceased deceased, CancellationToken cancellationToken);
+
+    Task<Deceased?> FindDeceasedAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Deceased>> ListDeceasedAsync(Guid cemeteryId, CancellationToken cancellationToken);
+
+    Task AddRevisionAsync(DeceasedRevision revision, CancellationToken cancellationToken);
+
+    Task AddIntermentAsync(Interment interment, CancellationToken cancellationToken);
+
+    Task<Interment?> FindIntermentAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Interment>> ListIntermentsBySiteAsync(Guid graveSiteId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Interment>> ListIntermentsByCemeteryAsync(Guid cemeteryId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Interment>> ListIntermentsByDeceasedAsync(Guid deceasedId, CancellationToken cancellationToken);
+
+    Task AddAuditAsync(AuditEntry entry, CancellationToken cancellationToken);
 }
