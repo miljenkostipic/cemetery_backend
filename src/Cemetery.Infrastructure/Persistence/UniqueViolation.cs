@@ -26,6 +26,8 @@ internal static class UniqueViolation
             "sections_tenant_code_key" => "section.code_taken",
             "grave_rows_tenant_label_key" => "row.label_taken",
             "grave_sites_tenant_code_key" => "grave_site.code_taken",
+            "interments_open_position_key" => "interment.position_taken",
+            "interments_open_deceased_key" => "interment.already_buried",
             _ => "conflict.unique",
         };
     }

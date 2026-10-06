@@ -3,6 +3,7 @@ using System;
 using Cemetery.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Cemetery.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(CemeteryDbContext))]
-    partial class CemeteryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261006122455_RemoveDeceased")]
+    partial class RemoveDeceased
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,4 +1,5 @@
 using Cemetery.Domain.Layout;
+using Cemetery.Domain.Register;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using CemeteryPlace = Cemetery.Domain.Layout.Cemetery;
@@ -15,6 +16,7 @@ public sealed class CemeteryConfiguration : IEntityTypeConfiguration<CemeteryPla
         builder.Property(entity => entity.Name).HasMaxLength(CemeteryPlace.NameMaxLength);
         builder.Property(entity => entity.PlanImageUrl).HasMaxLength(CemeteryPlace.PlanUrlMaxLength);
         builder.Property(entity => entity.PlanBounds).HasConversion(GeometryMapping.PolygonConverter).HasColumnType("geometry(Polygon,4326)");
+        builder.Property(entity => entity.RestPeriodYears).HasDefaultValue(RestPeriod.DefaultYears);
         builder.HasIndex(entity => entity.TenantId);
     }
 }
@@ -61,6 +63,7 @@ public sealed class GraveSiteConfiguration : IEntityTypeConfiguration<GraveSite>
     {
         builder.ToTable("grave_sites");
         builder.HasKey(entity => entity.Id);
+        builder.HasAlternateKey(entity => new { entity.TenantId, entity.Id });
         builder.Property(entity => entity.Code).HasMaxLength(GraveSite.CodeMaxLength);
         builder.Property(entity => entity.Kind)
             .HasConversion(kind => GraveSiteKinds.ToCode(kind), code => ParseKind(code))
