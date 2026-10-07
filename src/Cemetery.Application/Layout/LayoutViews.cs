@@ -28,7 +28,8 @@ public sealed record GraveSiteView(
     string Kind,
     int Capacity,
     string Status,
-    IReadOnlyList<GeoPointView> Outline);
+    IReadOnlyList<GeoPointView> Outline,
+    bool HiddenFromPublic);
 
 internal static class LayoutMaps
 {
@@ -52,7 +53,8 @@ internal static class LayoutMaps
             GraveSiteKinds.ToCode(site.Kind),
             site.Capacity,
             GraveSiteStatuses.ToCode(site.StatusFor(use)),
-            Ring(site.Outline));
+            Ring(site.Outline),
+            site.HiddenFromPublic);
 
     public static GeoPolygon? Polygon(IReadOnlyList<GeoPointView>? ring) =>
         TryPolygon(ring, out var polygon) ? polygon : null;

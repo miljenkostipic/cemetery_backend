@@ -73,6 +73,17 @@ public interface ILayoutRepository
     Task<int> NextSequenceAsync(Guid cemeteryId, CancellationToken cancellationToken);
 }
 
+public interface IPublicCatalog
+{
+    Task<IReadOnlyList<Catalog.PublicCemeterySummary>> ListCemeteriesAsync(CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Catalog.PublicSearchHit>> SearchAsync(string name, int? yearFrom, int? yearTo, string? slug, DateOnly today, CancellationToken cancellationToken);
+
+    Task<Catalog.PublicMemorial?> FindMemorialAsync(Guid deceasedId, DateOnly today, CancellationToken cancellationToken);
+
+    Task<Catalog.PublicMap?> FindMapAsync(string slug, Guid cemeteryId, CancellationToken cancellationToken);
+}
+
 public interface IRegisterRepository
 {
     Task AddDeceasedAsync(Deceased deceased, CancellationToken cancellationToken);

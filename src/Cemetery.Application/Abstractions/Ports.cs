@@ -12,6 +12,8 @@ public interface ITenantContext
 public interface ISessionHints
 {
     string InvitationHash { get; set; }
+
+    bool PublicRead { get; set; }
 }
 
 public interface ICurrentUser

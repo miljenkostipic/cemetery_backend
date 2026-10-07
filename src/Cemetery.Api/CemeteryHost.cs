@@ -68,6 +68,14 @@ public static class CemeteryHost
                     Window = AuthRateLimit.Window,
                     QueueLimit = 0,
                 }));
+            options.AddPolicy(PublicRateLimit.Policy, http => RateLimitPartition.GetFixedWindowLimiter(
+                http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = PublicRateLimit.PermitLimit,
+                    Window = PublicRateLimit.Window,
+                    QueueLimit = 0,
+                }));
         });
         var origins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [];
         builder.Services.AddCors(options => options.AddPolicy("spa", policy =>
@@ -88,7 +96,7 @@ public static class CemeteryHost
         if (app.Environment.IsDevelopment())
             ConfigureApiDocUis(app);
 
-        app.MapGroup("/api/v1").MapAuthEndpoints().MapOrganizationEndpoints().MapLayoutEndpoints().MapRegisterEndpoints();
+        app.MapGroup("/api/v1").MapAuthEndpoints().MapOrganizationEndpoints().MapLayoutEndpoints().MapRegisterEndpoints().MapPublicEndpoints();
     }
 
     private static void ConfigureApiDocUis(WebApplication app)

@@ -11,9 +11,17 @@ public static class AuditActions
     public const string IntermentExhumed = "interment.exhumed";
     public const string IntermentTransferred = "interment.transferred";
     public const string RestPeriodSet = "cemetery.rest_period_set";
+    public const string RegisterPublished = "register.published";
+    public const string RegisterWithdrawn = "register.withdrawn";
+    public const string GraveHidden = "grave_site.hidden_from_public";
+    public const string GraveShown = "grave_site.shown_on_public_map";
+    public const string MemorialDescribed = "memorial.described";
 
     public static bool IsKnown(string? action) => action is
-        DeceasedRecorded or DeceasedCorrected or DeceasedRemoved or IntermentRecorded or IntermentExhumed or IntermentTransferred or RestPeriodSet;
+        DeceasedRecorded or DeceasedCorrected or DeceasedRemoved
+        or IntermentRecorded or IntermentExhumed or IntermentTransferred
+        or RestPeriodSet or RegisterPublished or RegisterWithdrawn
+        or GraveHidden or GraveShown or MemorialDescribed;
 }
 
 public sealed class AuditEntry : TenantEntity

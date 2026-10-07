@@ -3,6 +3,7 @@ using Cemetery.Application.Auth;
 using Cemetery.Application.Dashboard;
 using Cemetery.Application.Layout;
 using Cemetery.Application.Organizations;
+using Cemetery.Application.Catalog;
 using Cemetery.Application.Register;
 using Cemetery.Application.Validation;
 using FluentValidation;
@@ -57,6 +58,16 @@ public static class DependencyInjection
         services.AddScoped<IQueryHandler<GetDeceased, DeceasedView>, GetDeceasedHandler>();
         services.AddScoped<IQueryHandler<ListFreePositions, IReadOnlyList<FreePositionView>>, ListFreePositionsHandler>();
         services.AddScoped<IQueryHandler<ListSiteInterments, IReadOnlyList<IntermentView>>, ListSiteIntermentsHandler>();
+        services.AddScoped<IQueryHandler<SearchPublic, IReadOnlyList<PublicSearchHit>>, SearchPublicHandler>();
+        services.AddScoped<IQueryHandler<GetMemorial, PublicMemorial>, GetMemorialHandler>();
+        services.AddScoped<IQueryHandler<GetPublicMap, PublicMap>, GetPublicMapHandler>();
+        services.AddScoped<IQueryHandler<ListPublicCemeteries, IReadOnlyList<PublicCemeterySummary>>, ListPublicCemeteriesHandler>();
+        services.AddScoped<IQueryHandler<GetVisibility, VisibilityView>, GetVisibilityHandler>();
+        Register<PublishRegister, VisibilityView, PublishRegisterHandler>(services);
+        Register<WithdrawRegister, VisibilityView, WithdrawRegisterHandler>(services);
+        Register<HideGraveFromPublic, GraveSiteView, HideGraveFromPublicHandler>(services);
+        Register<ShowGraveOnPublicMap, GraveSiteView, ShowGraveOnPublicMapHandler>(services);
+        Register<DescribeMemorial, DeceasedView, DescribeMemorialHandler>(services);
         return services;
     }
 

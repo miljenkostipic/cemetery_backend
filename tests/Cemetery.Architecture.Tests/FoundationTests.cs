@@ -76,6 +76,9 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.deceased_revisions", RowLevelSecurity.Register, StringComparison.Ordinal);
         Assert.Contains("cemetery.interments", RowLevelSecurity.Register, StringComparison.Ordinal);
         Assert.Contains("cemetery.audit_entries", RowLevelSecurity.Register, StringComparison.Ordinal);
+        Assert.Contains("SECURITY DEFINER", PublicCatalogSql.Up, StringComparison.Ordinal);
+        Assert.Contains("hidden_from_public", PublicCatalogSql.Up, StringComparison.Ordinal);
+        Assert.Contains("LIMIT 50", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("FORCE ROW LEVEL SECURITY", RowLevelSecurity.Up, StringComparison.Ordinal);
         Assert.Contains("ST_Intersection", GraveSiteGeometry.Up, StringComparison.Ordinal);
     }
@@ -183,6 +186,17 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["POST /api/v1/interments/{intermentId}/exhumations"] = "tenant",
         ["POST /api/v1/interments/{intermentId}/transfers"] = "tenant",
         ["GET /api/v1/grave-sites/{graveSiteId}/interments"] = "tenant",
+        ["GET /api/v1/public/cemeteries"] = "anonymous",
+        ["GET /api/v1/public/search"] = "anonymous",
+        ["GET /api/v1/public/cemeteries/{slug}/{cemeteryId}"] = "anonymous",
+        ["GET /api/v1/public/cemeteries/{slug}/search"] = "anonymous",
+        ["GET /api/v1/public/memorials/{deceasedId}"] = "anonymous",
+        ["GET /api/v1/organizations/visibility"] = "tenant",
+        ["PUT /api/v1/organizations/visibility"] = "tenant",
+        ["DELETE /api/v1/organizations/visibility"] = "tenant",
+        ["POST /api/v1/grave-sites/{graveSiteId}/hide-from-public"] = "tenant",
+        ["POST /api/v1/grave-sites/{graveSiteId}/show-on-public-map"] = "tenant",
+        ["PUT /api/v1/deceased/{deceasedId}/memorial"] = "tenant",
     };
 }
 

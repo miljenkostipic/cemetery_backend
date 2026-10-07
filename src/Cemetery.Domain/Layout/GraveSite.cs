@@ -28,6 +28,8 @@ public sealed class GraveSite : TenantEntity
 
     public bool Closed { get; private set; }
 
+    public bool HiddenFromPublic { get; private set; }
+
     public GraveSiteStatus Status => StatusFor(new SiteUse(0, false));
 
     public GraveSiteStatus StatusFor(SiteUse use) =>
@@ -76,6 +78,10 @@ public sealed class GraveSite : TenantEntity
     }
 
     public void Close() => Closed = true;
+
+    public void HideFromPublic() => HiddenFromPublic = true;
+
+    public void ShowOnPublicMap() => HiddenFromPublic = false;
 
     public void Reopen()
     {
