@@ -512,6 +512,169 @@
         }
       }
     },
+    "/api/v1/organizations/visibility": {
+      "get": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisibilityView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisibilityBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisibilityView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisibilityView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/hide-from-public": {
+      "post": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/show-on-public-map": {
+      "post": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/deceased/{deceasedId}/memorial": {
+      "put": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "deceasedId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemorialBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeceasedView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cemeteries/{cemeteryId}": {
       "get": {
         "tags": [
@@ -1411,6 +1574,216 @@
           }
         }
       }
+    },
+    "/api/v1/public/cemeteries": {
+      "get": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicCemeterySummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/search": {
+      "get": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "yearFrom",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "yearTo",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicSearchHit"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/cemeteries/{slug}/{cemeteryId}": {
+      "get": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicMap"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/cemeteries/{slug}/search": {
+      "get": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "yearFrom",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "yearTo",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicSearchHit"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/memorials/{deceasedId}": {
+      "get": {
+        "tags": [
+          "PublicEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "deceasedId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicMemorial"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1606,7 +1979,9 @@
           "intermentId",
           "graveSiteId",
           "graveSiteCode",
-          "position"
+          "position",
+          "epitaph",
+          "photoUrl"
         ],
         "type": "object",
         "properties": {
@@ -1674,6 +2049,18 @@
               "string"
             ],
             "format": "int32"
+          },
+          "epitaph": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "photoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1864,7 +2251,8 @@
           "kind",
           "capacity",
           "status",
-          "outline"
+          "outline",
+          "hiddenFromPublic"
         ],
         "type": "object",
         "properties": {
@@ -1909,6 +2297,9 @@
             "items": {
               "$ref": "#/components/schemas/GeoPointView"
             }
+          },
+          "hiddenFromPublic": {
+            "type": "boolean"
           }
         }
       },
@@ -2056,6 +2447,27 @@
           }
         }
       },
+      "MemorialBody": {
+        "required": [
+          "epitaph",
+          "photoUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "epitaph": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "photoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "MergeGraveSites": {
         "required": [
           "leftId",
@@ -2172,6 +2584,301 @@
             "type": "string"
           },
           "planBounds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
+          }
+        }
+      },
+      "PublicCemeterySummary": {
+        "required": [
+          "organizationSlug",
+          "organizationName",
+          "cemeteryId",
+          "cemeteryName",
+          "schematic"
+        ],
+        "type": "object",
+        "properties": {
+          "organizationSlug": {
+            "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryName": {
+            "type": "string"
+          },
+          "schematic": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicMap": {
+        "required": [
+          "organizationSlug",
+          "organizationName",
+          "cemeteryId",
+          "cemeteryName",
+          "schematic",
+          "planImageUrl",
+          "planBounds",
+          "sections",
+          "sites"
+        ],
+        "type": "object",
+        "properties": {
+          "organizationSlug": {
+            "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryName": {
+            "type": "string"
+          },
+          "schematic": {
+            "type": "boolean"
+          },
+          "planImageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "planBounds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicSection"
+            }
+          },
+          "sites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicSite"
+            }
+          }
+        }
+      },
+      "PublicMemorial": {
+        "required": [
+          "deceasedId",
+          "givenName",
+          "familyName",
+          "bornOn",
+          "diedOn",
+          "epitaph",
+          "photoUrl",
+          "organizationSlug",
+          "organizationName",
+          "cemeteryId",
+          "cemeteryName",
+          "schematic",
+          "graveSiteId",
+          "graveSiteCode",
+          "outline"
+        ],
+        "type": "object",
+        "properties": {
+          "deceasedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "bornOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "diedOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "epitaph": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "photoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "organizationSlug": {
+            "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryName": {
+            "type": "string"
+          },
+          "schematic": {
+            "type": "boolean"
+          },
+          "graveSiteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "outline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
+          }
+        }
+      },
+      "PublicSearchHit": {
+        "required": [
+          "deceasedId",
+          "givenName",
+          "familyName",
+          "bornOn",
+          "diedOn",
+          "organizationSlug",
+          "organizationName",
+          "cemeteryId",
+          "cemeteryName",
+          "graveSiteId",
+          "graveSiteCode"
+        ],
+        "type": "object",
+        "properties": {
+          "deceasedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "bornOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "diedOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "organizationSlug": {
+            "type": "string"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryName": {
+            "type": "string"
+          },
+          "graveSiteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PublicSection": {
+        "required": [
+          "id",
+          "name",
+          "code",
+          "outline"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "outline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
+          }
+        }
+      },
+      "PublicSite": {
+        "required": [
+          "id",
+          "code",
+          "outline"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "outline": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GeoPointView"
@@ -2414,6 +3121,42 @@
             "type": "string"
           }
         }
+      },
+      "VisibilityBody": {
+        "required": [
+          "hideRecentDeathsDays"
+        ],
+        "type": "object",
+        "properties": {
+          "hideRecentDeathsDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "VisibilityView": {
+        "required": [
+          "publishesRegister",
+          "hideRecentDeathsDays"
+        ],
+        "type": "object",
+        "properties": {
+          "publishesRegister": {
+            "type": "boolean"
+          },
+          "hideRecentDeathsDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
       }
     }
   },
@@ -2432,6 +3175,9 @@
     },
     {
       "name": "RegisterEndpoints"
+    },
+    {
+      "name": "PublicEndpoints"
     }
   ]
 }

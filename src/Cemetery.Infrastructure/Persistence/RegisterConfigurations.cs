@@ -15,6 +15,8 @@ public sealed class DeceasedConfiguration : IEntityTypeConfiguration<Deceased>
         builder.HasAlternateKey(entity => new { entity.TenantId, entity.Id });
         builder.Property(entity => entity.GivenName).HasMaxLength(PersonName.MaxLength);
         builder.Property(entity => entity.FamilyName).HasMaxLength(PersonName.MaxLength);
+        builder.Property(entity => entity.Epitaph).HasMaxLength(PublicListing.EpitaphMaxLength);
+        builder.Property(entity => entity.PhotoUrl).HasMaxLength(PublicListing.PhotoUrlMaxLength);
         builder.HasIndex(entity => new { entity.TenantId, entity.CemeteryId });
         builder.HasOne<CemeteryPlace>()
             .WithMany()

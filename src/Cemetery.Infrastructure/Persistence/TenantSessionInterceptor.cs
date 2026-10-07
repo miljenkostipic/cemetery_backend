@@ -77,11 +77,13 @@ public sealed class TenantSessionInterceptor(
         session.CommandText = """
             SELECT set_config('app.tenant_id', @tenant, false),
                    set_config('app.user_id', @user, false),
-                   set_config('app.invitation_hash', @hash, false)
+                   set_config('app.invitation_hash', @hash, false),
+                   set_config('app.public_read', @publicRead, false)
             """;
         Add(session, "tenant", tenant.OrganizationId?.ToString() ?? "");
         Add(session, "user", current.UserId?.ToString() ?? "");
         Add(session, "hash", hints.InvitationHash ?? "");
+        Add(session, "publicRead", hints.PublicRead ? "on" : "");
         await session.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 

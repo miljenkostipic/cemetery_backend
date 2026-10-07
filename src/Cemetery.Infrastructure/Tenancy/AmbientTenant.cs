@@ -12,4 +12,6 @@ public sealed class AmbientTenant : ITenantContext
 public sealed class AmbientSession : ISessionHints
 {
     public string InvitationHash { get; set; } = "";
+
+    public bool PublicRead { get; set; }
 }

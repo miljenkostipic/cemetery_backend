@@ -16,7 +16,9 @@ public sealed record DeceasedView(
     Guid? IntermentId,
     Guid? GraveSiteId,
     string? GraveSiteCode,
-    int? Position);
+    int? Position,
+    string? Epitaph,
+    string? PhotoUrl);
 
 public sealed record IntermentView(
     Guid Id,
@@ -68,7 +70,9 @@ internal static class RegisterMaps
             interment?.Id,
             interment?.GraveSiteId,
             graveSiteCode,
-            interment?.Position);
+            interment?.Position,
+            person.Epitaph,
+            person.PhotoUrl);
 
     public static IntermentView ToView(Interment interment, Deceased person, string graveSiteCode) =>
         new(

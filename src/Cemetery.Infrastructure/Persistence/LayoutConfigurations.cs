@@ -69,6 +69,7 @@ public sealed class GraveSiteConfiguration : IEntityTypeConfiguration<GraveSite>
             .HasConversion(kind => GraveSiteKinds.ToCode(kind), code => ParseKind(code))
             .HasMaxLength(32);
         builder.Property(entity => entity.Outline).HasConversion(GeometryMapping.PolygonConverter).HasColumnType("geometry(Polygon,4326)");
+        builder.Property(entity => entity.HiddenFromPublic).HasDefaultValue(false);
         builder.Ignore(entity => entity.Status);
         builder.HasIndex(entity => entity.Outline).HasMethod("gist");
         builder.HasIndex(entity => new { entity.TenantId, entity.CemeteryId, entity.Code }).IsUnique().HasDatabaseName("grave_sites_tenant_code_key");

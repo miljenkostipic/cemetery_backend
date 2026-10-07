@@ -1,3 +1,5 @@
+using Cemetery.Domain.Register;
+
 namespace Cemetery.Domain.Identity;
 
 public sealed class Organization
@@ -16,6 +18,10 @@ public sealed class Organization
     public string Name { get; private set; }
 
     public string Slug { get; private set; }
+
+    public bool PublishesRegister { get; private set; }
+
+    public int HideRecentDeathsDays { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
 
@@ -44,4 +50,12 @@ public sealed class Organization
             CreatedAt = createdAt,
         };
     }
+
+    public void PublishRegister(int hideRecentDeathsDays)
+    {
+        HideRecentDeathsDays = PublicListing.RequireHideDays(hideRecentDeathsDays);
+        PublishesRegister = true;
+    }
+
+    public void WithdrawRegister() => PublishesRegister = false;
 }

@@ -13,6 +13,8 @@ public sealed class OrganizationConfiguration : IEntityTypeConfiguration<Organiz
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.Name).HasMaxLength(Organization.NameMaxLength);
         builder.Property(entity => entity.Slug).HasMaxLength(Organization.NameMaxLength);
+        builder.Property(entity => entity.PublishesRegister).HasDefaultValue(false);
+        builder.Property(entity => entity.HideRecentDeathsDays).HasDefaultValue(0);
         builder.HasIndex(entity => entity.Slug).IsUnique().HasDatabaseName("organizations_slug_key");
     }
 }

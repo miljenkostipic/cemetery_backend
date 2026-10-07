@@ -26,6 +26,10 @@ public sealed class Deceased : TenantEntity
 
     public DateTimeOffset? RemovedAt { get; private set; }
 
+    public string? Epitaph { get; private set; }
+
+    public string? PhotoUrl { get; private set; }
+
     public static Deceased Record(
         Guid tenantId,
         Guid cemeteryId,
@@ -78,5 +82,11 @@ public sealed class Deceased : TenantEntity
         if (RemovedAt is not null)
             throw new DomainRuleException("deceased.removed");
         RemovedAt = at;
+    }
+
+    public void DescribeMemorial(string? epitaph, string? photoUrl)
+    {
+        Epitaph = PublicListing.EpitaphOf(epitaph);
+        PhotoUrl = PublicListing.PhotoOf(photoUrl);
     }
 }
