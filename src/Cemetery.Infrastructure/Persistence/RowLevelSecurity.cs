@@ -134,4 +134,22 @@ public static class RowLevelSecurity
         END
         $body$;
         """;
+
+    public const string Requests = """
+        ALTER TABLE cemetery.office_requests ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.office_requests FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS office_requests_tenant ON cemetery.office_requests;
+        CREATE POLICY office_requests_tenant ON cemetery.office_requests
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
 }

@@ -5,6 +5,7 @@ using Cemetery.Application.Layout;
 using Cemetery.Application.Organizations;
 using Cemetery.Application.Catalog;
 using Cemetery.Application.Register;
+using Cemetery.Application.Rights;
 using Cemetery.Application.Validation;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,6 +69,9 @@ public static class DependencyInjection
         Register<HideGraveFromPublic, GraveSiteView, HideGraveFromPublicHandler>(services);
         Register<ShowGraveOnPublicMap, GraveSiteView, ShowGraveOnPublicMapHandler>(services);
         Register<DescribeMemorial, DeceasedView, DescribeMemorialHandler>(services);
+        services.AddScoped<IQueryHandler<ListOfficeRequests, IReadOnlyList<OfficeRequestView>>, ListOfficeRequestsHandler>();
+        services.AddScoped<IQueryHandler<ListMyOfficeRequests, IReadOnlyList<OfficeRequestView>>, ListMyOfficeRequestsHandler>();
+        Register<SendOfficeRequest, OfficeRequestView, SendOfficeRequestHandler>(services);
         return services;
     }
 

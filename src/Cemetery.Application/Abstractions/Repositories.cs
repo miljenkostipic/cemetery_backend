@@ -1,6 +1,7 @@
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
 using Cemetery.Domain.Register;
+using Cemetery.Domain.Rights;
 using CemeteryPlace = Cemetery.Domain.Layout.Cemetery;
 
 namespace Cemetery.Application.Abstractions;
@@ -105,4 +106,13 @@ public interface IRegisterRepository
     Task<IReadOnlyList<Interment>> ListIntermentsByDeceasedAsync(Guid deceasedId, CancellationToken cancellationToken);
 
     Task AddAuditAsync(AuditEntry entry, CancellationToken cancellationToken);
+}
+
+public interface IOfficeRequestRepository
+{
+    Task AddAsync(OfficeRequest request, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<OfficeRequest>> ListAsync(CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<OfficeRequest>> ListForAuthorAsync(Guid authorId, CancellationToken cancellationToken);
 }
