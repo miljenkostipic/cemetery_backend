@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<ILayoutRepository, LayoutRepository>();
         services.AddScoped<IRegisterRepository, RegisterRepository>();
         services.AddScoped<IOfficeRequestRepository, OfficeRequestRepository>();
+        services.AddScoped<IOperationsRepository, OperationsRepository>();
         services.AddScoped<IPublicCatalog, PublicCatalogRepository>();
         services.AddScoped<IUserAccountGateway, UserAccountGateway>();
         services.AddScoped<IPasswordSignIn, PasswordSignInGateway>();
