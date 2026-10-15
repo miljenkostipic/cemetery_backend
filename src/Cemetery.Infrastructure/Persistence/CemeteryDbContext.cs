@@ -2,6 +2,7 @@ using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
+using Cemetery.Domain.Operations;
 using Cemetery.Domain.Register;
 using Cemetery.Domain.Rights;
 using Cemetery.Infrastructure.Identity;
@@ -41,6 +42,16 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
 
     public DbSet<OfficeRequest> OfficeRequests => Set<OfficeRequest>();
 
+    public DbSet<Funeral> Funerals => Set<Funeral>();
+
+    public DbSet<ChapelBooking> ChapelBookings => Set<ChapelBooking>();
+
+    public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
+
+    public DbSet<MonumentPermit> MonumentPermits => Set<MonumentPermit>();
+
+    public DbSet<WorkOrderPhoto> WorkOrderPhotos => Set<WorkOrderPhoto>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("cemetery");
@@ -58,6 +69,16 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.Entity<Interment>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<AuditEntry>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<OfficeRequest>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        FilterOperations(builder);
+    }
+
+    private void FilterOperations(ModelBuilder builder)
+    {
+        builder.Entity<Funeral>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<ChapelBooking>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<WorkOrder>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<MonumentPermit>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<WorkOrderPhoto>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
     }
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken) => SaveChangesAsync(cancellationToken);

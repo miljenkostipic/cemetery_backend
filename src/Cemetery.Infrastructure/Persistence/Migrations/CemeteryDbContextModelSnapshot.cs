@@ -355,6 +355,263 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                     b.ToTable("sections", "cemetery");
                 });
 
+            modelBuilder.Entity("Cemetery.Domain.Operations.ChapelBooking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<DateTime>("EndsAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("ends_at");
+
+                    b.Property<string>("Place")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("place");
+
+                    b.Property<DateTime>("StartsAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("starts_at");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chapel_bookings");
+
+                    b.HasIndex("TenantId", "CemeteryId", "StartsAt")
+                        .HasDatabaseName("ix_chapel_bookings_tenant_id_cemetery_id_starts_at");
+
+                    b.ToTable("chapel_bookings", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.Funeral", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<Guid>("DeceasedId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deceased_id");
+
+                    b.Property<DateTime>("EndsAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("ends_at");
+
+                    b.Property<Guid>("GraveSiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_site_id");
+
+                    b.Property<string>("Place")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("place");
+
+                    b.Property<DateTime>("StartsAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("starts_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_funerals");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_funerals_tenant_id_id");
+
+                    b.HasIndex("TenantId", "DeceasedId")
+                        .HasDatabaseName("ix_funerals_tenant_id_deceased_id");
+
+                    b.HasIndex("TenantId", "GraveSiteId")
+                        .HasDatabaseName("ix_funerals_tenant_id_grave_site_id");
+
+                    b.HasIndex("TenantId", "CemeteryId", "StartsAt")
+                        .HasDatabaseName("ix_funerals_tenant_id_cemetery_id_starts_at");
+
+                    b.ToTable("funerals", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.MonumentPermit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<DateOnly>("ExpiresOn")
+                        .HasColumnType("date")
+                        .HasColumnName("expires_on");
+
+                    b.Property<Guid>("GraveSiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_site_id");
+
+                    b.Property<string>("HolderName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("holder_name");
+
+                    b.Property<DateOnly>("IssuedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("issued_on");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_monument_permits");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_monument_permits_tenant_id_id");
+
+                    b.HasIndex("TenantId", "GraveSiteId")
+                        .HasDatabaseName("ix_monument_permits_tenant_id_grave_site_id");
+
+                    b.HasIndex("TenantId", "CemeteryId", "GraveSiteId")
+                        .HasDatabaseName("ix_monument_permits_tenant_id_cemetery_id_grave_site_id");
+
+                    b.ToTable("monument_permits", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.WorkOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<DateOnly?>("CompletedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("completed_on");
+
+                    b.Property<string>("CompletionNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("completion_note");
+
+                    b.Property<Guid>("GraveSiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_site_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid?>("PermitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("permit_id");
+
+                    b.Property<DateOnly>("ScheduledOn")
+                        .HasColumnType("date")
+                        .HasColumnName("scheduled_on");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_orders");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_work_orders_tenant_id_id");
+
+                    b.HasIndex("TenantId", "CemeteryId")
+                        .HasDatabaseName("ix_work_orders_tenant_id_cemetery_id");
+
+                    b.HasIndex("TenantId", "GraveSiteId")
+                        .HasDatabaseName("ix_work_orders_tenant_id_grave_site_id");
+
+                    b.HasIndex("TenantId", "PermitId")
+                        .HasDatabaseName("ix_work_orders_tenant_id_permit_id");
+
+                    b.HasIndex("TenantId", "ScheduledOn", "Status")
+                        .HasDatabaseName("ix_work_orders_tenant_id_scheduled_on_status");
+
+                    b.ToTable("work_orders", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.WorkOrderPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("content");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("content_type");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Guid>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_order_photos");
+
+                    b.HasIndex("TenantId", "WorkOrderId")
+                        .HasDatabaseName("ix_work_order_photos_tenant_id_work_order_id");
+
+                    b.ToTable("work_order_photos", "cemetery");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Register.AuditEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -846,6 +1103,100 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_sections_cemeteries_tenant_id_cemetery_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.ChapelBooking", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.Cemetery", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CemeteryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_chapel_bookings_cemeteries_tenant_id_cemetery_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.Funeral", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.Cemetery", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CemeteryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_funerals_cemeteries_tenant_id_cemetery_id");
+
+                    b.HasOne("Cemetery.Domain.Register.Deceased", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "DeceasedId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_funerals_deceased_tenant_id_deceased_id");
+
+                    b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "GraveSiteId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_funerals_grave_sites_tenant_id_grave_site_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.MonumentPermit", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.Cemetery", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CemeteryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_monument_permits_cemeteries_tenant_id_cemetery_id");
+
+                    b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "GraveSiteId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_monument_permits_grave_sites_tenant_id_grave_site_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.WorkOrder", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.Cemetery", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CemeteryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_orders_cemeteries_tenant_id_cemetery_id");
+
+                    b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "GraveSiteId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_orders_grave_sites_tenant_id_grave_site_id");
+
+                    b.HasOne("Cemetery.Domain.Operations.MonumentPermit", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "PermitId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_work_orders_monument_permits_tenant_id_permit_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Operations.WorkOrderPhoto", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Operations.WorkOrder", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "WorkOrderId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_order_photos_work_orders_tenant_id_work_order_id");
                 });
 
             modelBuilder.Entity("Cemetery.Domain.Register.Deceased", b =>

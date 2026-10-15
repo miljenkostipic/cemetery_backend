@@ -152,4 +152,50 @@ public static class RowLevelSecurity
         END
         $body$;
         """;
+
+    public const string Operations = """
+        ALTER TABLE cemetery.funerals ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.funerals FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS funerals_tenant ON cemetery.funerals;
+        CREATE POLICY funerals_tenant ON cemetery.funerals
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.chapel_bookings ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.chapel_bookings FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS chapel_bookings_tenant ON cemetery.chapel_bookings;
+        CREATE POLICY chapel_bookings_tenant ON cemetery.chapel_bookings
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.work_orders ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.work_orders FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS work_orders_tenant ON cemetery.work_orders;
+        CREATE POLICY work_orders_tenant ON cemetery.work_orders
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.monument_permits ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.monument_permits FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS monument_permits_tenant ON cemetery.monument_permits;
+        CREATE POLICY monument_permits_tenant ON cemetery.monument_permits
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.work_order_photos ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.work_order_photos FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS work_order_photos_tenant ON cemetery.work_order_photos;
+        CREATE POLICY work_order_photos_tenant ON cemetery.work_order_photos
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
 }

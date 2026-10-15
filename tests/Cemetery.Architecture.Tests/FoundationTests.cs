@@ -77,6 +77,11 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.interments", RowLevelSecurity.Register, StringComparison.Ordinal);
         Assert.Contains("cemetery.audit_entries", RowLevelSecurity.Register, StringComparison.Ordinal);
         Assert.Contains("cemetery.office_requests", RowLevelSecurity.Requests, StringComparison.Ordinal);
+        Assert.Contains("cemetery.funerals", RowLevelSecurity.Operations, StringComparison.Ordinal);
+        Assert.Contains("cemetery.chapel_bookings", RowLevelSecurity.Operations, StringComparison.Ordinal);
+        Assert.Contains("cemetery.work_orders", RowLevelSecurity.Operations, StringComparison.Ordinal);
+        Assert.Contains("cemetery.monument_permits", RowLevelSecurity.Operations, StringComparison.Ordinal);
+        Assert.Contains("cemetery.work_order_photos", RowLevelSecurity.Operations, StringComparison.Ordinal);
         Assert.Contains("SECURITY DEFINER", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("hidden_from_public", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("LIMIT 50", PublicCatalogSql.Up, StringComparison.Ordinal);
@@ -201,6 +206,22 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["GET /api/v1/office-requests"] = "tenant",
         ["GET /api/v1/me/requests"] = "tenant",
         ["POST /api/v1/me/requests"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/funerals"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/funerals"] = "tenant",
+        ["POST /api/v1/funerals/{funeralId}/cancellations"] = "tenant",
+        ["DELETE /api/v1/funerals/{funeralId}"] = "tenant",
+        ["DELETE /api/v1/chapel-bookings/{bookingId}"] = "tenant",
+        ["DELETE /api/v1/work-orders/{workOrderId}"] = "tenant",
+        ["DELETE /api/v1/monument-permits/{permitId}"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/chapel-bookings"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/chapel-bookings"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/work-orders"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/work-orders"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/monument-permits"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/monument-permits"] = "tenant",
+        ["GET /api/v1/field/today"] = "tenant",
+        ["POST /api/v1/work-orders/{workOrderId}/completions"] = "tenant",
+        ["POST /api/v1/work-orders/{workOrderId}/photos"] = "tenant",
     };
 }
 

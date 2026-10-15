@@ -1,5 +1,6 @@
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
+using Cemetery.Domain.Operations;
 using Cemetery.Domain.Register;
 using Cemetery.Domain.Rights;
 using CemeteryPlace = Cemetery.Domain.Layout.Cemetery;
@@ -106,6 +107,45 @@ public interface IRegisterRepository
     Task<IReadOnlyList<Interment>> ListIntermentsByDeceasedAsync(Guid deceasedId, CancellationToken cancellationToken);
 
     Task AddAuditAsync(AuditEntry entry, CancellationToken cancellationToken);
+}
+
+public interface IOperationsRepository
+{
+    Task AddFuneralAsync(Funeral funeral, CancellationToken cancellationToken);
+
+    Task<Funeral?> FindFuneralAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Funeral>> ListFuneralsAsync(Guid cemeteryId, CancellationToken cancellationToken);
+
+    void RemoveFuneral(Funeral funeral);
+
+    Task AddBookingAsync(ChapelBooking booking, CancellationToken cancellationToken);
+
+    Task<ChapelBooking?> FindBookingAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<ChapelBooking>> ListBookingsAsync(Guid cemeteryId, CancellationToken cancellationToken);
+
+    void RemoveBooking(ChapelBooking booking);
+
+    Task AddWorkOrderAsync(WorkOrder order, CancellationToken cancellationToken);
+
+    Task<WorkOrder?> FindWorkOrderAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<WorkOrder>> ListWorkOrdersAsync(Guid cemeteryId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<WorkOrder>> ListOpenOnAsync(DateOnly day, CancellationToken cancellationToken);
+
+    Task RemoveWorkOrderAsync(WorkOrder order, CancellationToken cancellationToken);
+
+    Task AddPermitAsync(MonumentPermit permit, CancellationToken cancellationToken);
+
+    Task<MonumentPermit?> FindPermitAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<MonumentPermit>> ListPermitsAsync(Guid cemeteryId, CancellationToken cancellationToken);
+
+    Task RemovePermitAsync(MonumentPermit permit, CancellationToken cancellationToken);
+
+    Task AddPhotoAsync(WorkOrderPhoto photo, CancellationToken cancellationToken);
 }
 
 public interface IOfficeRequestRepository

@@ -5,6 +5,7 @@ using Cemetery.Application.Layout;
 using Cemetery.Application.Organizations;
 using Cemetery.Application.Catalog;
 using Cemetery.Application.Register;
+using Cemetery.Application.Operations;
 using Cemetery.Application.Rights;
 using Cemetery.Application.Validation;
 using FluentValidation;
@@ -72,6 +73,22 @@ public static class DependencyInjection
         services.AddScoped<IQueryHandler<ListOfficeRequests, IReadOnlyList<OfficeRequestView>>, ListOfficeRequestsHandler>();
         services.AddScoped<IQueryHandler<ListMyOfficeRequests, IReadOnlyList<OfficeRequestView>>, ListMyOfficeRequestsHandler>();
         Register<SendOfficeRequest, OfficeRequestView, SendOfficeRequestHandler>(services);
+        Register<ScheduleFuneral, FuneralView, ScheduleFuneralHandler>(services);
+        Register<CancelFuneral, FuneralView, CancelFuneralHandler>(services);
+        Register<BookChapel, ChapelBookingView, BookChapelHandler>(services);
+        Register<OpenWorkOrder, WorkOrderView, OpenWorkOrderHandler>(services);
+        Register<IssuePermit, MonumentPermitView, IssuePermitHandler>(services);
+        Register<CompleteWorkOrder, CompletionView, CompleteWorkOrderHandler>(services);
+        Register<AttachWorkOrderPhoto, PhotoView, AttachWorkOrderPhotoHandler>(services);
+        Register<RemoveFuneral, bool, RemoveFuneralHandler>(services);
+        Register<RemoveChapelBooking, bool, RemoveChapelBookingHandler>(services);
+        Register<RemoveWorkOrder, bool, RemoveWorkOrderHandler>(services);
+        Register<RemoveMonumentPermit, bool, RemoveMonumentPermitHandler>(services);
+        services.AddScoped<IQueryHandler<ListFunerals, IReadOnlyList<FuneralView>>, ListFuneralsHandler>();
+        services.AddScoped<IQueryHandler<ListChapelBookings, IReadOnlyList<ChapelBookingView>>, ListChapelBookingsHandler>();
+        services.AddScoped<IQueryHandler<ListWorkOrders, IReadOnlyList<WorkOrderView>>, ListWorkOrdersHandler>();
+        services.AddScoped<IQueryHandler<ListPermits, IReadOnlyList<MonumentPermitView>>, ListPermitsHandler>();
+        services.AddScoped<IQueryHandler<ListFieldTasks, IReadOnlyList<FieldTaskView>>, ListFieldTasksHandler>();
         return services;
     }
 
