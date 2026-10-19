@@ -28,6 +28,8 @@ internal static class UniqueViolation
             "grave_sites_tenant_code_key" => "grave_site.code_taken",
             "interments_open_position_key" => "interment.position_taken",
             "interments_open_deceased_key" => "interment.already_buried",
+            "matica_links_interment_key" => "matica.already_linked",
+            "matica_links_certificate_key" => "matica.already_linked",
             _ => "conflict.unique",
         };
     }
