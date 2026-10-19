@@ -1,5 +1,6 @@
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
+using Cemetery.Domain.Launch;
 using Cemetery.Domain.Register;
 using FluentValidation;
 
@@ -45,6 +46,7 @@ public sealed class RecordIntermentHandler(
     IMembershipRepository memberships,
     ILayoutRepository layouts,
     IRegisterRepository register,
+    IWebhookRepository webhooks,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<RecordInterment, IntermentView>
 {
@@ -52,6 +54,7 @@ public sealed class RecordIntermentHandler(
     {
         await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
         var created = await PlaceAsync(command, cancellationToken).ConfigureAwait(false);
+        await webhooks.EnqueueAsync(WebhookEvents.IntermentRecorded, created.Id, clock.GetUtcNow(), cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return created;
     }

@@ -82,6 +82,10 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.work_orders", RowLevelSecurity.Operations, StringComparison.Ordinal);
         Assert.Contains("cemetery.monument_permits", RowLevelSecurity.Operations, StringComparison.Ordinal);
         Assert.Contains("cemetery.work_order_photos", RowLevelSecurity.Operations, StringComparison.Ordinal);
+        Assert.Contains("cemetery.webhook_subscriptions", RowLevelSecurity.Launch, StringComparison.Ordinal);
+        Assert.Contains("cemetery.webhook_deliveries", RowLevelSecurity.Launch, StringComparison.Ordinal);
+        Assert.Contains("cemetery.matica_links", RowLevelSecurity.Launch, StringComparison.Ordinal);
+        Assert.Contains("cemetery.gdpr_exports", RowLevelSecurity.Launch, StringComparison.Ordinal);
         Assert.Contains("SECURITY DEFINER", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("hidden_from_public", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("LIMIT 50", PublicCatalogSql.Up, StringComparison.Ordinal);
@@ -222,6 +226,15 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["GET /api/v1/field/today"] = "tenant",
         ["POST /api/v1/work-orders/{workOrderId}/completions"] = "tenant",
         ["POST /api/v1/work-orders/{workOrderId}/photos"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/reports"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/interments"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/matica-links"] = "tenant",
+        ["POST /api/v1/interments/{intermentId}/matica-links"] = "tenant",
+        ["GET /api/v1/integrations/webhooks"] = "tenant",
+        ["POST /api/v1/integrations/webhooks"] = "tenant",
+        ["DELETE /api/v1/integrations/webhooks/{webhookId}"] = "tenant",
+        ["GET /api/v1/gdpr/records"] = "tenant",
+        ["POST /api/v1/gdpr/exports"] = "tenant",
     };
 }
 

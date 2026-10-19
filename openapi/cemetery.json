@@ -675,6 +675,834 @@
         }
       }
     },
+    "/api/v1/office-requests": {
+      "get": {
+        "tags": [
+          "RightsEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OfficeRequestView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/requests": {
+      "get": {
+        "tags": [
+          "RightsEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OfficeRequestView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "RightsEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficeRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeRequestView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/funerals": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FuneralView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FuneralBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FuneralView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funerals/{funeralId}/cancellations": {
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "funeralId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FuneralView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funerals/{funeralId}": {
+      "delete": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "funeralId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/chapel-bookings/{bookingId}": {
+      "delete": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders/{workOrderId}": {
+      "delete": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "workOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/monument-permits/{permitId}": {
+      "delete": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "permitId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/chapel-bookings": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChapelBookingView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChapelBookingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChapelBookingView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/work-orders": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkOrderView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkOrderBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkOrderView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/monument-permits": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MonumentPermitView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonumentPermitBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonumentPermitView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/field/today": {
+      "get": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FieldTaskView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders/{workOrderId}/completions": {
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "workOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders/{workOrderId}/photos": {
+      "post": {
+        "tags": [
+          "OperationsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "workOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotoBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/reports": {
+      "get": {
+        "tags": [
+          "ReportsEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CemeteryReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/interments": {
+      "get": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntermentView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/matica-links": {
+      "get": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MaticaLinkView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interments/{intermentId}/matica-links": {
+      "post": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "intermentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaticaLinkBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaticaLinkView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/webhooks": {
+      "get": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookCreated"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/webhooks/{webhookId}": {
+      "delete": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/gdpr/records": {
+      "get": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GdprRecordView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gdpr/exports": {
+      "post": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GdprExportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cemeteries/{cemeteryId}": {
       "get": {
         "tags": [
@@ -1799,6 +2627,35 @@
           }
         }
       },
+      "CemeteryReportView": {
+        "required": [
+          "occupancy",
+          "freeCapacity",
+          "restPeriodEnds",
+          "revenue"
+        ],
+        "type": "object",
+        "properties": {
+          "occupancy": {
+            "$ref": "#/components/schemas/OccupancyView"
+          },
+          "freeCapacity": {
+            "$ref": "#/components/schemas/FreeCapacityView"
+          },
+          "restPeriodEnds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RestPeriodEndView"
+            }
+          },
+          "revenue": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RevenueView"
+            }
+          }
+        }
+      },
       "CemeteryView": {
         "required": [
           "id",
@@ -1839,6 +2696,91 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "ChapelBookingBody": {
+        "required": [
+          "place",
+          "startsAt",
+          "endsAt"
+        ],
+        "type": "object",
+        "properties": {
+          "place": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string"
+          },
+          "endsAt": {
+            "type": "string"
+          }
+        }
+      },
+      "ChapelBookingView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "place",
+          "startsAt",
+          "endsAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "place": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string"
+          },
+          "endsAt": {
+            "type": "string"
+          }
+        }
+      },
+      "CompletionBody": {
+        "required": [
+          "completedOn",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "completedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "CompletionView": {
+        "required": [
+          "workOrderId",
+          "status",
+          "completedOn"
+        ],
+        "type": "object",
+        "properties": {
+          "workOrderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "completedOn": {
+            "type": "string",
+            "format": "date"
           }
         }
       },
@@ -2076,6 +3018,98 @@
           }
         }
       },
+      "FieldTaskView": {
+        "required": [
+          "workOrderId",
+          "cemeteryId",
+          "cemeteryName",
+          "graveSiteId",
+          "graveSiteCode",
+          "kind",
+          "status",
+          "scheduledOn",
+          "notes",
+          "location"
+        ],
+        "type": "object",
+        "properties": {
+          "workOrderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryName": {
+            "type": "string"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "scheduledOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "location": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/GeoPointView"
+              }
+            ]
+          }
+        }
+      },
+      "FreeCapacityView": {
+        "required": [
+          "capacity",
+          "freePositions",
+          "reusablePositions"
+        ],
+        "type": "object",
+        "properties": {
+          "capacity": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "freePositions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "reusablePositions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "FreePositionView": {
         "required": [
           "graveSiteId",
@@ -2109,6 +3143,135 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "FuneralBody": {
+        "required": [
+          "deceasedId",
+          "graveSiteId",
+          "startsAt",
+          "endsAt",
+          "place"
+        ],
+        "type": "object",
+        "properties": {
+          "deceasedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string"
+          },
+          "endsAt": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          }
+        }
+      },
+      "FuneralView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "deceasedId",
+          "deceasedName",
+          "graveSiteId",
+          "graveSiteCode",
+          "startsAt",
+          "endsAt",
+          "place",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deceasedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deceasedName": {
+            "type": "string"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string"
+          },
+          "endsAt": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "GdprExportView": {
+        "required": [
+          "id",
+          "requestedAt",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "GdprRecordView": {
+        "required": [
+          "id",
+          "purpose",
+          "categories",
+          "retention",
+          "lawfulBasis"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "categories": {
+            "type": "string"
+          },
+          "retention": {
+            "type": "string"
+          },
+          "lawfulBasis": {
+            "type": "string"
           }
         }
       },
@@ -2447,6 +3610,48 @@
           }
         }
       },
+      "MaticaLinkBody": {
+        "required": [
+          "deathCertificateId"
+        ],
+        "type": "object",
+        "properties": {
+          "deathCertificateId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "MaticaLinkView": {
+        "required": [
+          "id",
+          "intermentId",
+          "deceasedName",
+          "graveSiteCode",
+          "deathCertificateId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "intermentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deceasedName": {
+            "type": "string"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "deathCertificateId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "MemorialBody": {
         "required": [
           "epitaph",
@@ -2481,6 +3686,167 @@
           },
           "rightId": {
             "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "MonumentPermitBody": {
+        "required": [
+          "graveSiteId",
+          "holderName",
+          "issuedOn",
+          "expiresOn"
+        ],
+        "type": "object",
+        "properties": {
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "holderName": {
+            "type": "string"
+          },
+          "issuedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "expiresOn": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "MonumentPermitView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "graveSiteId",
+          "graveSiteCode",
+          "holderName",
+          "issuedOn",
+          "expiresOn",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "holderName": {
+            "type": "string"
+          },
+          "issuedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "expiresOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "OccupancyView": {
+        "required": [
+          "siteCount",
+          "occupiedSites",
+          "fullSites",
+          "closedSites"
+        ],
+        "type": "object",
+        "properties": {
+          "siteCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "occupiedSites": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "fullSites": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "closedSites": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "OfficeRequestBody": {
+        "required": [
+          "message",
+          "graveSiteId"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "graveSiteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "OfficeRequestView": {
+        "required": [
+          "id",
+          "message",
+          "createdOn",
+          "graveSiteId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message": {
+            "type": "string"
+          },
+          "createdOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "graveSiteId": {
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           }
         }
@@ -2569,6 +3935,42 @@
         "type": "object",
         "properties": {
           "credentialJson": {
+            "type": "string"
+          }
+        }
+      },
+      "PhotoBody": {
+        "required": [
+          "contentType",
+          "contentBase64"
+        ],
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string"
+          },
+          "contentBase64": {
+            "type": "string"
+          }
+        }
+      },
+      "PhotoView": {
+        "required": [
+          "id",
+          "workOrderId",
+          "contentType"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workOrderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contentType": {
             "type": "string"
           }
         }
@@ -2932,6 +4334,59 @@
           }
         }
       },
+      "RestPeriodEndView": {
+        "required": [
+          "graveSiteId",
+          "graveSiteCode",
+          "position",
+          "endsOn"
+        ],
+        "type": "object",
+        "properties": {
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "position": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "endsOn": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "RevenueView": {
+        "required": [
+          "currency",
+          "charged",
+          "paid",
+          "outstanding"
+        ],
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "charged": {
+            "type": "string"
+          },
+          "paid": {
+            "type": "string"
+          },
+          "outstanding": {
+            "type": "string"
+          }
+        }
+      },
       "RowBody": {
         "required": [
           "label"
@@ -3157,6 +4612,141 @@
             "format": "int32"
           }
         }
+      },
+      "WebhookBody": {
+        "required": [
+          "url",
+          "event"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          }
+        }
+      },
+      "WebhookCreated": {
+        "required": [
+          "id",
+          "url",
+          "event",
+          "secret"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          }
+        }
+      },
+      "WebhookView": {
+        "required": [
+          "id",
+          "url",
+          "event"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkOrderBody": {
+        "required": [
+          "graveSiteId",
+          "kind",
+          "scheduledOn",
+          "notes"
+        ],
+        "type": "object",
+        "properties": {
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "scheduledOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkOrderView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "graveSiteId",
+          "graveSiteCode",
+          "kind",
+          "status",
+          "scheduledOn",
+          "notes",
+          "permitId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "scheduledOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "permitId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
       }
     }
   },
@@ -3178,6 +4768,18 @@
     },
     {
       "name": "PublicEndpoints"
+    },
+    {
+      "name": "RightsEndpoints"
+    },
+    {
+      "name": "OperationsEndpoints"
+    },
+    {
+      "name": "ReportsEndpoints"
+    },
+    {
+      "name": "LaunchEndpoints"
     }
   ]
 }

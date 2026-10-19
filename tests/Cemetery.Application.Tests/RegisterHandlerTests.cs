@@ -57,7 +57,9 @@ public sealed class RegisterHandlerTests
         register.FindDeceasedAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
         register.ListIntermentsBySiteAsync(site.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<Interment>());
         register.ListIntermentsByDeceasedAsync(person.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<Interment>());
-        var handler = new RecordIntermentHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), layouts, register, Substitute.For<IUnitOfWork>(), Clock());
+        var webhooks = Substitute.For<IWebhookRepository>();
+        webhooks.EnqueueAsync(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        var handler = new RecordIntermentHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), layouts, register, webhooks, Substitute.For<IUnitOfWork>(), Clock());
 
         var buried = await handler.Handle(new RecordInterment(person.Id, site.Id, 1, "coffin", new DateOnly(2020, 4, 1)), CancellationToken.None);
 

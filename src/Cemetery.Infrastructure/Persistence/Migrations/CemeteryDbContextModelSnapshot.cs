@@ -148,6 +148,161 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                     b.ToTable("organizations", "cemetery");
                 });
 
+            modelBuilder.Entity("Cemetery.Domain.Launch.GdprExport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("requested_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_gdpr_exports");
+
+                    b.HasIndex("TenantId", "RequestedAt")
+                        .HasDatabaseName("ix_gdpr_exports_tenant_id_requested_at");
+
+                    b.ToTable("gdpr_exports", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Launch.MaticaLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<Guid>("DeathCertificateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("death_certificate_id");
+
+                    b.Property<Guid>("IntermentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("interment_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_matica_links");
+
+                    b.HasIndex("TenantId", "CemeteryId")
+                        .HasDatabaseName("ix_matica_links_tenant_id_cemetery_id");
+
+                    b.HasIndex("TenantId", "DeathCertificateId")
+                        .IsUnique()
+                        .HasDatabaseName("matica_links_certificate_key");
+
+                    b.HasIndex("TenantId", "IntermentId")
+                        .IsUnique()
+                        .HasDatabaseName("matica_links_interment_key");
+
+                    b.ToTable("matica_links", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Launch.WebhookDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Event")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("event");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_id");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subscription_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_webhook_deliveries");
+
+                    b.HasIndex("TenantId", "SubscriptionId")
+                        .HasDatabaseName("ix_webhook_deliveries_tenant_id_subscription_id");
+
+                    b.ToTable("webhook_deliveries", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Launch.WebhookSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Event")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("event");
+
+                    b.Property<string>("Secret")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("secret");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("url");
+
+                    b.HasKey("Id")
+                        .HasName("pk_webhook_subscriptions");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_webhook_subscriptions_tenant_id_id");
+
+                    b.HasIndex("TenantId", "Event")
+                        .HasDatabaseName("ix_webhook_subscriptions_tenant_id_event");
+
+                    b.ToTable("webhook_subscriptions", "cemetery");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Layout.Cemetery", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1055,6 +1210,17 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasName("pk_asp_net_user_tokens");
 
                     b.ToTable("AspNetUserTokens", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Launch.WebhookDelivery", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Launch.WebhookSubscription", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "SubscriptionId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_webhook_deliveries_webhook_subscriptions_tenant_id_subscrip");
                 });
 
             modelBuilder.Entity("Cemetery.Domain.Layout.GraveRow", b =>

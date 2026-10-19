@@ -2,6 +2,7 @@ using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
+using Cemetery.Domain.Launch;
 using Cemetery.Domain.Operations;
 using Cemetery.Domain.Register;
 using Cemetery.Domain.Rights;
@@ -52,6 +53,14 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
 
     public DbSet<WorkOrderPhoto> WorkOrderPhotos => Set<WorkOrderPhoto>();
 
+    public DbSet<WebhookSubscription> WebhookSubscriptions => Set<WebhookSubscription>();
+
+    public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
+
+    public DbSet<MaticaLink> MaticaLinks => Set<MaticaLink>();
+
+    public DbSet<GdprExport> GdprExports => Set<GdprExport>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("cemetery");
@@ -70,6 +79,7 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.Entity<AuditEntry>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<OfficeRequest>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         FilterOperations(builder);
+        FilterLaunch(builder);
     }
 
     private void FilterOperations(ModelBuilder builder)
@@ -79,6 +89,14 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.Entity<WorkOrder>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<MonumentPermit>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<WorkOrderPhoto>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+    }
+
+    private void FilterLaunch(ModelBuilder builder)
+    {
+        builder.Entity<WebhookSubscription>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<WebhookDelivery>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<MaticaLink>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<GdprExport>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
     }
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken) => SaveChangesAsync(cancellationToken);

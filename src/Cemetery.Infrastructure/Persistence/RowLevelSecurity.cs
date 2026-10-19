@@ -198,4 +198,43 @@ public static class RowLevelSecurity
         END
         $body$;
         """;
+
+    public const string Launch = """
+        ALTER TABLE cemetery.webhook_subscriptions ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.webhook_subscriptions FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS webhook_subscriptions_tenant ON cemetery.webhook_subscriptions;
+        CREATE POLICY webhook_subscriptions_tenant ON cemetery.webhook_subscriptions
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.webhook_deliveries ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.webhook_deliveries FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS webhook_deliveries_tenant ON cemetery.webhook_deliveries;
+        CREATE POLICY webhook_deliveries_tenant ON cemetery.webhook_deliveries
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.matica_links ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.matica_links FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS matica_links_tenant ON cemetery.matica_links;
+        CREATE POLICY matica_links_tenant ON cemetery.matica_links
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.gdpr_exports ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.gdpr_exports FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS gdpr_exports_tenant ON cemetery.gdpr_exports;
+        CREATE POLICY gdpr_exports_tenant ON cemetery.gdpr_exports
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
 }

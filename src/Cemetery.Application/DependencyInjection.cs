@@ -5,6 +5,7 @@ using Cemetery.Application.Layout;
 using Cemetery.Application.Organizations;
 using Cemetery.Application.Catalog;
 using Cemetery.Application.Register;
+using Cemetery.Application.Launch;
 using Cemetery.Application.Operations;
 using Cemetery.Application.Rights;
 using Cemetery.Application.Validation;
@@ -89,6 +90,15 @@ public static class DependencyInjection
         services.AddScoped<IQueryHandler<ListWorkOrders, IReadOnlyList<WorkOrderView>>, ListWorkOrdersHandler>();
         services.AddScoped<IQueryHandler<ListPermits, IReadOnlyList<MonumentPermitView>>, ListPermitsHandler>();
         services.AddScoped<IQueryHandler<ListFieldTasks, IReadOnlyList<FieldTaskView>>, ListFieldTasksHandler>();
+        services.AddScoped<IQueryHandler<GetCemeteryReport, CemeteryReportView>, GetCemeteryReportHandler>();
+        services.AddScoped<IQueryHandler<ListWebhooks, IReadOnlyList<WebhookView>>, ListWebhooksHandler>();
+        services.AddScoped<IQueryHandler<ListMaticaLinks, IReadOnlyList<MaticaLinkView>>, ListMaticaLinksHandler>();
+        services.AddScoped<IQueryHandler<ListCemeteryInterments, IReadOnlyList<IntermentView>>, ListCemeteryIntermentsHandler>();
+        services.AddScoped<IQueryHandler<ListGdprRecords, IReadOnlyList<GdprRecordView>>, ListGdprRecordsHandler>();
+        Register<AddWebhook, WebhookCreated, AddWebhookHandler>(services);
+        Register<RemoveWebhook, bool, RemoveWebhookHandler>(services);
+        Register<LinkDeathCertificate, MaticaLinkView, LinkDeathCertificateHandler>(services);
+        Register<RequestGdprExport, GdprExportView, RequestGdprExportHandler>(services);
         return services;
     }
 

@@ -31,6 +31,9 @@ public static class DependencyInjection
         services.AddScoped<IRegisterRepository, RegisterRepository>();
         services.AddScoped<IOfficeRequestRepository, OfficeRequestRepository>();
         services.AddScoped<IOperationsRepository, OperationsRepository>();
+        services.AddScoped<IWebhookRepository, WebhookRepository>();
+        services.AddScoped<IMaticaLinkRepository, MaticaLinkRepository>();
+        services.AddScoped<IGdprExportRepository, GdprExportRepository>();
         services.AddScoped<IPublicCatalog, PublicCatalogRepository>();
         services.AddScoped<IUserAccountGateway, UserAccountGateway>();
         services.AddScoped<IPasswordSignIn, PasswordSignInGateway>();
