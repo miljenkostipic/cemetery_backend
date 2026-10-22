@@ -89,7 +89,7 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.fee_schedules", RowLevelSecurity.Billing, StringComparison.Ordinal);
         Assert.Contains("cemetery.charges", RowLevelSecurity.Billing, StringComparison.Ordinal);
         Assert.Contains("cemetery.merchant_accounts", RowLevelSecurity.Billing, StringComparison.Ordinal);
-        Assert.Contains("cemetery.payments", RowLevelSecurity.Billing, StringComparison.Ordinal);
+        Assert.Contains("cemetery.payments", RowLevelSecurity.Payments, StringComparison.Ordinal);
         Assert.Contains("SECURITY DEFINER", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("hidden_from_public", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("LIMIT 50", PublicCatalogSql.Up, StringComparison.Ordinal);

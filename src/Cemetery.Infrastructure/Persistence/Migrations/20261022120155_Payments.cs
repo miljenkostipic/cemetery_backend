@@ -49,7 +49,7 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                 table: "payments",
                 columns: new[] { "tenant_id", "charge_id" });
 
-            migrationBuilder.Sql(RowLevelSecurity.Billing);
+            migrationBuilder.Sql(RowLevelSecurity.Payments);
         }
 
         /// <inheritdoc />

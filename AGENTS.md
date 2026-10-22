@@ -33,6 +33,6 @@ tests/Cemetery.Architecture.Tests/
 
 ## Local machine
 
-Docker is not installed. PostgreSQL runs as a Windows service (PostgreSQL 18 with PostGIS), database `cemetery`, port 5432. Do not start `docker-compose` or Testcontainers for local work. `ConnectionStrings:Owner` and `ConnectionStrings:App` for this machine live in .NET user secrets (`Cemetery.Api`); do not put the owner password in `appsettings`. CI still uses the PostGIS container from the plan. The cross-tenant integration test skips when Docker is absent.
+Docker is installed. PostgreSQL 17 + PostGIS 3.5 runs from `docker-compose.yml` (`docker compose up -d`), database `cemetery`, port 5432, user and password `postgres`. Do not use the other Postgres containers on this machine; they have no PostGIS. `appsettings.Development.json` already points at this container. The app creates the `cemetery_app` role on startup (`DatabaseInitializer`). Integration tests use Testcontainers PostGIS, the same as CI.
 
 Domain language, phases, and frontend rules are in [plan.md](plan.md). Current milestone is Phase 0 (walking skeleton): this solution first, CI, multitenancy, organizations and sign-in.
