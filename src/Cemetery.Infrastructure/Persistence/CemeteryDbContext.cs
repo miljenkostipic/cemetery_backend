@@ -1,5 +1,6 @@
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
+using Cemetery.Domain.Billing;
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
 using Cemetery.Domain.Launch;
@@ -61,6 +62,14 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
 
     public DbSet<GdprExport> GdprExports => Set<GdprExport>();
 
+    public DbSet<FeeSchedule> FeeSchedules => Set<FeeSchedule>();
+
+    public DbSet<Charge> Charges => Set<Charge>();
+
+    public DbSet<MerchantAccount> MerchantAccounts => Set<MerchantAccount>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("cemetery");
@@ -80,6 +89,15 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.Entity<OfficeRequest>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         FilterOperations(builder);
         FilterLaunch(builder);
+        FilterBilling(builder);
+    }
+
+    private void FilterBilling(ModelBuilder builder)
+    {
+        builder.Entity<FeeSchedule>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<Charge>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<MerchantAccount>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<Payment>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
     }
 
     private void FilterOperations(ModelBuilder builder)

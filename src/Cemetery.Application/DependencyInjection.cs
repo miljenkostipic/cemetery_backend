@@ -6,6 +6,7 @@ using Cemetery.Application.Organizations;
 using Cemetery.Application.Catalog;
 using Cemetery.Application.Register;
 using Cemetery.Application.Launch;
+using Cemetery.Application.Billing;
 using Cemetery.Application.Operations;
 using Cemetery.Application.Rights;
 using Cemetery.Application.Validation;
@@ -99,6 +100,18 @@ public static class DependencyInjection
         Register<RemoveWebhook, bool, RemoveWebhookHandler>(services);
         Register<LinkDeathCertificate, MaticaLinkView, LinkDeathCertificateHandler>(services);
         Register<RequestGdprExport, GdprExportView, RequestGdprExportHandler>(services);
+        services.AddScoped<IQueryHandler<ListFeeSchedules, IReadOnlyList<FeeScheduleView>>, ListFeeSchedulesHandler>();
+        services.AddScoped<IQueryHandler<ListCharges, IReadOnlyList<ChargeView>>, ListChargesHandler>();
+        services.AddScoped<IQueryHandler<ListArrears, IReadOnlyList<ArrearsRow>>, ListArrearsHandler>();
+        services.AddScoped<IQueryHandler<ListPaymentProviders, IReadOnlyList<PaymentProviderView>>, ListPaymentProvidersHandler>();
+        Register<AddFeeSchedule, FeeScheduleView, AddFeeScheduleHandler>(services);
+        Register<RemoveFeeSchedule, bool, RemoveFeeScheduleHandler>(services);
+        Register<RunYear, YearlyRunView, RunYearHandler>(services);
+        Register<SendReminders, ReminderRunView, SendRemindersHandler>(services);
+        Register<RecordManualPayment, PaymentView, RecordManualPaymentHandler>(services);
+        Register<VoidPayment, ChargeView, VoidPaymentHandler>(services);
+        services.AddScoped<IQueryHandler<GetReceipt, ReceiptView>, GetReceiptHandler>();
+        Register<SavePaymentProvider, PaymentProviderView, SavePaymentProviderHandler>(services);
         return services;
     }
 
