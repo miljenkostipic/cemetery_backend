@@ -86,6 +86,10 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.webhook_deliveries", RowLevelSecurity.Launch, StringComparison.Ordinal);
         Assert.Contains("cemetery.matica_links", RowLevelSecurity.Launch, StringComparison.Ordinal);
         Assert.Contains("cemetery.gdpr_exports", RowLevelSecurity.Launch, StringComparison.Ordinal);
+        Assert.Contains("cemetery.fee_schedules", RowLevelSecurity.Billing, StringComparison.Ordinal);
+        Assert.Contains("cemetery.charges", RowLevelSecurity.Billing, StringComparison.Ordinal);
+        Assert.Contains("cemetery.merchant_accounts", RowLevelSecurity.Billing, StringComparison.Ordinal);
+        Assert.Contains("cemetery.payments", RowLevelSecurity.Billing, StringComparison.Ordinal);
         Assert.Contains("SECURITY DEFINER", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("hidden_from_public", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("LIMIT 50", PublicCatalogSql.Up, StringComparison.Ordinal);
@@ -235,6 +239,18 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         ["DELETE /api/v1/integrations/webhooks/{webhookId}"] = "tenant",
         ["GET /api/v1/gdpr/records"] = "tenant",
         ["POST /api/v1/gdpr/exports"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/fee-schedules"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/fee-schedules"] = "tenant",
+        ["DELETE /api/v1/fee-schedules/{feeScheduleId}"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/charges"] = "tenant",
+        ["GET /api/v1/cemeteries/{cemeteryId}/arrears"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/charges/yearly-runs"] = "tenant",
+        ["POST /api/v1/cemeteries/{cemeteryId}/charges/reminders"] = "tenant",
+        ["POST /api/v1/charges/{chargeId}/payments"] = "tenant",
+        ["GET /api/v1/payments/{paymentId}/receipt"] = "tenant",
+        ["POST /api/v1/payments/{paymentId}/voids"] = "tenant",
+        ["GET /api/v1/payment-providers"] = "tenant",
+        ["PUT /api/v1/payment-providers/{provider}"] = "tenant",
     };
 }
 

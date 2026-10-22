@@ -25,6 +25,271 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Cemetery.Domain.Billing.Charge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("description");
+
+                    b.Property<DateOnly>("DueOn")
+                        .HasColumnType("date")
+                        .HasColumnName("due_on");
+
+                    b.Property<Guid>("FeeScheduleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("fee_schedule_id");
+
+                    b.Property<string>("GraveSiteCode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("grave_site_code");
+
+                    b.Property<Guid>("GraveSiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_site_id");
+
+                    b.Property<string>("HolderName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("holder_name");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid?>("LatestPaymentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("latest_payment_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer")
+                        .HasColumnName("year");
+
+                    b.HasKey("Id")
+                        .HasName("pk_charges");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_charges_tenant_id_id");
+
+                    b.HasIndex("TenantId", "FeeScheduleId")
+                        .HasDatabaseName("ix_charges_tenant_id_fee_schedule_id");
+
+                    b.HasIndex("TenantId", "GraveSiteId")
+                        .HasDatabaseName("ix_charges_tenant_id_grave_site_id");
+
+                    b.HasIndex("TenantId", "CemeteryId", "GraveSiteId", "FeeScheduleId", "Year")
+                        .IsUnique()
+                        .HasDatabaseName("charges_year_key");
+
+                    b.ToTable("charges", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Billing.FeeSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_fee_schedules");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_fee_schedules_tenant_id_id");
+
+                    b.HasIndex("TenantId", "CemeteryId")
+                        .HasDatabaseName("ix_fee_schedules_tenant_id_cemetery_id");
+
+                    b.ToTable("fee_schedules", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Billing.MerchantAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("enabled");
+
+                    b.Property<string>("MerchantId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("merchant_id");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("Secret")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("secret");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_merchant_accounts");
+
+                    b.HasIndex("TenantId", "Provider")
+                        .IsUnique()
+                        .HasDatabaseName("merchant_accounts_provider_key");
+
+                    b.ToTable("merchant_accounts", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Billing.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("ChargeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("charge_id");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("method");
+
+                    b.Property<DateOnly>("PaidOn")
+                        .HasColumnType("date")
+                        .HasColumnName("paid_on");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("receipt_number");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("reference");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("VoidReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("void_reason");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payments");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_payments_tenant_id_id");
+
+                    b.HasIndex("TenantId", "ChargeId")
+                        .HasDatabaseName("ix_payments_tenant_id_charge_id");
+
+                    b.ToTable("payments", "cemetery");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Identity.Invitation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1210,6 +1475,55 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasName("pk_asp_net_user_tokens");
 
                     b.ToTable("AspNetUserTokens", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Billing.Charge", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.Cemetery", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CemeteryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_charges_cemeteries_tenant_id_cemetery_id");
+
+                    b.HasOne("Cemetery.Domain.Billing.FeeSchedule", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "FeeScheduleId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_charges_fee_schedules_tenant_id_fee_schedule_id");
+
+                    b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "GraveSiteId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_charges_grave_sites_tenant_id_grave_site_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Billing.FeeSchedule", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.Cemetery", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CemeteryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_fee_schedules_cemeteries_tenant_id_cemetery_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Billing.Payment", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Billing.Charge", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "ChargeId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_payments_charges_tenant_id_charge_id");
                 });
 
             modelBuilder.Entity("Cemetery.Domain.Launch.WebhookDelivery", b =>
