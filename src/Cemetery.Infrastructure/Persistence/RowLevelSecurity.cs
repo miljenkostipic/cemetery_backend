@@ -253,17 +253,28 @@ public static class RowLevelSecurity
           USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
           WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
 
-        ALTER TABLE cemetery.payments ENABLE ROW LEVEL SECURITY;
-        ALTER TABLE cemetery.payments FORCE ROW LEVEL SECURITY;
-        DROP POLICY IF EXISTS payments_tenant ON cemetery.payments;
-        CREATE POLICY payments_tenant ON cemetery.payments
-          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
-          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
-
         ALTER TABLE cemetery.merchant_accounts ENABLE ROW LEVEL SECURITY;
         ALTER TABLE cemetery.merchant_accounts FORCE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS merchant_accounts_tenant ON cemetery.merchant_accounts;
         CREATE POLICY merchant_accounts_tenant ON cemetery.merchant_accounts
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
+
+    public const string Payments = """
+        ALTER TABLE cemetery.payments ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.payments FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS payments_tenant ON cemetery.payments;
+        CREATE POLICY payments_tenant ON cemetery.payments
           USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
           WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
 
