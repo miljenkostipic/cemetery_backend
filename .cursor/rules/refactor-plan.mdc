@@ -1,0 +1,19 @@
+---
+description: The active refactor plan for this repo and how to work on it
+alwaysApply: true
+---
+
+# Active refactor plan
+
+This repo is in a planned refactor. The plan is `docs/refactor/README.md`; read it before any change. Also follow `AGENTS.md`.
+
+Rules for every change:
+
+1. Work on exactly one task from the status table in `docs/refactor/README.md`: the first unchecked one, unless the user names another. Read its section in the step file (`docs/refactor/R*.md`).
+2. Do only what its "Do" list says. Respect its "Don't" list. Anything else you notice goes under "Found while working" at the end of that step file. Do not fix it now.
+3. Tests first. A task is done only when every "Done when" check passes locally. Run `dotnet build -c Release` and `dotnet test Cemetery.slnx -c Release` before saying it is done.
+4. Never weaken a test, a coverage threshold, an analyzer rule or an RLS policy to make something pass. If you cannot finish, stop and explain what blocks you.
+5. Tick the task's box in the README status table in the same change.
+6. Keep the house style: one handler per use case, no MediatR / AutoMapper / Result<T>, typed exceptions with stable error codes, methods of 20 lines or fewer, UUID v7 ids, every tenant table has `TenantId` + EF query filter + RLS policy.
+7. Every new or changed endpoint gets three integration tests: happy path, wrong role (403 `access.forbidden`), other tenant (404).
+8. After changing endpoints, rebuild so `openapi/cemetery.json` is regenerated, and commit it.
