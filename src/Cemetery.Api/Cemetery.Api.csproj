@@ -7,6 +7,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -23,6 +27,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>a082eb8d-4c2d-45ca-aa0d-3cc997c18bc1</UserSecretsId>
+    <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../../openapi</OpenApiDocumentsDirectory>
   </PropertyGroup>
+
+  <Target Name="UseCommittedOpenApiName" AfterTargets="GenerateOpenApiDocuments" Condition="Exists('$(MSBuildProjectDirectory)/../../openapi/Cemetery.Api.json')">
+    <Copy
+      SourceFiles="$(MSBuildProjectDirectory)/../../openapi/Cemetery.Api.json"
+      DestinationFiles="$(MSBuildProjectDirectory)/../../openapi/cemetery.json"
+      OverwriteReadOnlyFiles="true" />
+    <Delete Files="$(MSBuildProjectDirectory)/../../openapi/Cemetery.Api.json" />
+  </Target>
 
 </Project>

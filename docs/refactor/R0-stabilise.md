@@ -44,4 +44,12 @@ Gate: CI fails when `openapi/cemetery.json` is out of date and when coverage is 
 
 ## Found while working
 
-(add items here, do not fix them in this step)
+- `Microsoft.Extensions.ApiDescription.Server` writes `openapi/Cemetery.Api.json` because the document name is `v1` and the tool names that file after the project. The build copies it to `openapi/cemetery.json`. The generator also logs "No action descriptors found"; the minimal-API paths are still present (83, including billing).
+- `dotnet test --nologo` together with the coverage arguments exits 5 before any test runs. The CI script does not pass `--nologo`.
+- Coverage from the unit tests, with `Migrations/` excluded. The integration test was skipped because Docker is not installed, so Api and Infrastructure are lower here than they will be in CI:
+  - Cemetery.Domain: line 91.3%, branch 80.4% (target 100% / 100%)
+  - Cemetery.Application: line 79.8%, branch 69.5% (target 100% / 100%)
+  - Cemetery.Api: line 25.4% (target 90% line)
+  - Cemetery.Infrastructure: line 49.7% (target 90% line)
+- R0.3 stays open. Domain and Application are below the gate, so the threshold step is red on purpose and the box is not ticked. The largest Domain gaps are layout types the unit tests do not exercise fully (`Cemetery`, `Section`, `GraveSite`, `GraveRow`, `GraveSiteKinds`) plus generated regex. The largest Application gaps are handler files the application tests do not execute (`GraveSites`, `Sections`, `DeceasedHandlers`, `IntermentHandlers`). Api and Infrastructure stay red until R1, as this step allows.
+- The frontend OpenAPI file still documents 12 paths this API does not implement: `/api/v1/grave-rights/{rightId}/inheritances`, `/api/v1/grave-rights/{rightId}/renewals`, `/api/v1/grave-rights/{rightId}/transfers`, `/api/v1/grave-sites/{graveSiteId}/documents`, `/api/v1/grave-sites/{graveSiteId}/reservations`, `/api/v1/grave-sites/{graveSiteId}/right`, `/api/v1/me/charges`, `/api/v1/me/charges/{chargeId}/payments`, `/api/v1/me/documents`, `/api/v1/me/grave-sites`, `/api/v1/me/payments/{paymentId}`, `/api/v1/reservations/{reservationId}/cancellations`. Those belong to R2.

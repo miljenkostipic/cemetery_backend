@@ -46,6 +46,8 @@ Generated\ Files/
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+coverage-results/
+coverage-report/
 
 # NUnit
 *.VisualState.xml

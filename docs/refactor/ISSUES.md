@@ -15,9 +15,9 @@ How to use it with Cursor:
 Gate: CI fails on OpenAPI drift and on coverage below target
 
 - [ ] **R0.1** Merge `fix-payments-migration-order` into `main` · finding B10 · [task](R0-stabilise.md#r01-merge-the-payments-migration-fix) · PR: 
-- [ ] **R0.2** OpenAPI export + drift check in CI · finding B8 · [task](R0-stabilise.md#r02-openapi-export--drift-check) · PR: 
+- [x] **R0.2** OpenAPI export + drift check in CI · finding B8 · [task](R0-stabilise.md#r02-openapi-export--drift-check) · PR: 
 - [ ] **R0.3** Coverage thresholds in CI · finding B9 · [task](R0-stabilise.md#r03-coverage-thresholds-in-ci) · PR: 
-- [ ] **R0.4** Register handlers by assembly scan · finding B7 · [task](R0-stabilise.md#r04-register-handlers-by-assembly-scan) · PR: 
+- [x] **R0.4** Register handlers by assembly scan · finding B7 · [task](R0-stabilise.md#r04-register-handlers-by-assembly-scan) · PR: 
 
 ## R1 Safety net
 

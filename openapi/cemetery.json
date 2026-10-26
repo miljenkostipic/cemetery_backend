@@ -1503,6 +1503,407 @@
         }
       }
     },
+    "/api/v1/cemeteries/{cemeteryId}/fee-schedules": {
+      "get": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeeScheduleView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeeScheduleBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeeScheduleView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fee-schedules/{feeScheduleId}": {
+      "delete": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "feeScheduleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/charges": {
+      "get": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/arrears": {
+      "get": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArrearsRow"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/charges/yearly-runs": {
+      "post": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/YearlyRunBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/YearlyRunView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/charges/reminders": {
+      "post": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderRunView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/charges/{chargeId}/payments": {
+      "post": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "chargeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualPaymentBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{paymentId}/receipt": {
+      "get": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{paymentId}/voids": {
+      "post": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BillingReasonBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment-providers": {
+      "get": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentProviderView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payment-providers/{provider}": {
+      "put": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentProviderBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProviderView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cemeteries/{cemeteryId}": {
       "get": {
         "tags": [
@@ -2627,6 +3028,54 @@
           }
         }
       },
+      "ArrearsRow": {
+        "required": [
+          "chargeId",
+          "graveSiteCode",
+          "holderName",
+          "amount",
+          "currency",
+          "dueOn",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "holderName": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "dueOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "BillingReasonBody": {
+        "required": [
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
       "CemeteryReportView": {
         "required": [
           "occupancy",
@@ -2744,6 +3193,79 @@
           },
           "endsAt": {
             "type": "string"
+          }
+        }
+      },
+      "ChargeView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "graveSiteId",
+          "graveSiteCode",
+          "holderName",
+          "kind",
+          "description",
+          "amount",
+          "currency",
+          "status",
+          "dueOn",
+          "year",
+          "latestPaymentId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteCode": {
+            "type": "string"
+          },
+          "holderName": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "dueOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "year": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "latestPaymentId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -3015,6 +3537,62 @@
           "on": {
             "type": "string",
             "format": "date"
+          }
+        }
+      },
+      "FeeScheduleBody": {
+        "required": [
+          "kind",
+          "name",
+          "amount",
+          "currency"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          }
+        }
+      },
+      "FeeScheduleView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "kind",
+          "name",
+          "amount",
+          "currency"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
           }
         }
       },
@@ -3610,6 +4188,33 @@
           }
         }
       },
+      "ManualPaymentBody": {
+        "required": [
+          "method",
+          "amount",
+          "paidOn",
+          "reference"
+        ],
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "paidOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "reference": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "MaticaLinkBody": {
         "required": [
           "deathCertificateId"
@@ -3936,6 +4541,106 @@
         "properties": {
           "credentialJson": {
             "type": "string"
+          }
+        }
+      },
+      "PaymentProviderBody": {
+        "required": [
+          "merchantId",
+          "secret",
+          "enabled"
+        ],
+        "type": "object",
+        "properties": {
+          "merchantId": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PaymentProviderView": {
+        "required": [
+          "provider",
+          "enabled",
+          "connected",
+          "merchantId"
+        ],
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "connected": {
+            "type": "boolean"
+          },
+          "merchantId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PaymentView": {
+        "required": [
+          "id",
+          "chargeId",
+          "method",
+          "amount",
+          "currency",
+          "status",
+          "paidOn",
+          "redirectUrl",
+          "receiptNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "paidOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "redirectUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "receiptNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -4288,6 +4993,43 @@
           }
         }
       },
+      "ReceiptView": {
+        "required": [
+          "paymentId",
+          "receiptNumber",
+          "amount",
+          "currency",
+          "paidOn",
+          "method",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receiptNumber": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "paidOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "method": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
       "RegisterUser": {
         "required": [
           "email",
@@ -4304,6 +5046,22 @@
           },
           "displayName": {
             "type": "string"
+          }
+        }
+      },
+      "ReminderRunView": {
+        "required": [
+          "remindedCount"
+        ],
+        "type": "object",
+        "properties": {
+          "remindedCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -4747,6 +5505,47 @@
             "format": "uuid"
           }
         }
+      },
+      "YearlyRunBody": {
+        "required": [
+          "year"
+        ],
+        "type": "object",
+        "properties": {
+          "year": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "YearlyRunView": {
+        "required": [
+          "year",
+          "chargeCount"
+        ],
+        "type": "object",
+        "properties": {
+          "year": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "chargeCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
       }
     }
   },
@@ -4780,6 +5579,9 @@
     },
     {
       "name": "LaunchEndpoints"
+    },
+    {
+      "name": "BillingEndpoints"
     }
   ]
 }
