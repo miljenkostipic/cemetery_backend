@@ -14,7 +14,7 @@ How to use it with Cursor:
 
 Gate: CI fails on OpenAPI drift and on coverage below target
 
-- [ ] **R0.1** Merge `fix-payments-migration-order` into `main` · finding B10 · [task](R0-stabilise.md#r01-merge-the-payments-migration-fix) · PR: 
+- [x] **R0.1** Merge `fix-payments-migration-order` into `main` · finding B10 · [task](R0-stabilise.md#r01-merge-the-payments-migration-fix) · PR: [#10](https://github.com/miljenkostipic/cemetery_backend/pull/10)
 - [x] **R0.2** OpenAPI export + drift check in CI · finding B8 · [task](R0-stabilise.md#r02-openapi-export--drift-check) · PR: [#13](https://github.com/miljenkostipic/cemetery_backend/pull/13)
 - [ ] **R0.3** Coverage thresholds in CI · finding B9 · [task](R0-stabilise.md#r03-coverage-thresholds-in-ci) · PR: 
 - [x] **R0.4** Register handlers by assembly scan · finding B7 · [task](R0-stabilise.md#r04-register-handlers-by-assembly-scan) · PR: [#13](https://github.com/miljenkostipic/cemetery_backend/pull/13)
