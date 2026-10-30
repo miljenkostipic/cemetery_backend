@@ -14,4 +14,30 @@ jobs:
         with:
           dotnet-version: "10.0.x"
       - name: Test
-        run: dotnet test Cemetery.slnx --configuration Release
+        run: |
+          settings="${GITHUB_WORKSPACE}/coverage.config"
+          output="${GITHUB_WORKSPACE}/coverage-results"
+          mkdir -p "$output"
+          dotnet build Cemetery.slnx --configuration Release
+          for project in tests/*/*.csproj; do
+            name="$(basename "$project" .csproj)"
+            dotnet test "$project" --configuration Release --no-build -- \
+              --coverage \
+              --coverage-output-format cobertura \
+              --coverage-output "${name}.cobertura.xml" \
+              --coverage-settings "$settings" \
+              --results-directory "$output/$name"
+          done
+      - name: OpenAPI drift
+        run: git diff --exit-code openapi/cemetery.json
+      - name: Coverage summary
+        run: |
+          dotnet tool restore
+          dotnet tool run reportgenerator \
+            -reports:"coverage-results/**/*.cobertura.xml" \
+            -targetdir:coverage-report \
+            -reporttypes:"TextSummary;Cobertura" \
+            -assemblyfilters:"+Cemetery.Domain;+Cemetery.Application;+Cemetery.Api;+Cemetery.Infrastructure"
+          cat coverage-report/Summary.txt
+      - name: Coverage thresholds
+        run: python3 scripts/check-coverage.py coverage-report/Cobertura.xml

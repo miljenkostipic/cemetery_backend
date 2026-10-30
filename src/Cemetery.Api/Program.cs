@@ -7,7 +7,7 @@ if (args.Contains("--export-openapi"))
     return;
 }
 
-if (!app.Environment.IsEnvironment("Testing"))
+if (!app.Environment.IsEnvironment("Testing") && !OpenApiGeneration.IsRunning)
     await app.InitializeDatabaseAsync().ConfigureAwait(false);
 
 app.Run();

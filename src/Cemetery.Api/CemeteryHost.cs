@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Threading.RateLimiting;
 using Cemetery.Api.Endpoints;
 using Cemetery.Api.Errors;
@@ -17,7 +18,7 @@ public static class CemeteryHost
     public static WebApplication Create(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        var headless = args.Contains("--export-openapi") || builder.Environment.IsEnvironment("Testing");
+        var headless = IsHeadless(args, builder.Environment);
         ConfigureServices(builder, headless);
         var app = builder.Build();
         ConfigurePipeline(app);
@@ -31,6 +32,9 @@ public static class CemeteryHost
         var application = configuration.GetConnectionString("App") ?? throw new InvalidOperationException("ConnectionStrings:App is required.");
         await DatabaseInitializer.ApplyAsync(owner, application, CancellationToken.None).ConfigureAwait(false);
     }
+
+    private static bool IsHeadless(string[] args, IHostEnvironment environment) =>
+        args.Contains("--export-openapi") || environment.IsEnvironment("Testing") || OpenApiGeneration.IsRunning;
 
     private static void ConfigureServices(WebApplicationBuilder builder, bool headless)
     {
@@ -108,6 +112,12 @@ public static class CemeteryHost
         });
         app.MapScalarApiReference().AllowAnonymous();
     }
+}
+
+internal static class OpenApiGeneration
+{
+    public static bool IsRunning =>
+        string.Equals(Assembly.GetEntryAssembly()?.GetName().Name, "GetDocument.Insider", StringComparison.Ordinal);
 }
 
 public static class OpenApiExporter
