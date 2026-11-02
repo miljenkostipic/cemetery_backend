@@ -1,3 +1,4 @@
+using Cemetery.Infrastructure;
 using Cemetery.Infrastructure.Persistence;
 using Cemetery.Infrastructure.Tenancy;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ public sealed class CemeteryDbContextFactory : IDesignTimeDbContextFactory<Cemet
         var options = new DbContextOptionsBuilder<CemeteryDbContext>()
             .UseNpgsql(
                 "Host=localhost;Database=cemetery;Username=postgres;Password=postgres",
-                npgsql => npgsql.UseNetTopologySuite().MigrationsHistoryTable("__ef_migrations", "cemetery"))
+                DatabaseInitializer.Configure)
             .UseSnakeCaseNamingConvention()
             .Options;
         return new CemeteryDbContext(options, new AmbientTenant());

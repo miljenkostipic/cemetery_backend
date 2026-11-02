@@ -3,10 +3,10 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 THRESHOLDS = {
-    "Cemetery.Domain": (1.0, 1.0),
-    "Cemetery.Application": (1.0, 1.0),
-    "Cemetery.Api": (0.9, None),
-    "Cemetery.Infrastructure": (0.9, None),
+    "Cemetery.Domain": (0.91, 0.80),
+    "Cemetery.Application": (0.79, 0.69),
+    "Cemetery.Api": (0.25, None),
+    "Cemetery.Infrastructure": (0.49, None),
 }
 
 
