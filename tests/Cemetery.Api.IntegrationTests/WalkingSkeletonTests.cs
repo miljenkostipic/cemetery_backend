@@ -27,6 +27,7 @@ public sealed class WalkingSkeletonTests
         var owner = container.GetConnectionString();
         var app = new NpgsqlConnectionStringBuilder(owner) { Username = "cemetery_app", Password = "cemetery_app" }.ConnectionString;
         await DatabaseInitializer.ApplyAsync(owner, app, cancellationToken);
+        await AssertHistoryAsync(owner, cancellationToken);
 
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
@@ -55,6 +56,20 @@ public sealed class WalkingSkeletonTests
         Assert.Equal(alphaOrg, dashboard.GetProperty("organizationId").GetGuid());
         Assert.Equal(0, dashboard.GetProperty("graveSiteCount").GetInt32());
     }
+
+    private static async Task AssertHistoryAsync(string connectionString, CancellationToken cancellationToken)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var command = new NpgsqlCommand(HistorySql(), connection);
+        var aligned = (bool)(await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!;
+        Assert.True(aligned);
+    }
+
+    private static string HistorySql() => """
+        SELECT to_regclass('cemetery.__ef_migrations') IS NOT NULL
+           AND to_regclass('public."__EFMigrationsHistory"') IS NULL
+        """;
 
     private static async Task RegisterAsync(HttpClient client, string email, CancellationToken cancellationToken)
     {

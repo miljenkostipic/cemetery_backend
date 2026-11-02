@@ -66,7 +66,7 @@ public static class DependencyInjection
     {
         var connection = configuration.GetConnectionString("App")
             ?? throw new InvalidOperationException("ConnectionStrings:App is required.");
-        options.UseNpgsql(connection, npgsql => npgsql.UseNetTopologySuite().MigrationsHistoryTable("__ef_migrations", "cemetery"));
+        options.UseNpgsql(connection, DatabaseInitializer.Configure);
         options.UseSnakeCaseNamingConvention();
         options.AddInterceptors(provider.GetRequiredService<TenantSessionInterceptor>());
     }

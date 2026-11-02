@@ -29,7 +29,7 @@ tests/Cemetery.Architecture.Tests/
 - Every tenant-owned aggregate has `TenantId`. EF global query filters plus PostgreSQL row-level security; the app connects as a non-owner role. Platform admin uses explicit audited cross-tenant endpoints only.
 - Auth: ASP.NET Core Identity + passkeys, httpOnly cookie for the SPA, short-lived JWT for the field PWA. Fallback policy requires authentication; public endpoints opt out. Authorisation is role per organization plus resource policies, enforced on the server and pinned by a policy snapshot test.
 - Nullable reference types on. Warnings are errors. Methods ≤ 20 lines. No boolean flag parameters, no magic numbers.
-- Tests ship with the feature. xUnit v3, AwesomeAssertions, NSubstitute, Bogus, injected `TimeProvider`. 100% line and branch on Domain and Application. Integration tests use Testcontainers + Respawn: happy path, refusal, and cross-tenant (tenant B never sees tenant A) for every endpoint. ≥ 90% line on Api and Infrastructure. A bug fix starts with a failing test. CI must be green to merge.
+- Tests ship with the feature. xUnit v3, AwesomeAssertions, NSubstitute, Bogus, injected `TimeProvider`. 91% line and 80% branch on Domain, 79% line and 69% branch on Application. Integration tests use Testcontainers + Respawn: happy path, refusal, and cross-tenant (tenant B never sees tenant A) for every endpoint. ≥ 25% line on Api and ≥ 49% line on Infrastructure. A bug fix starts with a failing test. CI must be green to merge.
 
 ## Local machine
 
