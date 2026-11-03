@@ -65,4 +65,5 @@ Groups: R1.3 Auth + Organizations + Dashboard · R1.4 Layout · R1.5 Register ·
 
 ## Found while working
 
-(add items here, do not fix them in this step)
+- Auth rate limit is 10 requests per minute per client IP and lives in process memory. Respawn does not clear it, so a long integration run can receive 429 on register and login. Not changed in R1.1.
+- The test `InvitationInbox` replaces `IEmailSender`, so a password-reset integration test cannot read the reset link from the log. Not changed in R1.1.
