@@ -47,7 +47,7 @@ public static class PasskeyEndpoints
         if (user is null)
             throw new UnauthorizedException("auth.required");
 
-        var attestation = await signIn.PerformPasskeyAttestationAsync(body.CredentialJson).ConfigureAwait(false);
+        var attestation = await Ceremony(() => signIn.PerformPasskeyAttestationAsync(body.CredentialJson)).ConfigureAwait(false);
         if (!attestation.Succeeded)
             throw new UnauthorizedException("auth.passkey_failed");
 
@@ -70,10 +70,27 @@ public static class PasskeyEndpoints
 
     private static async Task<NoContent> Login(PasskeyCredential body, SignInManager<ApplicationUser> signIn)
     {
-        var result = await signIn.PasskeySignInAsync(body.CredentialJson).ConfigureAwait(false);
+        var result = await Ceremony(() => signIn.PasskeySignInAsync(body.CredentialJson)).ConfigureAwait(false);
         if (!result.Succeeded)
             throw new UnauthorizedException("auth.passkey_failed");
 
         return TypedResults.NoContent();
+    }
+
+    /// <summary>
+    /// Runs a passkey step. Identity throws InvalidOperationException when no ceremony is underway
+    /// (the options were never requested, or their cookie expired); that is a failed passkey, 401,
+    /// not a server error.
+    /// </summary>
+    private static async Task<T> Ceremony<T>(Func<Task<T>> step)
+    {
+        try
+        {
+            return await step().ConfigureAwait(false);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new UnauthorizedException("auth.passkey_failed");
+        }
     }
 }
