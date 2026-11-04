@@ -287,4 +287,15 @@ public static class RowLevelSecurity
         END
         $body$;
         """;
+
+    /// <summary>AspNetUserPasskeys is an Identity table: no tenant column, so no policy, only the grants.</summary>
+    public const string Passkeys = """
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
 }

@@ -62,10 +62,8 @@ public sealed class LaunchEndpointTests(ApiFixture api) : ApiTest(api)
             kind = "coffin",
             buriedOn = "2001-03-05",
         }, CancellationToken);
-        var rows = await OfficeWorld.Get(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/interments", CancellationToken);
-        Assert.DoesNotContain(interment, ApiAssert.Ids(rows));
-        var links = await OfficeWorld.Get(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/matica-links", CancellationToken);
-        Assert.Empty(links.EnumerateArray());
+        await OfficeWorld.Hidden(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/interments", interment, CancellationToken);
+        await OfficeWorld.Hidden(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/matica-links", null, CancellationToken);
         var report = await world.Other.GetAsync($"/api/v1/cemeteries/{world.CemeteryId}/reports", CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, report.StatusCode);
     }

@@ -64,12 +64,9 @@ public sealed class BillingEndpointTests(ApiFixture api) : ApiTest(api)
     {
         var world = await OfficeWorld.Open(Api, CancellationToken);
         var fee = await OfficeWorld.PostId(world.Clerk, $"/api/v1/cemeteries/{world.CemeteryId}/fee-schedules", Fee("annual", "Upkeep"), CancellationToken);
-        var fees = await OfficeWorld.Get(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/fee-schedules", CancellationToken);
-        Assert.DoesNotContain(fee, ApiAssert.Ids(fees));
-        var charges = await OfficeWorld.Get(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/charges", CancellationToken);
-        Assert.Empty(charges.EnumerateArray());
-        var arrears = await OfficeWorld.Get(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/arrears", CancellationToken);
-        Assert.Empty(arrears.EnumerateArray());
+        await OfficeWorld.Hidden(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/fee-schedules", fee, CancellationToken);
+        await OfficeWorld.Hidden(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/charges", null, CancellationToken);
+        await OfficeWorld.Hidden(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/arrears", null, CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, (await world.Other.DeleteAsync($"/api/v1/fee-schedules/{fee}", CancellationToken)).StatusCode);
     }
 

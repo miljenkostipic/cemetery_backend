@@ -48,8 +48,10 @@ public sealed class RegisterEndpointTests(ApiFixture api) : ApiTest(api)
             on = "2010-04-01",
         }, CancellationToken);
         Assert.Equal(world.SecondSiteId, moved.GetProperty("graveSiteId").GetGuid());
-        var exhumed = await OfficeWorld.Post(world.Clerk, $"/api/v1/interments/{intermentId}/exhumations", new { on = "2011-05-01" }, CancellationToken);
-        Assert.Equal(intermentId, ApiAssert.Id(exhumed));
+        // A transfer closes the original interment and opens a new one at the destination.
+        var movedId = ApiAssert.Id(moved);
+        var exhumed = await OfficeWorld.Post(world.Clerk, $"/api/v1/interments/{movedId}/exhumations", new { on = "2011-05-01" }, CancellationToken);
+        Assert.Equal(movedId, ApiAssert.Id(exhumed));
 
         var extra = await OfficeWorld.PostId(world.Clerk, $"/api/v1/cemeteries/{world.CemeteryId}/deceased", new
         {
@@ -81,12 +83,9 @@ public sealed class RegisterEndpointTests(ApiFixture api) : ApiTest(api)
     {
         var world = await OfficeWorld.Open(Api, CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, (await world.Other.GetAsync($"/api/v1/deceased/{world.DeceasedId}", CancellationToken)).StatusCode);
-        var people = await OfficeWorld.Get(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/deceased", CancellationToken);
-        Assert.DoesNotContain(world.DeceasedId, ApiAssert.Ids(people));
-        var positions = await OfficeWorld.Get(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/positions", CancellationToken);
-        Assert.Empty(positions.EnumerateArray());
-        var interments = await OfficeWorld.Get(world.Other, $"/api/v1/grave-sites/{world.SiteId}/interments", CancellationToken);
-        Assert.Empty(interments.EnumerateArray());
+        await OfficeWorld.Hidden(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/deceased", world.DeceasedId, CancellationToken);
+        await OfficeWorld.Hidden(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/positions", null, CancellationToken);
+        await OfficeWorld.Hidden(world.Other, $"/api/v1/grave-sites/{world.SiteId}/interments", null, CancellationToken);
     }
 
     [Fact]

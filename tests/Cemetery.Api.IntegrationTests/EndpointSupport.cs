@@ -117,6 +117,25 @@ internal sealed class OfficeWorld
         new { longitude = 16.0, latitude = 45.0 },
     };
 
+    /// <summary>
+    /// Another tenant reading under this tenant's cemetery or site: either it is not found, or the
+    /// list comes back without this tenant's rows (<paramref name="hidden"/>, or empty when null).
+    /// Both keep tenant B from seeing tenant A; lookups that check the parent answer 404, lists that
+    /// only filter answer an empty list.
+    /// </summary>
+    public static async Task Hidden(HttpClient client, string url, Guid? hidden, CancellationToken cancellationToken)
+    {
+        var response = await client.GetAsync(url, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return;
+
+        var list = await ApiAssert.Ok(response);
+        if (hidden is { } id)
+            Assert.DoesNotContain(id, ApiAssert.Ids(list));
+        else
+            Assert.Empty(list.EnumerateArray());
+    }
+
     public static object Grid(int columns) => new
     {
         kind = "single",
