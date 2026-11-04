@@ -1,3 +1,4 @@
+using Cemetery.Application;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Application.Register;
@@ -9,16 +10,14 @@ namespace Cemetery.Application.Billing;
 public sealed record ListFeeSchedules(Guid CemeteryId);
 
 public sealed class ListFeeSchedulesHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IBillingRepository billing) : IQueryHandler<ListFeeSchedules, IReadOnlyList<FeeScheduleView>>
 {
     public async Task<IReadOnlyList<FeeScheduleView>> Handle(ListFeeSchedules query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await BillingAccess.RequireCemeteryAsync(layouts, query.CemeteryId, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var fees = await billing.ListFeesAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         return fees.Select(BillingMaps.Fee).ToArray();
     }
@@ -38,17 +37,15 @@ public sealed class AddFeeScheduleValidator : AbstractValidator<AddFeeSchedule>
 }
 
 public sealed class AddFeeScheduleHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IBillingRepository billing,
     IUnitOfWork unitOfWork) : ICommandHandler<AddFeeSchedule, FeeScheduleView>
 {
     public async Task<FeeScheduleView> Handle(AddFeeSchedule command, CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await BillingAccess.RequireCemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
         var fee = FeeSchedule.Add(organizationId, command.CemeteryId, command.Kind, command.Name, command.Amount, command.Currency);
         await billing.AddFeeAsync(fee, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -65,15 +62,13 @@ public sealed class RemoveFeeScheduleValidator : AbstractValidator<RemoveFeeSche
 }
 
 public sealed class RemoveFeeScheduleHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IBillingRepository billing,
     IUnitOfWork unitOfWork) : ICommandHandler<RemoveFeeSchedule, bool>
 {
     public async Task<bool> Handle(RemoveFeeSchedule command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var fee = await billing.FindFeeAsync(command.FeeScheduleId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("fee.not_found");
         await RejectWhenCharged(fee.Id, cancellationToken).ConfigureAwait(false);

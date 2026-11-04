@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Billing;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,18 +9,18 @@ public static class BillingEndpoints
 {
     public static RouteGroupBuilder MapBillingEndpoints(this RouteGroupBuilder api)
     {
-        api.MapGet("/cemeteries/{cemeteryId}/fee-schedules", GetFees).RequireAuthorization("tenant");
-        api.MapPost("/cemeteries/{cemeteryId}/fee-schedules", PostFee).RequireAuthorization("tenant");
-        api.MapDelete("/fee-schedules/{feeScheduleId}", DeleteFee).RequireAuthorization("tenant");
-        api.MapGet("/cemeteries/{cemeteryId}/charges", GetCharges).RequireAuthorization("tenant");
-        api.MapGet("/cemeteries/{cemeteryId}/arrears", GetArrears).RequireAuthorization("tenant");
-        api.MapPost("/cemeteries/{cemeteryId}/charges/yearly-runs", PostYear).RequireAuthorization("tenant");
-        api.MapPost("/cemeteries/{cemeteryId}/charges/reminders", PostReminders).RequireAuthorization("tenant");
-        api.MapPost("/charges/{chargeId}/payments", PostPayment).RequireAuthorization("tenant");
-        api.MapGet("/payments/{paymentId}/receipt", ReadReceipt).RequireAuthorization("tenant");
-        api.MapPost("/payments/{paymentId}/voids", PostVoid).RequireAuthorization("tenant");
-        api.MapGet("/payment-providers", GetProviders).RequireAuthorization("tenant");
-        api.MapPut("/payment-providers/{provider}", PutProvider).RequireAuthorization("tenant");
+        api.MapGet("/cemeteries/{cemeteryId}/fee-schedules", GetFees).RequireAuthorization(Policies.Office);
+        api.MapPost("/cemeteries/{cemeteryId}/fee-schedules", PostFee).RequireAuthorization(Policies.Office);
+        api.MapDelete("/fee-schedules/{feeScheduleId}", DeleteFee).RequireAuthorization(Policies.Office);
+        api.MapGet("/cemeteries/{cemeteryId}/charges", GetCharges).RequireAuthorization(Policies.Office);
+        api.MapGet("/cemeteries/{cemeteryId}/arrears", GetArrears).RequireAuthorization(Policies.Office);
+        api.MapPost("/cemeteries/{cemeteryId}/charges/yearly-runs", PostYear).RequireAuthorization(Policies.Office);
+        api.MapPost("/cemeteries/{cemeteryId}/charges/reminders", PostReminders).RequireAuthorization(Policies.Office);
+        api.MapPost("/charges/{chargeId}/payments", PostPayment).RequireAuthorization(Policies.Office);
+        api.MapGet("/payments/{paymentId}/receipt", ReadReceipt).RequireAuthorization(Policies.Office);
+        api.MapPost("/payments/{paymentId}/voids", PostVoid).RequireAuthorization(Policies.Office);
+        api.MapGet("/payment-providers", GetProviders).RequireAuthorization(Policies.Office);
+        api.MapPut("/payment-providers/{provider}", PutProvider).RequireAuthorization(Policies.Office);
         return api;
     }
 

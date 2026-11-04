@@ -1,3 +1,4 @@
+using Cemetery.Application;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Layout;
@@ -20,18 +21,16 @@ public sealed class OpenWorkOrderValidator : AbstractValidator<OpenWorkOrder>
 }
 
 public sealed class OpenWorkOrderHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IOperationsRepository store,
     IUnitOfWork unitOfWork) : ICommandHandler<OpenWorkOrder, WorkOrderView>
 {
     public async Task<WorkOrderView> Handle(OpenWorkOrder command, CancellationToken cancellationToken)
     {
-        var organizationId = await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await OperationsGate.RequireCemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
-        var site = await OperationsGate.RequireSiteAsync(layouts, command.CemeteryId, command.GraveSiteId, "work_order.site_invalid", cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var site = await Require.SiteAsync(layouts, command.CemeteryId, command.GraveSiteId, "work_order.site_invalid", cancellationToken).ConfigureAwait(false);
         var order = await Save(organizationId, command, cancellationToken).ConfigureAwait(false);
         return OperationsMaps.Order(order, site);
     }
@@ -60,15 +59,13 @@ public sealed class OpenWorkOrderHandler(
 public sealed record ListWorkOrders(Guid CemeteryId);
 
 public sealed class ListWorkOrdersHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IOperationsRepository store) : IQueryHandler<ListWorkOrders, IReadOnlyList<WorkOrderView>>
 {
     public async Task<IReadOnlyList<WorkOrderView>> Handle(ListWorkOrders query, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var orders = await store.ListWorkOrdersAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var sites = OperationsIndex.ById(await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false), site => site.Id);
         return orders.Select(order => Map(order, sites)).ToArray();
@@ -93,15 +90,13 @@ public sealed class CompleteWorkOrderValidator : AbstractValidator<CompleteWorkO
 }
 
 public sealed class CompleteWorkOrderHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOperationsRepository store,
     IUnitOfWork unitOfWork) : ICommandHandler<CompleteWorkOrder, CompletionView>
 {
     public async Task<CompletionView> Handle(CompleteWorkOrder command, CancellationToken cancellationToken)
     {
-        _ = await OperationsAccess.RequireFieldAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var order = await store.FindWorkOrderAsync(command.WorkOrderId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("work_order.not_found");
         order.Complete(command.CompletedOn, command.Note);
@@ -119,15 +114,13 @@ public sealed class AttachWorkOrderPhotoValidator : AbstractValidator<AttachWork
 }
 
 public sealed class AttachWorkOrderPhotoHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOperationsRepository store,
     IUnitOfWork unitOfWork) : ICommandHandler<AttachWorkOrderPhoto, PhotoView>
 {
     public async Task<PhotoView> Handle(AttachWorkOrderPhoto command, CancellationToken cancellationToken)
     {
-        var organizationId = await OperationsAccess.RequireFieldAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         var order = await store.FindWorkOrderAsync(command.WorkOrderId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("work_order.not_found");
         var photo = WorkOrderPhoto.Record(organizationId, order.Id, command.ContentType, command.ContentBase64);

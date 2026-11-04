@@ -84,26 +84,27 @@ public sealed class CreateOrganizationHandlerTests
 public sealed class DashboardAndInviteTests
 {
     [Fact]
-    public async Task Dashboard_fails_closed_without_a_tenant()
+    public async Task Dashboard_fails_closed_when_the_organization_is_missing()
     {
-        var handler = new GetDashboardHandler(new FakeTenant(), Substitute.For<IOrganizationRepository>(), Substitute.For<ILayoutRepository>());
+        var handler = new GetDashboardHandler(
+            Callers.For(Guid.CreateVersion7(), MembershipRole.CemeteryClerk),
+            Substitute.For<IOrganizationRepository>(),
+            Substitute.For<ILayoutRepository>());
 
         var error = await Assert.ThrowsAsync<ForbiddenException>(() => handler.Handle(new GetDashboard(), CancellationToken.None));
 
-        Assert.Equal("tenant.required", error.Code);
+        Assert.Equal("tenant.forbidden", error.Code);
     }
 
     [Fact]
     public async Task Dashboard_is_empty_for_the_current_tenant()
     {
         var organization = Organization.Create("Alpha", "alpha", DateTimeOffset.UnixEpoch);
-        var tenant = new FakeTenant();
-        tenant.Use(organization.Id);
         var organizations = Substitute.For<IOrganizationRepository>();
         organizations.FindAsync(organization.Id, Arg.Any<CancellationToken>()).Returns(organization);
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.CountGraveSitesAsync(Arg.Any<CancellationToken>()).Returns(0);
-        var handler = new GetDashboardHandler(tenant, organizations, layouts);
+        var handler = new GetDashboardHandler(Callers.For(organization.Id, MembershipRole.OrganizationAdmin), organizations, layouts);
 
         var dashboard = await handler.Handle(new GetDashboard(), CancellationToken.None);
 
@@ -112,16 +113,14 @@ public sealed class DashboardAndInviteTests
     }
 
     [Fact]
-    public async Task Invite_fails_closed_without_a_tenant()
+    public async Task Invite_refuses_a_clerk()
     {
-        var current = Substitute.For<ICurrentUser>();
-        current.UserId.Returns(Guid.CreateVersion7());
-        var handler = Invite(current, new FakeTenant(), Substitute.For<IMembershipRepository>());
+        var handler = Invite(Callers.For(Guid.CreateVersion7(), MembershipRole.CemeteryClerk));
 
         var error = await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.Handle(new InviteMember("holder@example.com", MembershipRoles.GraveHolder), CancellationToken.None));
 
-        Assert.Equal("tenant.required", error.Code);
+        Assert.Equal("access.forbidden", error.Code);
     }
 
     [Fact]
@@ -140,11 +139,9 @@ public sealed class DashboardAndInviteTests
         Assert.Equal("tenant.forbidden", error.Code);
     }
 
-    private static InviteMemberHandler Invite(ICurrentUser current, ITenantContext tenant, IMembershipRepository memberships) =>
+    private static InviteMemberHandler Invite(ICallerContext caller) =>
         new(
-            current,
-            tenant,
-            memberships,
+            caller,
             Substitute.For<IInvitationRepository>(),
             Substitute.For<IInvitationTokenFactory>(),
             Substitute.For<IEmailSender>(),

@@ -10,16 +10,14 @@ namespace Cemetery.Application.Layout;
 public sealed record ListGraveSites(Guid CemeteryId);
 
 public sealed class ListGraveSitesHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     TimeProvider clock) : IQueryHandler<ListGraveSites, IReadOnlyList<GraveSiteView>>
 {
     public async Task<IReadOnlyList<GraveSiteView>> Handle(ListGraveSites query, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var sites = await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var cemetery = await layouts.FindCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var interments = await register.ListIntermentsByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
@@ -30,16 +28,14 @@ public sealed class ListGraveSitesHandler(
 public sealed record GetGraveSite(Guid GraveSiteId);
 
 public sealed class GetGraveSiteHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     TimeProvider clock) : IQueryHandler<GetGraveSite, GraveSiteView>
 {
     public async Task<GraveSiteView> Handle(GetGraveSite query, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var site = await layouts.FindGraveSiteAsync(query.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         var cemetery = await layouts.FindCemeteryAsync(site.CemeteryId, cancellationToken).ConfigureAwait(false);
@@ -60,15 +56,13 @@ public sealed class ReplaceGraveSiteOutlineValidator : AbstractValidator<Replace
 }
 
 public sealed class ReplaceGraveSiteOutlineHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<ReplaceGraveSiteOutline, GraveSiteView>
 {
     public async Task<GraveSiteView> Handle(ReplaceGraveSiteOutline command, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var site = await layouts.FindGraveSiteAsync(command.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         var outline = LayoutMaps.Polygon(command.Outline) ?? throw new ValidationFailedException(["geometry.ring_invalid"]);
@@ -91,15 +85,13 @@ public sealed class SplitGraveSiteValidator : AbstractValidator<SplitGraveSite>
 }
 
 public sealed class SplitGraveSiteHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<SplitGraveSite, IReadOnlyList<GraveSiteView>>
 {
     public async Task<IReadOnlyList<GraveSiteView>> Handle(SplitGraveSite command, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var site = await layouts.FindGraveSiteAsync(command.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         var sequence = await layouts.NextSequenceAsync(site.CemeteryId, cancellationToken).ConfigureAwait(false);
@@ -124,15 +116,13 @@ public sealed class MergeGraveSitesValidator : AbstractValidator<MergeGraveSites
 }
 
 public sealed class MergeGraveSitesHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<MergeGraveSites, GraveSiteView>
 {
     public async Task<GraveSiteView> Handle(MergeGraveSites command, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var left = await layouts.FindGraveSiteAsync(command.LeftId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         var right = await layouts.FindGraveSiteAsync(command.RightId, cancellationToken).ConfigureAwait(false)
@@ -158,15 +148,13 @@ public sealed class CloseGraveSiteValidator : AbstractValidator<CloseGraveSite>
 }
 
 public sealed class CloseGraveSiteHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<CloseGraveSite, GraveSiteView>
 {
     public async Task<GraveSiteView> Handle(CloseGraveSite command, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var site = await layouts.FindGraveSiteAsync(command.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         site.Close();
@@ -186,15 +174,13 @@ public sealed class ReopenGraveSiteValidator : AbstractValidator<ReopenGraveSite
 }
 
 public sealed class ReopenGraveSiteHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<ReopenGraveSite, GraveSiteView>
 {
     public async Task<GraveSiteView> Handle(ReopenGraveSite command, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var site = await layouts.FindGraveSiteAsync(command.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         var others = await layouts.ListByCemeteryAsync(site.CemeteryId, cancellationToken).ConfigureAwait(false);
@@ -265,15 +251,13 @@ public sealed class UndoGraveSiteSplitValidator : AbstractValidator<UndoGraveSit
 }
 
 public sealed class UndoGraveSiteSplitHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<UndoGraveSiteSplit, GraveSiteView>
 {
     public async Task<GraveSiteView> Handle(UndoGraveSiteSplit command, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var original = await layouts.FindGraveSiteAsync(command.OriginalId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         var left = await layouts.FindGraveSiteAsync(command.LeftId, cancellationToken).ConfigureAwait(false)

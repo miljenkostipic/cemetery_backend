@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Launch;
 using Cemetery.Application.Register;
@@ -9,14 +10,14 @@ public static class LaunchEndpoints
 {
     public static RouteGroupBuilder MapLaunchEndpoints(this RouteGroupBuilder api)
     {
-        api.MapGet("/cemeteries/{cemeteryId}/interments", GetInterments).RequireAuthorization("tenant");
-        api.MapGet("/cemeteries/{cemeteryId}/matica-links", GetLinks).RequireAuthorization("tenant");
-        api.MapPost("/interments/{intermentId}/matica-links", PostLink).RequireAuthorization("tenant");
-        api.MapGet("/integrations/webhooks", GetWebhooks).RequireAuthorization("tenant");
-        api.MapPost("/integrations/webhooks", PostWebhook).RequireAuthorization("tenant");
-        api.MapDelete("/integrations/webhooks/{webhookId}", DeleteWebhook).RequireAuthorization("tenant");
-        api.MapGet("/gdpr/records", GetRecords).RequireAuthorization("tenant");
-        api.MapPost("/gdpr/exports", PostExport).RequireAuthorization("tenant");
+        api.MapGet("/cemeteries/{cemeteryId}/interments", GetInterments).RequireAuthorization(Policies.Office);
+        api.MapGet("/cemeteries/{cemeteryId}/matica-links", GetLinks).RequireAuthorization(Policies.Office);
+        api.MapPost("/interments/{intermentId}/matica-links", PostLink).RequireAuthorization(Policies.Office);
+        api.MapGet("/integrations/webhooks", GetWebhooks).RequireAuthorization(Policies.Office);
+        api.MapPost("/integrations/webhooks", PostWebhook).RequireAuthorization(Policies.Office);
+        api.MapDelete("/integrations/webhooks/{webhookId}", DeleteWebhook).RequireAuthorization(Policies.Office);
+        api.MapGet("/gdpr/records", GetRecords).RequireAuthorization(Policies.Office);
+        api.MapPost("/gdpr/exports", PostExport).RequireAuthorization(Policies.Office);
         return api;
     }
 

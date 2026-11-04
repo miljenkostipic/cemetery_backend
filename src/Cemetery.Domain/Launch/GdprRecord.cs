@@ -23,18 +23,20 @@ public static class GdprCatalog
     ];
 }
 
+public enum GdprExportStatus
+{
+    Requested = 1,
+}
+
 public sealed class GdprExport : TenantEntity
 {
-    public const string Requested = "requested";
-
     private GdprExport()
     {
-        Status = "";
     }
 
     public DateTimeOffset RequestedAt { get; private set; }
 
-    public string Status { get; private set; }
+    public GdprExportStatus Status { get; private set; }
 
     public static GdprExport Open(Guid tenantId, DateTimeOffset requestedAt)
     {
@@ -46,7 +48,7 @@ public sealed class GdprExport : TenantEntity
             Id = Guid.CreateVersion7(),
             TenantId = tenantId,
             RequestedAt = requestedAt,
-            Status = Requested,
+            Status = GdprExportStatus.Requested,
         };
     }
 }

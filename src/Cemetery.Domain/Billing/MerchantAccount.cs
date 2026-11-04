@@ -3,6 +3,13 @@ using Cemetery.Domain.Identity;
 
 namespace Cemetery.Domain.Billing;
 
+public enum BillingProvider
+{
+    Monri = 1,
+    Paypal = 2,
+    Payrexx = 3,
+}
+
 public static class BillingProviders
 {
     public const string Monri = "monri";
@@ -17,13 +24,13 @@ public static class BillingProviders
 
     public static bool IsKnown(string? provider) => provider is Monri or Paypal or Payrexx;
 
-    public static string Require(string? provider)
+    public static BillingProvider Require(string? provider) => provider switch
     {
-        if (!IsKnown(provider))
-            throw new DomainRuleException("payment.provider_invalid");
-
-        return provider!;
-    }
+        Monri => BillingProvider.Monri,
+        Paypal => BillingProvider.Paypal,
+        Payrexx => BillingProvider.Payrexx,
+        _ => throw new DomainRuleException("payment.provider_invalid"),
+    };
 }
 
 public readonly record struct MerchantCredentials(string MerchantId, string Secret, bool Enabled);
@@ -77,12 +84,11 @@ public sealed class MerchantAccount : TenantEntity
 {
     private MerchantAccount()
     {
-        Provider = "";
         MerchantId = "";
         Secret = "";
     }
 
-    public string Provider { get; private set; }
+    public BillingProvider Provider { get; private set; }
 
     public string MerchantId { get; private set; }
 
@@ -105,7 +111,7 @@ public sealed class MerchantAccount : TenantEntity
         Enabled = credentials.Enabled;
     }
 
-    private static MerchantAccount Create(Guid tenantId, string provider, MerchantCredentials credentials) =>
+    private static MerchantAccount Create(Guid tenantId, BillingProvider provider, MerchantCredentials credentials) =>
         new()
         {
             Id = Guid.CreateVersion7(),

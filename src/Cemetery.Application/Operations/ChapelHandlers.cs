@@ -1,3 +1,4 @@
+using Cemetery.Application;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Operations;
@@ -19,17 +20,15 @@ public sealed class BookChapelValidator : AbstractValidator<BookChapel>
 }
 
 public sealed class BookChapelHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IOperationsRepository store,
     IUnitOfWork unitOfWork) : ICommandHandler<BookChapel, ChapelBookingView>
 {
     public async Task<ChapelBookingView> Handle(BookChapel command, CancellationToken cancellationToken)
     {
-        var organizationId = await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await OperationsGate.RequireCemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
         var booking = await Save(organizationId, command, cancellationToken).ConfigureAwait(false);
         return OperationsMaps.Booking(booking);
     }
@@ -55,14 +54,12 @@ public sealed class BookChapelHandler(
 public sealed record ListChapelBookings(Guid CemeteryId);
 
 public sealed class ListChapelBookingsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOperationsRepository store) : IQueryHandler<ListChapelBookings, IReadOnlyList<ChapelBookingView>>
 {
     public async Task<IReadOnlyList<ChapelBookingView>> Handle(ListChapelBookings query, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var bookings = await store.ListBookingsAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         return bookings.Select(OperationsMaps.Booking).ToArray();
     }

@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Cemetery.Api.Endpoints;
 using Cemetery.Api.Errors;
@@ -7,6 +9,7 @@ using Cemetery.Application;
 using Cemetery.Application.Abstractions;
 using Cemetery.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 using Serilog;
@@ -36,6 +39,9 @@ public static class CemeteryHost
     private static bool IsHeadless(string[] args, IHostEnvironment environment) =>
         args.Contains("--export-openapi") || environment.IsEnvironment("Testing") || OpenApiGeneration.IsRunning;
 
+    private static int PermitLimit(IHostEnvironment environment) =>
+        environment.IsEnvironment("Testing") ? 10_000 : AuthRateLimit.PermitLimit;
+
     private static void ConfigureServices(WebApplicationBuilder builder, bool headless)
     {
         builder.Host.UseSerilog((_, configuration) =>
@@ -44,9 +50,12 @@ public static class CemeteryHost
         builder.Services.AddInfrastructure(builder.Configuration, headless);
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+        builder.Services.AddScoped<ICallerContext, HttpCallerContext>();
         builder.Services.AddScoped<IActiveOrganizationStore, CookieOrganizationStore>();
         builder.Services.AddExceptionHandler<CemeteryExceptionHandler>();
         builder.Services.AddProblemDetails();
+        builder.Services.ConfigureHttpJsonOptions(options =>
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower)));
         builder.Services.AddOpenApi("v1", options =>
         {
             options.AddDocumentTransformer((document, _, _) =>
@@ -58,9 +67,11 @@ public static class CemeteryHost
         builder.Services.AddAuthorization(options =>
         {
             options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-            options.AddPolicy("tenant", policy => policy.RequireAuthenticatedUser().AddRequirements(new TenantRequirement()));
+            options.AddCallerPolicies();
         });
-        builder.Services.AddScoped<IAuthorizationHandler, TenantAuthorizationHandler>();
+        builder.Services.AddScoped<IAuthorizationHandler, CallerRoleHandler>();
+        builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AccessDeniedHandler>();
+        var permitLimit = PermitLimit(builder.Environment);
         builder.Services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -68,7 +79,7 @@ public static class CemeteryHost
                 http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 _ => new FixedWindowRateLimiterOptions
                 {
-                    PermitLimit = AuthRateLimit.PermitLimit,
+                    PermitLimit = permitLimit,
                     Window = AuthRateLimit.Window,
                     QueueLimit = 0,
                 }));
@@ -76,7 +87,7 @@ public static class CemeteryHost
                 http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 _ => new FixedWindowRateLimiterOptions
                 {
-                    PermitLimit = PublicRateLimit.PermitLimit,
+                    PermitLimit = permitLimit,
                     Window = PublicRateLimit.Window,
                     QueueLimit = 0,
                 }));

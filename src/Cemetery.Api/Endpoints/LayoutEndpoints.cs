@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Layout;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,23 +9,23 @@ public static class LayoutEndpoints
 {
     public static RouteGroupBuilder MapLayoutEndpoints(this RouteGroupBuilder api)
     {
-        api.MapPost("/cemeteries", Open).RequireAuthorization("tenant");
-        api.MapGet("/cemeteries", List).RequireAuthorization("tenant");
-        var cemeteries = api.MapGroup("/cemeteries").RequireAuthorization("tenant");
+        api.MapPost("/cemeteries", Open).RequireAuthorization(Policies.Office);
+        api.MapGet("/cemeteries", List).RequireAuthorization(Policies.Office);
+        var cemeteries = api.MapGroup("/cemeteries").RequireAuthorization(Policies.Office);
         cemeteries.MapGet("/{cemeteryId}", Get);
         cemeteries.MapPost("/{cemeteryId}/plan", Plan);
         cemeteries.MapPost("/{cemeteryId}/sections", AddSection);
         cemeteries.MapGet("/{cemeteryId}/sections", ListSections);
         cemeteries.MapGet("/{cemeteryId}/grave-sites", ListSites);
 
-        var sections = api.MapGroup("/sections").RequireAuthorization("tenant");
+        var sections = api.MapGroup("/sections").RequireAuthorization(Policies.Office);
         sections.MapDelete("/{sectionId}", DeleteSection);
         sections.MapPut("/{sectionId}/outline", SectionOutline);
         sections.MapPost("/{sectionId}/rows", AddRow);
         sections.MapGet("/{sectionId}/rows", ListRows);
         sections.MapPost("/{sectionId}/grave-sites", Generate);
 
-        var sites = api.MapGroup("/grave-sites").RequireAuthorization("tenant");
+        var sites = api.MapGroup("/grave-sites").RequireAuthorization(Policies.Office);
         sites.MapPost("/merge", Merge);
         sites.MapPost("/undo-split", UndoSplit);
         sites.MapGet("/{graveSiteId}", GetSite);

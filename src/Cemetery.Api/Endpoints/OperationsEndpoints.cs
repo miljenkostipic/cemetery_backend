@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Operations;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,22 +9,22 @@ public static class OperationsEndpoints
 {
     public static RouteGroupBuilder MapOperationsEndpoints(this RouteGroupBuilder api)
     {
-        api.MapGet("/cemeteries/{cemeteryId}/funerals", GetFunerals).RequireAuthorization("tenant");
-        api.MapPost("/cemeteries/{cemeteryId}/funerals", PostFuneral).RequireAuthorization("tenant");
-        api.MapPost("/funerals/{funeralId}/cancellations", PostCancellation).RequireAuthorization("tenant");
-        api.MapDelete("/funerals/{funeralId}", DeleteFuneral).RequireAuthorization("tenant");
-        api.MapDelete("/chapel-bookings/{bookingId}", DeleteBooking).RequireAuthorization("tenant");
-        api.MapDelete("/work-orders/{workOrderId}", DeleteOrder).RequireAuthorization("tenant");
-        api.MapDelete("/monument-permits/{permitId}", DeletePermit).RequireAuthorization("tenant");
-        api.MapGet("/cemeteries/{cemeteryId}/chapel-bookings", GetBookings).RequireAuthorization("tenant");
-        api.MapPost("/cemeteries/{cemeteryId}/chapel-bookings", PostBooking).RequireAuthorization("tenant");
-        api.MapGet("/cemeteries/{cemeteryId}/work-orders", GetOrders).RequireAuthorization("tenant");
-        api.MapPost("/cemeteries/{cemeteryId}/work-orders", PostOrder).RequireAuthorization("tenant");
-        api.MapGet("/cemeteries/{cemeteryId}/monument-permits", GetPermits).RequireAuthorization("tenant");
-        api.MapPost("/cemeteries/{cemeteryId}/monument-permits", PostPermit).RequireAuthorization("tenant");
-        api.MapGet("/field/today", FieldToday).RequireAuthorization("tenant");
-        api.MapPost("/work-orders/{workOrderId}/completions", CompleteOrder).RequireAuthorization("tenant");
-        api.MapPost("/work-orders/{workOrderId}/photos", AddPhoto).RequireAuthorization("tenant");
+        api.MapGet("/cemeteries/{cemeteryId}/funerals", GetFunerals).RequireAuthorization(Policies.Office);
+        api.MapPost("/cemeteries/{cemeteryId}/funerals", PostFuneral).RequireAuthorization(Policies.Office);
+        api.MapPost("/funerals/{funeralId}/cancellations", PostCancellation).RequireAuthorization(Policies.Office);
+        api.MapDelete("/funerals/{funeralId}", DeleteFuneral).RequireAuthorization(Policies.Office);
+        api.MapDelete("/chapel-bookings/{bookingId}", DeleteBooking).RequireAuthorization(Policies.Office);
+        api.MapDelete("/work-orders/{workOrderId}", DeleteOrder).RequireAuthorization(Policies.Office);
+        api.MapDelete("/monument-permits/{permitId}", DeletePermit).RequireAuthorization(Policies.Office);
+        api.MapGet("/cemeteries/{cemeteryId}/chapel-bookings", GetBookings).RequireAuthorization(Policies.Office);
+        api.MapPost("/cemeteries/{cemeteryId}/chapel-bookings", PostBooking).RequireAuthorization(Policies.Office);
+        api.MapGet("/cemeteries/{cemeteryId}/work-orders", GetOrders).RequireAuthorization(Policies.Office);
+        api.MapPost("/cemeteries/{cemeteryId}/work-orders", PostOrder).RequireAuthorization(Policies.Office);
+        api.MapGet("/cemeteries/{cemeteryId}/monument-permits", GetPermits).RequireAuthorization(Policies.Office);
+        api.MapPost("/cemeteries/{cemeteryId}/monument-permits", PostPermit).RequireAuthorization(Policies.Office);
+        api.MapGet("/field/today", FieldToday).RequireAuthorization(Policies.Field);
+        api.MapPost("/work-orders/{workOrderId}/completions", CompleteOrder).RequireAuthorization(Policies.Field);
+        api.MapPost("/work-orders/{workOrderId}/photos", AddPhoto).RequireAuthorization(Policies.Field);
         return api;
     }
 

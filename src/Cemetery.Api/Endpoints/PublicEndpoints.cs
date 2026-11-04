@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Layout;
 using Cemetery.Application.Catalog;
@@ -17,12 +18,12 @@ public static class PublicEndpoints
         catalog.MapGet("/cemeteries/{slug}/search", SearchOne);
         catalog.MapGet("/memorials/{deceasedId}", Memorial);
 
-        api.MapGet("/organizations/visibility", ReadVisibility).RequireAuthorization("tenant");
-        api.MapPut("/organizations/visibility", Publish).RequireAuthorization("tenant");
-        api.MapDelete("/organizations/visibility", Withdraw).RequireAuthorization("tenant");
-        api.MapPost("/grave-sites/{graveSiteId}/hide-from-public", Hide).RequireAuthorization("tenant");
-        api.MapPost("/grave-sites/{graveSiteId}/show-on-public-map", Show).RequireAuthorization("tenant");
-        api.MapPut("/deceased/{deceasedId}/memorial", Describe).RequireAuthorization("tenant");
+        api.MapGet("/organizations/visibility", ReadVisibility).RequireAuthorization(Policies.Office);
+        api.MapPut("/organizations/visibility", Publish).RequireAuthorization(Policies.Office);
+        api.MapDelete("/organizations/visibility", Withdraw).RequireAuthorization(Policies.Office);
+        api.MapPost("/grave-sites/{graveSiteId}/hide-from-public", Hide).RequireAuthorization(Policies.Office);
+        api.MapPost("/grave-sites/{graveSiteId}/show-on-public-map", Show).RequireAuthorization(Policies.Office);
+        api.MapPut("/deceased/{deceasedId}/memorial", Describe).RequireAuthorization(Policies.Office);
         return api;
     }
 

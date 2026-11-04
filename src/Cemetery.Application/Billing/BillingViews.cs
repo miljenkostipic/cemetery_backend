@@ -4,7 +4,7 @@ using Cemetery.Domain.Billing;
 
 namespace Cemetery.Application.Billing;
 
-public sealed record FeeScheduleView(Guid Id, Guid CemeteryId, string Kind, string Name, string Amount, string Currency);
+public sealed record FeeScheduleView(Guid Id, Guid CemeteryId, FeeKind Kind, string Name, string Amount, string Currency);
 
 public sealed record YearlyRunView(int Year, int ChargeCount);
 
@@ -16,11 +16,11 @@ public sealed record ChargeView(
     Guid GraveSiteId,
     string GraveSiteCode,
     string HolderName,
-    string Kind,
+    FeeKind Kind,
     string Description,
     string Amount,
     string Currency,
-    string Status,
+    ChargeStatus Status,
     DateOnly DueOn,
     int? Year,
     Guid? LatestPaymentId);
@@ -32,9 +32,9 @@ public sealed record ArrearsRow(
     string Amount,
     string Currency,
     DateOnly DueOn,
-    string Status);
+    ChargeStatus Status);
 
-public sealed record PaymentProviderView(string Provider, bool Enabled, bool Connected, string? MerchantId);
+public sealed record PaymentProviderView(BillingProvider Provider, bool Enabled, bool Connected, string? MerchantId);
 
 public sealed record FeeScheduleBody(string Kind, string Name, string Amount, string Currency);
 
@@ -47,10 +47,10 @@ public sealed record BillingReasonBody(string Reason);
 public sealed record PaymentView(
     Guid Id,
     Guid ChargeId,
-    string Method,
+    ManualMethod Method,
     string Amount,
     string Currency,
-    string Status,
+    PaymentStatus Status,
     DateOnly? PaidOn,
     string? RedirectUrl,
     string? ReceiptNumber);
@@ -61,7 +61,7 @@ public sealed record ReceiptView(
     string Amount,
     string Currency,
     DateOnly PaidOn,
-    string Method,
+    ManualMethod Method,
     string Description);
 
 public sealed record PaymentProviderBody(string MerchantId, string Secret, bool Enabled);
@@ -99,15 +99,5 @@ internal static class BillingMaps
     public static PaymentProviderView Provider(MerchantAccount account) =>
         new(account.Provider, account.Enabled, true, account.MerchantId);
 
-    public static PaymentProviderView Missing(string provider) => new(provider, false, false, null);
-}
-
-internal static class BillingAccess
-{
-    public static async Task RequireCemeteryAsync(ILayoutRepository layouts, Guid cemeteryId, CancellationToken cancellationToken)
-    {
-        var found = await layouts.FindCemeteryAsync(cemeteryId, cancellationToken).ConfigureAwait(false);
-        if (found is null)
-            throw new NotFoundException("cemetery.not_found");
-    }
+    public static PaymentProviderView Missing(string provider) => new(BillingProviders.Require(provider), false, false, null);
 }

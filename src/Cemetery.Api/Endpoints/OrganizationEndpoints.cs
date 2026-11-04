@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Dashboard;
 using Cemetery.Application.Organizations;
@@ -12,9 +13,9 @@ public static class OrganizationEndpoints
         api.MapPost("/organizations", Create).RequireAuthorization();
         api.MapGet("/organizations", List).RequireAuthorization();
         api.MapPost("/organizations/switch", Switch).RequireAuthorization();
-        api.MapPost("/organizations/invitations", Invite).RequireAuthorization("tenant");
+        api.MapPost("/organizations/invitations", Invite).RequireAuthorization(Policies.Office);
         api.MapPost("/invitations/accept", Accept).RequireAuthorization();
-        api.MapGet("/dashboard", Dashboard).RequireAuthorization("tenant");
+        api.MapGet("/dashboard", Dashboard).RequireAuthorization(Policies.Member);
         api.MapGet("/health", Health).AllowAnonymous();
         return api;
     }

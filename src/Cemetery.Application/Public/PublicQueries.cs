@@ -54,14 +54,12 @@ public sealed class ListPublicCemeteriesHandler(IPublicCatalog catalog) : IQuery
 public sealed record GetVisibility();
 
 public sealed class GetVisibilityHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOrganizationRepository organizations) : IQueryHandler<GetVisibility, VisibilityView>
 {
     public async Task<VisibilityView> Handle(GetVisibility query, CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         var organization = await organizations.FindAsync(organizationId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("organization.not_found");
         return new VisibilityView(organization.PublishesRegister, organization.HideRecentDeathsDays);

@@ -19,7 +19,7 @@ public sealed class OfficeRequestHandlerTests
         var stored = OfficeRequest.Send(tenant, author, "Please call", null, new DateOnly(2026, 10, 7));
         var requests = Substitute.For<IOfficeRequestRepository>();
         requests.ListAsync(Arg.Any<CancellationToken>()).Returns(new[] { stored });
-        var handler = new ListOfficeRequestsHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), requests);
+        var handler = new ListOfficeRequestsHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), requests);
 
         var listed = await handler.Handle(new ListOfficeRequests(), CancellationToken.None);
 
@@ -28,23 +28,11 @@ public sealed class OfficeRequestHandlerTests
     }
 
     [Fact]
-    public async Task A_grave_holder_cannot_read_the_office_list()
-    {
-        var handler = new ListOfficeRequestsHandler(User(), Tenant(Guid.CreateVersion7()), Membership(MembershipRole.GraveHolder), Substitute.For<IOfficeRequestRepository>());
-
-        var error = await Assert.ThrowsAsync<ForbiddenException>(() => handler.Handle(new ListOfficeRequests(), CancellationToken.None));
-
-        Assert.Equal("register.forbidden", error.Code);
-    }
-
-    [Fact]
     public async Task A_member_sends_a_request()
     {
         var requests = Substitute.For<IOfficeRequestRepository>();
         var handler = new SendOfficeRequestHandler(
-            User(),
-            Tenant(Guid.CreateVersion7()),
-            Membership(MembershipRole.GraveHolder),
+            Callers.For(Guid.CreateVersion7(), MembershipRole.GraveHolder),
             Substitute.For<ILayoutRepository>(),
             requests,
             Substitute.For<IUnitOfWork>(),
@@ -57,26 +45,8 @@ public sealed class OfficeRequestHandlerTests
         await requests.Received(1).AddAsync(Arg.Any<OfficeRequest>(), Arg.Any<CancellationToken>());
     }
 
-    private static ICurrentUser User()
-    {
-        var current = Substitute.For<ICurrentUser>();
-        current.UserId.Returns(Guid.CreateVersion7());
-        return current;
-    }
 
-    private static ITenantContext Tenant(Guid organizationId)
-    {
-        var tenant = Substitute.For<ITenantContext>();
-        tenant.OrganizationId.Returns(organizationId);
-        return tenant;
-    }
 
-    private static IMembershipRepository Membership(MembershipRole role)
-    {
-        var memberships = Substitute.For<IMembershipRepository>();
-        memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(role);
-        return memberships;
-    }
 
     private static TimeProvider Clock()
     {

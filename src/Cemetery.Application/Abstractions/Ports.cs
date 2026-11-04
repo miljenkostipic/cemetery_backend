@@ -23,6 +23,15 @@ public interface ICurrentUser
     string? Email { get; }
 }
 
+public interface ICallerContext
+{
+    Guid UserId { get; }
+
+    Guid OrganizationId { get; }
+
+    MembershipRole Role { get; }
+}
+
 public interface IUnitOfWork
 {
     Task SaveChangesAsync(CancellationToken cancellationToken);

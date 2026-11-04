@@ -1,3 +1,4 @@
+using Cemetery.Application;
 using Cemetery.Application.Abstractions;
 using Cemetery.Domain.Layout;
 using Cemetery.Domain.Operations;
@@ -20,9 +21,7 @@ public sealed class IssuePermitValidator : AbstractValidator<IssuePermit>
 }
 
 public sealed class IssuePermitHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IOperationsRepository store,
     IUnitOfWork unitOfWork,
@@ -30,9 +29,9 @@ public sealed class IssuePermitHandler(
 {
     public async Task<MonumentPermitView> Handle(IssuePermit command, CancellationToken cancellationToken)
     {
-        var organizationId = await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await OperationsGate.RequireCemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
-        var site = await OperationsGate.RequireSiteAsync(layouts, command.CemeteryId, command.GraveSiteId, "permit.site_invalid", cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var site = await Require.SiteAsync(layouts, command.CemeteryId, command.GraveSiteId, "permit.site_invalid", cancellationToken).ConfigureAwait(false);
         var permit = await Save(organizationId, command, cancellationToken).ConfigureAwait(false);
         return OperationsMaps.Permit(permit, site, OperationsClock.Today(clock));
     }
@@ -49,16 +48,14 @@ public sealed class IssuePermitHandler(
 public sealed record ListPermits(Guid CemeteryId);
 
 public sealed class ListPermitsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IOperationsRepository store,
     TimeProvider clock) : IQueryHandler<ListPermits, IReadOnlyList<MonumentPermitView>>
 {
     public async Task<IReadOnlyList<MonumentPermitView>> Handle(ListPermits query, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var permits = await store.ListPermitsAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var sites = OperationsIndex.ById(await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false), site => site.Id);
         var today = OperationsClock.Today(clock);

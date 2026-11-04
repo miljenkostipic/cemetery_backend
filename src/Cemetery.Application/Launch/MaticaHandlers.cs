@@ -15,16 +15,14 @@ public sealed record MaticaLinkBody(Guid DeathCertificateId);
 public sealed record ListMaticaLinks(Guid CemeteryId);
 
 public sealed class ListMaticaLinksHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IMaticaLinkRepository links) : IQueryHandler<ListMaticaLinks, IReadOnlyList<MaticaLinkView>>
 {
     public async Task<IReadOnlyList<MaticaLinkView>> Handle(ListMaticaLinks query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         _ = await layouts.FindCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("cemetery.not_found");
         var rows = await links.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
@@ -38,15 +36,13 @@ public sealed class ListMaticaLinksHandler(
 public sealed record ListCemeteryInterments(Guid CemeteryId);
 
 public sealed class ListCemeteryIntermentsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register) : IQueryHandler<ListCemeteryInterments, IReadOnlyList<IntermentView>>
 {
     public async Task<IReadOnlyList<IntermentView>> Handle(ListCemeteryInterments query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         _ = await layouts.FindCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("cemetery.not_found");
         var interments = await register.ListIntermentsByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
@@ -68,9 +64,7 @@ public sealed class LinkDeathCertificateValidator : AbstractValidator<LinkDeathC
 }
 
 public sealed class LinkDeathCertificateHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IRegisterRepository register,
     ILayoutRepository layouts,
     IMaticaLinkRepository links,
@@ -78,7 +72,7 @@ public sealed class LinkDeathCertificateHandler(
 {
     public async Task<MaticaLinkView> Handle(LinkDeathCertificate command, CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         var interment = await RequireIntermentAsync(command.IntermentId, cancellationToken).ConfigureAwait(false);
         await RejectDuplicateAsync(command, cancellationToken).ConfigureAwait(false);
         return await SaveAsync(organizationId, interment, command.DeathCertificateId, cancellationToken).ConfigureAwait(false);

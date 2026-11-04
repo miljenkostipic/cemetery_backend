@@ -24,9 +24,9 @@ public sealed class OperationsHandlerTests
         var stored = Scheduled(world);
         world.Store.ListFuneralsAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns([stored]);
         world.Store.FindFuneralAsync(stored.Id, Arg.Any<CancellationToken>()).Returns(stored);
-        var listed = await new ListFuneralsHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Register, world.Store)
+        var listed = await new ListFuneralsHandler(world.Caller, world.Layouts, world.Register, world.Store)
             .Handle(new ListFunerals(world.Cemetery.Id), CancellationToken.None);
-        var cancelled = await new CancelFuneralHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Register, world.Store, world.Unit)
+        var cancelled = await new CancelFuneralHandler(world.Caller, world.Layouts, world.Register, world.Store, world.Unit)
             .Handle(new CancelFuneral(stored.Id), CancellationToken.None);
 
         Assert.Equal("Ana Horvat", scheduled.DeceasedName);
@@ -86,22 +86,18 @@ public sealed class OperationsHandlerTests
     }
 
     [Fact]
-    public async Task A_field_worker_cannot_schedule_and_a_missing_funeral_cannot_be_cancelled()
+    public async Task A_missing_funeral_cannot_be_cancelled()
     {
         var world = new World();
-        world.Memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(MembershipRole.FieldWorker);
-        var forbidden = await Assert.ThrowsAsync<ForbiddenException>(() => Schedule(world).Handle(Command(world, "2026-06-01T10:00", "2026-06-01T11:00"), CancellationToken.None));
-        world.Memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(MembershipRole.CemeteryClerk);
         var missing = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new CancelFuneralHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Register, world.Store, world.Unit)
+            new CancelFuneralHandler(world.Caller, world.Layouts, world.Register, world.Store, world.Unit)
                 .Handle(new CancelFuneral(Guid.CreateVersion7()), CancellationToken.None));
         world.Store.ListFuneralsAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<Funeral>());
         world.Register.ListDeceasedAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<Deceased>());
         world.Layouts.ListByCemeteryAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveSite>());
-        var listed = await new ListFuneralsHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Register, world.Store)
+        var listed = await new ListFuneralsHandler(world.Caller, world.Layouts, world.Register, world.Store)
             .Handle(new ListFunerals(world.Cemetery.Id), CancellationToken.None);
 
-        Assert.Equal("register.forbidden", forbidden.Code);
         Assert.Equal("funeral.not_found", missing.Code);
         Assert.Empty(listed);
     }
@@ -118,7 +114,7 @@ public sealed class OperationsHandlerTests
         var funeral = Funeral.Schedule(world.TenantId, world.Cemetery.Id, world.Person.Id, world.Site.Id, "2026-06-01T10:00", "2026-06-01T11:00", "chapel");
         world.Store.ListFuneralsAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns([funeral]);
         var funeralClash = await Assert.ThrowsAsync<ConflictException>(() => Book(world).Handle(new BookChapel(world.Cemetery.Id, "chapel", "2026-06-01T10:30", "2026-06-01T11:30"), CancellationToken.None));
-        var listed = await new ListChapelBookingsHandler(world.User, world.Tenant, world.Memberships, world.Store)
+        var listed = await new ListChapelBookingsHandler(world.Caller, world.Store)
             .Handle(new ListChapelBookings(world.Cemetery.Id), CancellationToken.None);
 
         Assert.Equal("mortuary", booked.Place);
@@ -153,9 +149,9 @@ public sealed class OperationsHandlerTests
         world.Store.ListWorkOrdersAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns([order]);
         world.Store.ListPermitsAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns([permit]);
         world.Layouts.ListByCemeteryAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveSite>());
-        var orders = await new ListWorkOrdersHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Store)
+        var orders = await new ListWorkOrdersHandler(world.Caller, world.Layouts, world.Store)
             .Handle(new ListWorkOrders(world.Cemetery.Id), CancellationToken.None);
-        var permits = await new ListPermitsHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Store, Clock())
+        var permits = await new ListPermitsHandler(world.Caller, world.Layouts, world.Store, Clock())
             .Handle(new ListPermits(world.Cemetery.Id), CancellationToken.None);
 
         Assert.Equal("", orders[0].GraveSiteCode);
@@ -167,15 +163,14 @@ public sealed class OperationsHandlerTests
     public async Task A_field_worker_completes_today_and_can_add_a_photo_afterward()
     {
         var world = new World();
-        world.Memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(MembershipRole.FieldWorker);
         var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, world.Site.Id, "digging", new DateOnly(2026, 6, 1), "");
         world.Store.ListOpenOnAsync(new DateOnly(2026, 6, 1), Arg.Any<CancellationToken>()).Returns([order]);
         world.Store.FindWorkOrderAsync(order.Id, Arg.Any<CancellationToken>()).Returns(order);
-        var tasks = await new ListFieldTasksHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Store, Clock())
+        var tasks = await new ListFieldTasksHandler(world.Caller, world.Layouts, world.Store, Clock())
             .Handle(new ListFieldTasks(), CancellationToken.None);
-        var completed = await new CompleteWorkOrderHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+        var completed = await new CompleteWorkOrderHandler(world.Caller, world.Store, world.Unit)
             .Handle(new CompleteWorkOrder(order.Id, new DateOnly(2026, 6, 1), "done"), CancellationToken.None);
-        var photo = await new AttachWorkOrderPhotoHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+        var photo = await new AttachWorkOrderPhotoHandler(world.Caller, world.Store, world.Unit)
             .Handle(new AttachWorkOrderPhoto(order.Id, "image/jpeg", Convert.ToBase64String([0xFF, 0xD8, 0xFF])), CancellationToken.None);
 
         Assert.Equal(world.Cemetery.Name, tasks[0].CemeteryName);
@@ -186,33 +181,17 @@ public sealed class OperationsHandlerTests
     }
 
     [Fact]
-    public async Task Field_work_hides_a_task_without_a_cemetery_and_refuses_strangers()
+    public async Task Field_work_hides_a_task_without_a_cemetery()
     {
         var world = new World();
         var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, Guid.CreateVersion7(), "digging", new DateOnly(2026, 6, 1), "");
         world.Store.ListOpenOnAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns([order]);
         world.Layouts.ListCemeteriesAsync(Arg.Any<CancellationToken>()).Returns(Array.Empty<CemeteryPlace>());
-        var tasks = await new ListFieldTasksHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Store, Clock())
+        var tasks = await new ListFieldTasksHandler(world.Caller, world.Layouts, world.Store, Clock())
             .Handle(new ListFieldTasks(), CancellationToken.None);
-        world.Memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(MembershipRole.GraveHolder);
-        var forbidden = await Assert.ThrowsAsync<ForbiddenException>(() =>
-            new ListFieldTasksHandler(world.User, world.Tenant, world.Memberships, world.Layouts, world.Store, Clock())
-                .Handle(new ListFieldTasks(), CancellationToken.None));
-        world.User.UserId.Returns((Guid?)null);
-        var anonymous = await Assert.ThrowsAsync<UnauthorizedException>(() =>
-            new CompleteWorkOrderHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
-                .Handle(new CompleteWorkOrder(order.Id, new DateOnly(2026, 6, 1), ""), CancellationToken.None));
-        world.User.UserId.Returns(Guid.CreateVersion7());
-        world.Tenant.OrganizationId.Returns((Guid?)null);
-        var noTenant = await Assert.ThrowsAsync<ForbiddenException>(() =>
-            new AttachWorkOrderPhotoHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
-                .Handle(new AttachWorkOrderPhoto(order.Id, "image/jpeg", "AA=="), CancellationToken.None));
 
         Assert.Equal("", tasks[0].CemeteryName);
         Assert.Null(tasks[0].Location);
-        Assert.Equal("register.forbidden", forbidden.Code);
-        Assert.Equal("auth.required", anonymous.Code);
-        Assert.Equal("tenant.required", noTenant.Code);
     }
 
     [Fact]
@@ -220,16 +199,16 @@ public sealed class OperationsHandlerTests
     {
         var world = new World();
         var missing = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new CompleteWorkOrderHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+            new CompleteWorkOrderHandler(world.Caller, world.Store, world.Unit)
                 .Handle(new CompleteWorkOrder(Guid.CreateVersion7(), new DateOnly(2026, 6, 1), ""), CancellationToken.None));
         var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, world.Site.Id, "digging", new DateOnly(2026, 6, 1), "");
         order.Complete(new DateOnly(2026, 6, 1), "");
         world.Store.FindWorkOrderAsync(order.Id, Arg.Any<CancellationToken>()).Returns(order);
         var closed = await Assert.ThrowsAsync<DomainRuleException>(() =>
-            new CompleteWorkOrderHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+            new CompleteWorkOrderHandler(world.Caller, world.Store, world.Unit)
                 .Handle(new CompleteWorkOrder(order.Id, new DateOnly(2026, 6, 1), ""), CancellationToken.None));
         var photo = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new AttachWorkOrderPhotoHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+            new AttachWorkOrderPhotoHandler(world.Caller, world.Store, world.Unit)
                 .Handle(new AttachWorkOrderPhoto(Guid.CreateVersion7(), "image/jpeg", "AA=="), CancellationToken.None));
 
         Assert.Equal("work_order.not_found", missing.Code);
@@ -298,34 +277,34 @@ public sealed class OperationsHandlerTests
         var world = new World();
         var funeral = Scheduled(world);
         world.Store.FindFuneralAsync(funeral.Id, Arg.Any<CancellationToken>()).Returns(funeral);
-        var removedFuneral = await new RemoveFuneralHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+        var removedFuneral = await new RemoveFuneralHandler(world.Caller, world.Store, world.Unit)
             .Handle(new RemoveFuneral(funeral.Id), CancellationToken.None);
         var missingFuneral = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new RemoveFuneralHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+            new RemoveFuneralHandler(world.Caller, world.Store, world.Unit)
                 .Handle(new RemoveFuneral(Guid.CreateVersion7()), CancellationToken.None));
 
         var booking = ChapelBooking.Book(world.TenantId, world.Cemetery.Id, "chapel", "2026-06-01T10:00", "2026-06-01T11:00");
         world.Store.FindBookingAsync(booking.Id, Arg.Any<CancellationToken>()).Returns(booking);
-        var removedBooking = await new RemoveChapelBookingHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+        var removedBooking = await new RemoveChapelBookingHandler(world.Caller, world.Store, world.Unit)
             .Handle(new RemoveChapelBooking(booking.Id), CancellationToken.None);
         var missingBooking = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new RemoveChapelBookingHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+            new RemoveChapelBookingHandler(world.Caller, world.Store, world.Unit)
                 .Handle(new RemoveChapelBooking(Guid.CreateVersion7()), CancellationToken.None));
 
         var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, world.Site.Id, "digging", new DateOnly(2026, 6, 1), "");
         world.Store.FindWorkOrderAsync(order.Id, Arg.Any<CancellationToken>()).Returns(order);
-        var removedOrder = await new RemoveWorkOrderHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+        var removedOrder = await new RemoveWorkOrderHandler(world.Caller, world.Store, world.Unit)
             .Handle(new RemoveWorkOrder(order.Id), CancellationToken.None);
         var missingOrder = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new RemoveWorkOrderHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+            new RemoveWorkOrderHandler(world.Caller, world.Store, world.Unit)
                 .Handle(new RemoveWorkOrder(Guid.CreateVersion7()), CancellationToken.None));
 
         var permit = MonumentPermit.Issue(world.TenantId, world.Cemetery.Id, world.Site.Id, "Ana", new DateOnly(2026, 6, 1), new DateOnly(2026, 12, 1));
         world.Store.FindPermitAsync(permit.Id, Arg.Any<CancellationToken>()).Returns(permit);
-        var removedPermit = await new RemoveMonumentPermitHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+        var removedPermit = await new RemoveMonumentPermitHandler(world.Caller, world.Store, world.Unit)
             .Handle(new RemoveMonumentPermit(permit.Id), CancellationToken.None);
         var missingPermit = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new RemoveMonumentPermitHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
+            new RemoveMonumentPermitHandler(world.Caller, world.Store, world.Unit)
                 .Handle(new RemoveMonumentPermit(Guid.CreateVersion7()), CancellationToken.None));
 
         Assert.True(removedFuneral);
@@ -342,29 +321,17 @@ public sealed class OperationsHandlerTests
         await world.Store.Received(1).RemovePermitAsync(permit, Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task A_field_worker_cannot_remove_a_funeral()
-    {
-        var world = new World();
-        world.Memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(MembershipRole.FieldWorker);
-        var forbidden = await Assert.ThrowsAsync<ForbiddenException>(() =>
-            new RemoveFuneralHandler(world.User, world.Tenant, world.Memberships, world.Store, world.Unit)
-                .Handle(new RemoveFuneral(Guid.CreateVersion7()), CancellationToken.None));
-
-        Assert.Equal("register.forbidden", forbidden.Code);
-    }
-
     private static ScheduleFuneralHandler Schedule(World world) =>
-        new(world.User, world.Tenant, world.Memberships, world.Layouts, world.Register, world.Store, world.Webhooks, world.Unit, Clock());
+        new(world.Caller, world.Layouts, world.Register, world.Store, world.Webhooks, world.Unit, Clock());
 
     private static BookChapelHandler Book(World world) =>
-        new(world.User, world.Tenant, world.Memberships, world.Layouts, world.Store, world.Unit);
+        new(world.Caller, world.Layouts, world.Store, world.Unit);
 
     private static OpenWorkOrderHandler Open(World world) =>
-        new(world.User, world.Tenant, world.Memberships, world.Layouts, world.Store, world.Unit);
+        new(world.Caller, world.Layouts, world.Store, world.Unit);
 
     private static IssuePermitHandler Issue(World world) =>
-        new(world.User, world.Tenant, world.Memberships, world.Layouts, world.Store, world.Unit, Clock());
+        new(world.Caller, world.Layouts, world.Store, world.Unit, Clock());
 
     private static ScheduleFuneral Command(World world, string start, string end) =>
         new(world.Cemetery.Id, world.Person.Id, world.Site.Id, start, end, "chapel");
@@ -390,15 +357,10 @@ public sealed class OperationsHandlerTests
     {
         public World()
         {
+            Caller = Callers.For(TenantId, MembershipRole.CemeteryClerk);
             Cemetery = CemeteryPlace.Open(TenantId, "Pilot", true, Now);
             Person = Deceased.Record(TenantId, Cemetery.Id, "Ana", "Horvat", null, null, Now);
             Site = GraveSite.Place(TenantId, Cemetery.Id, Guid.CreateVersion7(), null, "A-1", GraveSiteKind.SingleGrave, Box());
-            User = Substitute.For<ICurrentUser>();
-            User.UserId.Returns(Guid.CreateVersion7());
-            Tenant = Substitute.For<ITenantContext>();
-            Tenant.OrganizationId.Returns(TenantId);
-            Memberships = Substitute.For<IMembershipRepository>();
-            Memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(MembershipRole.CemeteryClerk);
             Layouts = Substitute.For<ILayoutRepository>();
             Layouts.FindCemeteryAsync(Cemetery.Id, Arg.Any<CancellationToken>()).Returns(Cemetery);
             Layouts.FindGraveSiteAsync(Site.Id, Arg.Any<CancellationToken>()).Returns(Site);
@@ -426,11 +388,7 @@ public sealed class OperationsHandlerTests
 
         public GraveSite Site { get; }
 
-        public ICurrentUser User { get; }
-
-        public ITenantContext Tenant { get; }
-
-        public IMembershipRepository Memberships { get; }
+        public ICallerContext Caller { get; }
 
         public ILayoutRepository Layouts { get; }
 

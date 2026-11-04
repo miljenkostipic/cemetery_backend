@@ -65,5 +65,8 @@ Groups: R1.3 Auth + Organizations + Dashboard · R1.4 Layout · R1.5 Register ·
 
 ## Found while working
 
-- Auth rate limit is 10 requests per minute per client IP and lives in process memory. Respawn does not clear it, so a long integration run can receive 429 on register and login. Not changed in R1.1.
-- The test `InvitationInbox` replaces `IEmailSender`, so a password-reset integration test cannot read the reset link from the log. Not changed in R1.1.
+- Auth rate limit is 10 requests per minute per client IP and lives in process memory. Respawn does not clear it. The Testing environment raises the auth and public limits to 10 000 so the endpoint suite can run. Production stays at 10.
+- `InvitationInbox` now keeps password-reset tokens the same way it keeps invitation tokens, so the reset happy path can read the link.
+- `POST /organizations/switch` to an organization the caller does not belong to stays 403 `tenant.forbidden`. The walking skeleton already pins that. It is a membership refusal, not a hidden row.
+- Passkey attestation and passkey login succeed only with a real WebAuthn ceremony, so those two success lines in `PasskeyEndpoints` are not covered. The failure paths and both options endpoints are covered.
+- `dotnet ef` in this environment ships without `ef.dll`, so the empty-migration check could not be generated here. The new enums use `HasConversion<string>()` and the same max lengths, and the OpenAPI diff only adds enum annotations.

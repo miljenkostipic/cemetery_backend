@@ -1,3 +1,4 @@
+using Cemetery.Application;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Launch;
@@ -24,9 +25,7 @@ public sealed class ScheduleFuneralValidator : AbstractValidator<ScheduleFuneral
 }
 
 public sealed class ScheduleFuneralHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IOperationsRepository store,
@@ -36,10 +35,10 @@ public sealed class ScheduleFuneralHandler(
 {
     public async Task<FuneralView> Handle(ScheduleFuneral command, CancellationToken cancellationToken)
     {
-        var organizationId = await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await OperationsGate.RequireCemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
-        var person = await OperationsGate.RequirePersonAsync(register, command.CemeteryId, command.DeceasedId, cancellationToken).ConfigureAwait(false);
-        var site = await OperationsGate.RequireSiteAsync(layouts, command.CemeteryId, command.GraveSiteId, "funeral.site_invalid", cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var person = await Require.PersonAsync(register, command.CemeteryId, command.DeceasedId, cancellationToken).ConfigureAwait(false);
+        var site = await Require.SiteAsync(layouts, command.CemeteryId, command.GraveSiteId, "funeral.site_invalid", cancellationToken).ConfigureAwait(false);
         var funeral = await Save(organizationId, command, cancellationToken).ConfigureAwait(false);
         return OperationsMaps.Funeral(funeral, person, site);
     }
@@ -72,9 +71,7 @@ public sealed class CancelFuneralValidator : AbstractValidator<CancelFuneral>
 }
 
 public sealed class CancelFuneralHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IOperationsRepository store,
@@ -82,7 +79,7 @@ public sealed class CancelFuneralHandler(
 {
     public async Task<FuneralView> Handle(CancelFuneral command, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var funeral = await store.FindFuneralAsync(command.FuneralId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("funeral.not_found");
         funeral.Cancel();
@@ -101,16 +98,14 @@ public sealed class CancelFuneralHandler(
 public sealed record ListFunerals(Guid CemeteryId);
 
 public sealed class ListFuneralsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IOperationsRepository store) : IQueryHandler<ListFunerals, IReadOnlyList<FuneralView>>
 {
     public async Task<IReadOnlyList<FuneralView>> Handle(ListFunerals query, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var funerals = await store.ListFuneralsAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var people = OperationsIndex.ById(await register.ListDeceasedAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false), person => person.Id);
         var sites = OperationsIndex.ById(await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false), site => site.Id);

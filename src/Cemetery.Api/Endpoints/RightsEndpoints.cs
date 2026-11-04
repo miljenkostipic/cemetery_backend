@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Rights;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,9 +9,9 @@ public static class RightsEndpoints
 {
     public static RouteGroupBuilder MapRightsEndpoints(this RouteGroupBuilder api)
     {
-        api.MapGet("/office-requests", List).RequireAuthorization("tenant");
-        api.MapGet("/me/requests", Mine).RequireAuthorization("tenant");
-        api.MapPost("/me/requests", Send).RequireAuthorization("tenant");
+        api.MapGet("/office-requests", List).RequireAuthorization(Policies.Office);
+        api.MapGet("/me/requests", Mine).RequireAuthorization(Policies.Holder);
+        api.MapPost("/me/requests", Send).RequireAuthorization(Policies.Holder);
         return api;
     }
 

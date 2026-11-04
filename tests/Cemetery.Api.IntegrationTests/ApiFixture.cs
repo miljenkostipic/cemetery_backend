@@ -77,6 +77,10 @@ public sealed partial class ApiFixture : IAsyncLifetime
         await ResetDatabaseAsync();
     }
 
+    public string TakeInvitation(string email) => inbox.TakeInvitation(email);
+
+    public string TakeReset(string email) => inbox.TakeReset(email);
+
     public HttpClient CreateClient()
     {
         var client = Factory().CreateClient();

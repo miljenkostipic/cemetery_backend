@@ -21,9 +21,7 @@ public sealed class RecordDeceasedValidator : AbstractValidator<RecordDeceased>
 }
 
 public sealed class RecordDeceasedHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
@@ -31,7 +29,7 @@ public sealed class RecordDeceasedHandler(
 {
     public async Task<DeceasedView> Handle(RecordDeceased command, CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         _ = await layouts.FindCemeteryAsync(command.CemeteryId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("cemetery.not_found");
         var person = Deceased.Record(organizationId, command.CemeteryId, command.GivenName, command.FamilyName, command.BornOn, command.DiedOn, clock.GetUtcNow());
@@ -45,15 +43,13 @@ public sealed class RecordDeceasedHandler(
 public sealed record ListDeceased(Guid CemeteryId);
 
 public sealed class ListDeceasedHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register) : IQueryHandler<ListDeceased, IReadOnlyList<DeceasedView>>
 {
     public async Task<IReadOnlyList<DeceasedView>> Handle(ListDeceased query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var people = await register.ListDeceasedAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var interments = await register.ListIntermentsByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var sites = await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
@@ -70,15 +66,13 @@ public sealed class ListDeceasedHandler(
 public sealed record GetDeceased(Guid DeceasedId);
 
 public sealed class GetDeceasedHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register) : IQueryHandler<GetDeceased, DeceasedView>
 {
     public async Task<DeceasedView> Handle(GetDeceased query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var person = DeceasedPresence.Present(await register.FindDeceasedAsync(query.DeceasedId, cancellationToken).ConfigureAwait(false));
         var interments = await register.ListIntermentsByDeceasedAsync(person.Id, cancellationToken).ConfigureAwait(false);
         var buried = RegisterMaps.Occupying(person.Id, interments);
@@ -101,16 +95,14 @@ public sealed class CorrectDeceasedValidator : AbstractValidator<CorrectDeceased
 }
 
 public sealed class CorrectDeceasedHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<CorrectDeceased, DeceasedView>
 {
     public async Task<DeceasedView> Handle(CorrectDeceased command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var person = DeceasedPresence.Present(await register.FindDeceasedAsync(command.DeceasedId, cancellationToken).ConfigureAwait(false));
         await RequireBurialOrderAsync(person, command.DiedOn, cancellationToken).ConfigureAwait(false);
         var revision = person.Correct(command.GivenName, command.FamilyName, command.BornOn, command.DiedOn, command.Reason, clock.GetUtcNow());
@@ -138,16 +130,14 @@ public sealed class RemoveDeceasedValidator : AbstractValidator<RemoveDeceased>
 }
 
 public sealed class RemoveDeceasedHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<RemoveDeceased, bool>
 {
     public async Task<bool> Handle(RemoveDeceased command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var person = DeceasedPresence.Present(await register.FindDeceasedAsync(command.DeceasedId, cancellationToken).ConfigureAwait(false));
         await ReleaseAsync(person, cancellationToken).ConfigureAwait(false);
         person.Remove(clock.GetUtcNow());
@@ -198,9 +188,7 @@ public sealed class SetRestPeriodValidator : AbstractValidator<SetRestPeriod>
 }
 
 public sealed class SetRestPeriodHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
@@ -208,7 +196,7 @@ public sealed class SetRestPeriodHandler(
 {
     public async Task<int> Handle(SetRestPeriod command, CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         var cemetery = await layouts.FindCemeteryAsync(command.CemeteryId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("cemetery.not_found");
         cemetery.SetRestPeriod(command.Years);

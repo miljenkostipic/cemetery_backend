@@ -11,14 +11,12 @@ public sealed record OfficeRequestView(Guid Id, string Message, DateOnly Created
 public sealed record ListOfficeRequests;
 
 public sealed class ListOfficeRequestsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOfficeRequestRepository requests) : IQueryHandler<ListOfficeRequests, IReadOnlyList<OfficeRequestView>>
 {
     public async Task<IReadOnlyList<OfficeRequestView>> Handle(ListOfficeRequests query, CancellationToken cancellationToken)
     {
-        await OfficeAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var rows = await requests.ListAsync(cancellationToken).ConfigureAwait(false);
         return rows.Select(OfficeMaps.View).ToArray();
     }
@@ -27,14 +25,12 @@ public sealed class ListOfficeRequestsHandler(
 public sealed record ListMyOfficeRequests;
 
 public sealed class ListMyOfficeRequestsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOfficeRequestRepository requests) : IQueryHandler<ListMyOfficeRequests, IReadOnlyList<OfficeRequestView>>
 {
     public async Task<IReadOnlyList<OfficeRequestView>> Handle(ListMyOfficeRequests query, CancellationToken cancellationToken)
     {
-        var userId = await OfficeAccess.RequireMemberAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var userId = caller.UserId;
         var rows = await requests.ListForAuthorAsync(userId, cancellationToken).ConfigureAwait(false);
         return rows.Select(OfficeMaps.View).ToArray();
     }
@@ -54,9 +50,7 @@ public sealed class SendOfficeRequestValidator : AbstractValidator<SendOfficeReq
 }
 
 public sealed class SendOfficeRequestHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IOfficeRequestRepository requests,
     IUnitOfWork unitOfWork,
@@ -64,8 +58,8 @@ public sealed class SendOfficeRequestHandler(
 {
     public async Task<OfficeRequestView> Handle(SendOfficeRequest command, CancellationToken cancellationToken)
     {
-        var userId = await OfficeAccess.RequireMemberAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        var organizationId = tenant.OrganizationId ?? throw new ForbiddenException("tenant.required");
+        var userId = caller.UserId;
+        var organizationId = caller.OrganizationId;
         if (command.GraveSiteId is Guid graveSiteId)
         {
             var site = await layouts.FindGraveSiteAsync(graveSiteId, cancellationToken).ConfigureAwait(false);
@@ -84,34 +78,4 @@ internal static class OfficeMaps
 {
     public static OfficeRequestView View(OfficeRequest request) =>
         new(request.Id, request.Message, request.CreatedOn, request.GraveSiteId);
-}
-
-internal static class OfficeAccess
-{
-    public static async Task<Guid> RequireMemberAsync(
-        ICurrentUser current,
-        ITenantContext tenant,
-        IMembershipRepository memberships,
-        CancellationToken cancellationToken)
-    {
-        var userId = current.UserId ?? throw new UnauthorizedException("auth.required");
-        if (tenant.OrganizationId is null)
-            throw new ForbiddenException("tenant.required");
-        var role = await memberships.RoleInCurrentTenantAsync(userId, cancellationToken).ConfigureAwait(false);
-        if (role is null)
-            throw new ForbiddenException("tenant.forbidden");
-        return userId;
-    }
-
-    public static async Task RequireClerkAsync(
-        ICurrentUser current,
-        ITenantContext tenant,
-        IMembershipRepository memberships,
-        CancellationToken cancellationToken)
-    {
-        var userId = await RequireMemberAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        var role = await memberships.RoleInCurrentTenantAsync(userId, cancellationToken).ConfigureAwait(false);
-        if (role is not MembershipRole.OrganizationAdmin and not MembershipRole.CemeteryClerk)
-            throw new ForbiddenException("register.forbidden");
-    }
 }

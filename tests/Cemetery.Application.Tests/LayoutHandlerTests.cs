@@ -24,16 +24,6 @@ public sealed class LayoutHandlerTests
     }
 
     [Fact]
-    public async Task A_field_worker_cannot_map()
-    {
-        var handler = Handler(MembershipRole.FieldWorker, Substitute.For<ILayoutRepository>());
-
-        var error = await Assert.ThrowsAsync<ForbiddenException>(() => handler.Handle(new OpenCemetery("Pilot", false), CancellationToken.None));
-
-        Assert.Equal("layout.forbidden", error.Code);
-    }
-
-    [Fact]
     public async Task Generating_a_grid_gives_every_site_an_id_type_and_geometry()
     {
         var tenant = Guid.CreateVersion7();
@@ -44,7 +34,7 @@ public sealed class LayoutHandlerTests
         layouts.ListOpenInSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveSite>());
         layouts.NextSequenceAsync(cemeteryId, Arg.Any<CancellationToken>()).Returns(1);
         layouts.CountRowsAsync(section.Id, Arg.Any<CancellationToken>()).Returns(0);
-        var handler = new GenerateGraveSitesHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), layouts, Substitute.For<IUnitOfWork>());
+        var handler = new GenerateGraveSitesHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), layouts, Substitute.For<IUnitOfWork>());
 
         var sites = await handler.Handle(new GenerateGraveSites(section.Id, "single", 1, 2, 16, 45, 2, 1, 0.2, 0), CancellationToken.None);
 
@@ -60,14 +50,8 @@ public sealed class LayoutHandlerTests
     }
 
     private static OpenCemeteryHandler Handler(MembershipRole role, ILayoutRepository layouts) =>
-        new(User(), Tenant(Guid.CreateVersion7()), Membership(role), layouts, Substitute.For<IUnitOfWork>(), TimeProvider.System);
+        new(Callers.For(Guid.CreateVersion7(), role), layouts, Substitute.For<IUnitOfWork>(), TimeProvider.System);
 
-    private static ICurrentUser User()
-    {
-        var current = Substitute.For<ICurrentUser>();
-        current.UserId.Returns(Guid.CreateVersion7());
-        return current;
-    }
 
     [Fact]
     public async Task A_clerk_removes_a_section()
@@ -78,7 +62,7 @@ public sealed class LayoutHandlerTests
         layouts.FindSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(section);
         layouts.SectionHasClosedSiteAsync(section.Id, Arg.Any<CancellationToken>()).Returns(false);
         var unitOfWork = Substitute.For<IUnitOfWork>();
-        var handler = new RemoveSectionHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, unitOfWork);
+        var handler = new RemoveSectionHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, unitOfWork);
 
         var removed = await handler.Handle(new RemoveSection(section.Id), CancellationToken.None);
 
@@ -95,7 +79,7 @@ public sealed class LayoutHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(section);
         layouts.SectionHasClosedSiteAsync(section.Id, Arg.Any<CancellationToken>()).Returns(true);
-        var handler = new RemoveSectionHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
+        var handler = new RemoveSectionHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
 
         var error = await Assert.ThrowsAsync<ConflictException>(() => handler.Handle(new RemoveSection(section.Id), CancellationToken.None));
 
@@ -112,7 +96,7 @@ public sealed class LayoutHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindGraveSiteAsync(site.Id, Arg.Any<CancellationToken>()).Returns(site);
         layouts.ListByCemeteryAsync(section.CemeteryId, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveSite>());
-        var handler = new ReopenGraveSiteHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
+        var handler = new ReopenGraveSiteHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
 
         var reopened = await handler.Handle(new ReopenGraveSite(site.Id), CancellationToken.None);
 
@@ -129,7 +113,7 @@ public sealed class LayoutHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindGraveSiteAsync(original.Id, Arg.Any<CancellationToken>()).Returns(original);
         layouts.ListByCemeteryAsync(section.CemeteryId, Arg.Any<CancellationToken>()).Returns(new[] { left, right });
-        var handler = new ReopenGraveSiteHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
+        var handler = new ReopenGraveSiteHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
 
         var restored = await handler.Handle(new ReopenGraveSite(original.Id), CancellationToken.None);
 
@@ -151,7 +135,7 @@ public sealed class LayoutHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindGraveSiteAsync(original.Id, Arg.Any<CancellationToken>()).Returns(original);
         layouts.ListByCemeteryAsync(section.CemeteryId, Arg.Any<CancellationToken>()).Returns(new[] { left, right, neighbour });
-        var handler = new ReopenGraveSiteHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
+        var handler = new ReopenGraveSiteHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
 
         var restored = await handler.Handle(new ReopenGraveSite(original.Id), CancellationToken.None);
 
@@ -172,7 +156,7 @@ public sealed class LayoutHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindGraveSiteAsync(site.Id, Arg.Any<CancellationToken>()).Returns(site);
         layouts.ListByCemeteryAsync(section.CemeteryId, Arg.Any<CancellationToken>()).Returns(new[] { neighbour });
-        var handler = new ReopenGraveSiteHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
+        var handler = new ReopenGraveSiteHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
 
         var error = await Assert.ThrowsAsync<ConflictException>(() => handler.Handle(new ReopenGraveSite(site.Id), CancellationToken.None));
 
@@ -190,7 +174,7 @@ public sealed class LayoutHandlerTests
         layouts.FindGraveSiteAsync(original.Id, Arg.Any<CancellationToken>()).Returns(original);
         layouts.FindGraveSiteAsync(left.Id, Arg.Any<CancellationToken>()).Returns(left);
         layouts.FindGraveSiteAsync(right.Id, Arg.Any<CancellationToken>()).Returns(right);
-        var handler = new UndoGraveSiteSplitHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
+        var handler = new UndoGraveSiteSplitHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
 
         var restored = await handler.Handle(new UndoGraveSiteSplit(original.Id, left.Id, right.Id), CancellationToken.None);
 
@@ -240,17 +224,5 @@ public sealed class LayoutHandlerTests
             new GeoPoint(16.001, 45),
         ]);
 
-    private static ITenantContext Tenant(Guid organizationId)
-    {
-        var tenant = Substitute.For<ITenantContext>();
-        tenant.OrganizationId.Returns(organizationId);
-        return tenant;
-    }
 
-    private static IMembershipRepository Membership(MembershipRole role)
-    {
-        var memberships = Substitute.For<IMembershipRepository>();
-        memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(role);
-        return memberships;
-    }
 }
