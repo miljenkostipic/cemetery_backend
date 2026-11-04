@@ -20,10 +20,17 @@ internal static class ApiAssert
         Assert.Equal(status, response.StatusCode);
         using var document = JsonDocument.Parse(body);
         var root = document.RootElement;
-        var actual = root.TryGetProperty("errorCode", out var errorCode)
-            ? errorCode.GetString()
-            : root.GetProperty("errors")[0].GetString();
-        Assert.Equal(code, actual);
+        var errorCode = root.TryGetProperty("errorCode", out var top) ? top.GetString() : null;
+        var errors = root.TryGetProperty("errors", out var list) && list.ValueKind == JsonValueKind.Array
+            ? list.EnumerateArray().Select(error => error.GetString()).ToList()
+            : [];
+
+        // A validation failure is always errorCode "validation.failed" with the specific codes in
+        // errors; any other problem carries its own errorCode.
+        if (errorCode == "validation.failed" && code != errorCode)
+            Assert.Contains(code, errors);
+        else
+            Assert.Equal(code, errorCode ?? errors.FirstOrDefault());
     }
 
     public static IEnumerable<Guid> Ids(JsonElement list)
@@ -69,18 +76,8 @@ internal sealed class OfficeWorld
         var other = await api.SignedInClientAsync(MembershipRole.CemeteryClerk, label + "b", cancellationToken);
         var cemeteryId = await PostId(clerk, "/api/v1/cemeteries", new { name = "Pilot", schematic = true }, cancellationToken);
         var sectionId = await PostId(clerk, $"/api/v1/cemeteries/{cemeteryId}/sections", new { name = "Main", code = "S1" }, cancellationToken);
-        var sites = await Post(clerk, $"/api/v1/cemeteries/{cemeteryId}/plan", new
-        {
-            kind = "single",
-            rows = 1,
-            columns = 2,
-            originLongitude = 15.98,
-            originLatitude = 45.81,
-            widthMeters = 1.0,
-            depthMeters = 2.0,
-            gapMeters = 0.3,
-            rotationDegrees = 0.0,
-        }, cancellationToken);
+        // Grave sites are generated per section; /cemeteries/{id}/plan sets the plan image.
+        var sites = await Post(clerk, $"/api/v1/sections/{sectionId}/grave-sites", Grid(2), cancellationToken);
         var deceasedId = await PostId(clerk, $"/api/v1/cemeteries/{cemeteryId}/deceased", new
         {
             givenName = "Ana",

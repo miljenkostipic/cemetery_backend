@@ -11,6 +11,7 @@ public sealed class CemeteryDbContextFactory : IDesignTimeDbContextFactory<Cemet
     public CemeteryDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<CemeteryDbContext>()
+            .UseApplicationServiceProvider(DatabaseInitializer.IdentitySchema)
             .UseNpgsql(
                 "Host=localhost;Database=cemetery;Username=postgres;Password=postgres",
                 DatabaseInitializer.Configure)

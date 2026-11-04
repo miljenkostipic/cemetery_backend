@@ -1,6 +1,8 @@
 using Cemetery.Infrastructure.Persistence;
 using Cemetery.Infrastructure.Tenancy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 
@@ -21,8 +23,20 @@ public static class DatabaseInitializer
     internal static void Configure(NpgsqlDbContextOptionsBuilder npgsql) =>
         npgsql.UseNetTopologySuite().MigrationsHistoryTable("__ef_migrations", "cemetery");
 
+    /// <summary>
+    /// The Identity schema version for contexts built outside the app's services: the startup
+    /// migrator and the design-time factory. Identity reads it from IdentityOptions in the
+    /// application services; without them it models version 1, which has no AspNetUserPasskeys,
+    /// while the app runs version 3 (AddIdentityCore). Both must see the same model, or migrations
+    /// miss tables and MigrateAsync refuses a model that differs from the snapshot.
+    /// </summary>
+    internal static readonly IServiceProvider IdentitySchema = new ServiceCollection()
+        .Configure<IdentityOptions>(options => options.Stores.SchemaVersion = IdentitySchemaVersions.Version3)
+        .BuildServiceProvider();
+
     internal static DbContextOptions<CemeteryDbContext> CreateOptions(string ownerConnection) =>
         new DbContextOptionsBuilder<CemeteryDbContext>()
+            .UseApplicationServiceProvider(IdentitySchema)
             .UseNpgsql(ownerConnection, Configure)
             .UseSnakeCaseNamingConvention()
             .Options;
