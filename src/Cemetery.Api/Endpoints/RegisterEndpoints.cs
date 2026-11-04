@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Register;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,23 +9,23 @@ public static class RegisterEndpoints
 {
     public static RouteGroupBuilder MapRegisterEndpoints(this RouteGroupBuilder api)
     {
-        var cemeteries = api.MapGroup("/cemeteries").RequireAuthorization("tenant");
+        var cemeteries = api.MapGroup("/cemeteries").RequireAuthorization(Policies.Office);
         cemeteries.MapPost("/{cemeteryId}/deceased", RecordDeceased);
         cemeteries.MapGet("/{cemeteryId}/deceased", ListDeceased);
         cemeteries.MapPut("/{cemeteryId}/rest-period", RestPeriod);
         cemeteries.MapGet("/{cemeteryId}/positions", Positions);
 
-        var people = api.MapGroup("/deceased").RequireAuthorization("tenant");
+        var people = api.MapGroup("/deceased").RequireAuthorization(Policies.Office);
         people.MapGet("/{deceasedId}", GetDeceased);
         people.MapPost("/{deceasedId}/corrections", Correct);
         people.MapDelete("/{deceasedId}", Remove);
 
-        api.MapPost("/interments", RecordInterment).RequireAuthorization("tenant");
-        var interments = api.MapGroup("/interments").RequireAuthorization("tenant");
+        api.MapPost("/interments", RecordInterment).RequireAuthorization(Policies.Office);
+        var interments = api.MapGroup("/interments").RequireAuthorization(Policies.Office);
         interments.MapPost("/{intermentId}/exhumations", Exhume);
         interments.MapPost("/{intermentId}/transfers", Transfer);
 
-        api.MapGet("/grave-sites/{graveSiteId}/interments", SiteInterments).RequireAuthorization("tenant");
+        api.MapGet("/grave-sites/{graveSiteId}/interments", SiteInterments).RequireAuthorization(Policies.Office);
         return api;
     }
 

@@ -1,3 +1,4 @@
+using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Launch;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,7 +9,7 @@ public static class ReportsEndpoints
 {
     public static RouteGroupBuilder MapReportsEndpoints(this RouteGroupBuilder api)
     {
-        api.MapGet("/cemeteries/{cemeteryId}/reports", GetReport).RequireAuthorization("tenant");
+        api.MapGet("/cemeteries/{cemeteryId}/reports", GetReport).RequireAuthorization(Policies.Office);
         return api;
     }
 

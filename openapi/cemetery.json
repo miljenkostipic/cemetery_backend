@@ -3061,9 +3061,16 @@
             "format": "date"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/ChargeStatus"
           }
         }
+      },
+      "BillingProvider": {
+        "enum": [
+          "monri",
+          "paypal",
+          "payrexx"
+        ]
       },
       "BillingReasonBody": {
         "required": [
@@ -3196,6 +3203,13 @@
           }
         }
       },
+      "ChargeStatus": {
+        "enum": [
+          "open",
+          "reminded",
+          "paid"
+        ]
+      },
       "ChargeView": {
         "required": [
           "id",
@@ -3233,7 +3247,7 @@
             "type": "string"
           },
           "kind": {
-            "type": "string"
+            "$ref": "#/components/schemas/FeeKind"
           },
           "description": {
             "type": "string"
@@ -3245,7 +3259,7 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/ChargeStatus"
           },
           "dueOn": {
             "type": "string",
@@ -3540,6 +3554,12 @@
           }
         }
       },
+      "FeeKind": {
+        "enum": [
+          "annual",
+          "service"
+        ]
+      },
       "FeeScheduleBody": {
         "required": [
           "kind",
@@ -3583,7 +3603,7 @@
             "format": "uuid"
           },
           "kind": {
-            "type": "string"
+            "$ref": "#/components/schemas/FeeKind"
           },
           "name": {
             "type": "string"
@@ -3804,6 +3824,11 @@
           }
         }
       },
+      "GdprExportStatus": {
+        "enum": [
+          "requested"
+        ]
+      },
       "GdprExportView": {
         "required": [
           "id",
@@ -3821,7 +3846,7 @@
             "format": "date-time"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/GdprExportStatus"
           }
         }
       },
@@ -4187,6 +4212,12 @@
             "type": "string"
           }
         }
+      },
+      "ManualMethod": {
+        "enum": [
+          "cash",
+          "bank"
+        ]
       },
       "ManualPaymentBody": {
         "required": [
@@ -4573,7 +4604,7 @@
         "type": "object",
         "properties": {
           "provider": {
-            "type": "string"
+            "$ref": "#/components/schemas/BillingProvider"
           },
           "enabled": {
             "type": "boolean"
@@ -4588,6 +4619,12 @@
             ]
           }
         }
+      },
+      "PaymentStatus": {
+        "enum": [
+          "succeeded",
+          "voided"
+        ]
       },
       "PaymentView": {
         "required": [
@@ -4612,7 +4649,7 @@
             "format": "uuid"
           },
           "method": {
-            "type": "string"
+            "$ref": "#/components/schemas/ManualMethod"
           },
           "amount": {
             "type": "string"
@@ -4621,7 +4658,7 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/PaymentStatus"
           },
           "paidOn": {
             "type": [
@@ -5023,7 +5060,7 @@
             "format": "date"
           },
           "method": {
-            "type": "string"
+            "$ref": "#/components/schemas/ManualMethod"
           },
           "description": {
             "type": "string"

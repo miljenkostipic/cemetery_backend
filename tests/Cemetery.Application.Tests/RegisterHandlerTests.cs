@@ -22,7 +22,7 @@ public sealed class RegisterHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(cemetery);
         var register = Substitute.For<IRegisterRepository>();
-        var handler = new RecordDeceasedHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, register, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new RecordDeceasedHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, register, Substitute.For<IUnitOfWork>(), Clock());
 
         var created = await handler.Handle(new RecordDeceased(cemetery.Id, "Ana", "Horvat", null, new DateOnly(2020, 3, 4)), CancellationToken.None);
 
@@ -31,16 +31,6 @@ public sealed class RegisterHandlerTests
         Assert.Null(created.IntermentId);
         await register.Received(1).AddDeceasedAsync(Arg.Any<Deceased>(), Arg.Any<CancellationToken>());
         await register.Received(1).AddAuditAsync(Arg.Is<AuditEntry>(entry => entry.Action == AuditActions.DeceasedRecorded), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task A_field_worker_cannot_keep_the_register()
-    {
-        var handler = new RecordDeceasedHandler(User(), Tenant(Guid.CreateVersion7()), Membership(MembershipRole.FieldWorker), Substitute.For<ILayoutRepository>(), Substitute.For<IRegisterRepository>(), Substitute.For<IUnitOfWork>(), Clock());
-
-        var error = await Assert.ThrowsAsync<ForbiddenException>(() => handler.Handle(new RecordDeceased(Guid.CreateVersion7(), "Ana", "Horvat", null, null), CancellationToken.None));
-
-        Assert.Equal("register.forbidden", error.Code);
     }
 
     [Fact]
@@ -59,7 +49,7 @@ public sealed class RegisterHandlerTests
         register.ListIntermentsByDeceasedAsync(person.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<Interment>());
         var webhooks = Substitute.For<IWebhookRepository>();
         webhooks.EnqueueAsync(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-        var handler = new RecordIntermentHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), layouts, register, webhooks, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new RecordIntermentHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), layouts, register, webhooks, Substitute.For<IUnitOfWork>(), Clock());
 
         var buried = await handler.Handle(new RecordInterment(person.Id, site.Id, 1, "coffin", new DateOnly(2020, 4, 1)), CancellationToken.None);
 
@@ -81,7 +71,7 @@ public sealed class RegisterHandlerTests
         layouts.ListByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { site });
         var register = Substitute.For<IRegisterRepository>();
         register.ListIntermentsByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { buried });
-        var handler = new ListFreePositionsHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, register, Clock());
+        var handler = new ListFreePositionsHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, register, Clock());
 
         var open = await handler.Handle(new ListFreePositions(cemetery.Id, site.Id), CancellationToken.None);
 
@@ -103,7 +93,7 @@ public sealed class RegisterHandlerTests
         layouts.ListByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { site });
         var register = Substitute.For<IRegisterRepository>();
         register.ListIntermentsByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { buried });
-        var handler = new ListGraveSitesHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, register, Clock());
+        var handler = new ListGraveSitesHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, register, Clock());
 
         var sites = await handler.Handle(new ListGraveSites(cemetery.Id), CancellationToken.None);
 
@@ -121,7 +111,7 @@ public sealed class RegisterHandlerTests
         var register = Substitute.For<IRegisterRepository>();
         register.FindDeceasedAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
         register.ListIntermentsByDeceasedAsync(person.Id, Arg.Any<CancellationToken>()).Returns(new[] { buried });
-        var handler = new RemoveDeceasedHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), register, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new RemoveDeceasedHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), register, Substitute.For<IUnitOfWork>(), Clock());
 
         Assert.True(await handler.Handle(new RemoveDeceased(person.Id), CancellationToken.None));
 
@@ -136,33 +126,15 @@ public sealed class RegisterHandlerTests
     {
         var register = Substitute.For<IRegisterRepository>();
         register.FindDeceasedAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Deceased?)null);
-        var handler = new CorrectDeceasedHandler(User(), Tenant(Guid.CreateVersion7()), Membership(MembershipRole.CemeteryClerk), register, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new CorrectDeceasedHandler(Callers.For(Guid.CreateVersion7(), MembershipRole.CemeteryClerk), register, Substitute.For<IUnitOfWork>(), Clock());
 
         var error = await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new CorrectDeceased(Guid.CreateVersion7(), "Ana", "Kovač", null, null, "Spelling"), CancellationToken.None));
 
         Assert.Equal("deceased.not_found", error.Code);
     }
 
-    private static ICurrentUser User()
-    {
-        var current = Substitute.For<ICurrentUser>();
-        current.UserId.Returns(Guid.CreateVersion7());
-        return current;
-    }
 
-    private static ITenantContext Tenant(Guid organizationId)
-    {
-        var tenant = Substitute.For<ITenantContext>();
-        tenant.OrganizationId.Returns(organizationId);
-        return tenant;
-    }
 
-    private static IMembershipRepository Membership(MembershipRole role)
-    {
-        var memberships = Substitute.For<IMembershipRepository>();
-        memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(role);
-        return memberships;
-    }
 
     private static TimeProvider Clock()
     {

@@ -18,15 +18,13 @@ public sealed class AddSectionValidator : AbstractValidator<AddSection>
 }
 
 public sealed class AddSectionHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<AddSection, SectionView>
 {
     public async Task<SectionView> Handle(AddSection command, CancellationToken cancellationToken)
     {
-        var organizationId = await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         _ = await layouts.FindCemeteryAsync(command.CemeteryId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("cemetery.not_found");
         var code = command.Code.Trim().ToUpperInvariant();
@@ -51,15 +49,13 @@ public sealed class RemoveSectionValidator : AbstractValidator<RemoveSection>
 }
 
 public sealed class RemoveSectionHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<RemoveSection, bool>
 {
     public async Task<bool> Handle(RemoveSection command, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var section = await layouts.FindSectionAsync(command.SectionId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("section.not_found");
         if (await layouts.SectionHasClosedSiteAsync(section.Id, cancellationToken).ConfigureAwait(false))
@@ -73,14 +69,12 @@ public sealed class RemoveSectionHandler(
 public sealed record ListSections(Guid CemeteryId);
 
 public sealed class ListSectionsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts) : IQueryHandler<ListSections, IReadOnlyList<SectionView>>
 {
     public async Task<IReadOnlyList<SectionView>> Handle(ListSections query, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var sections = await layouts.ListSectionsAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         return sections.Select(LayoutMaps.ToView).ToArray();
     }
@@ -97,15 +91,13 @@ public sealed class ReplaceSectionOutlineValidator : AbstractValidator<ReplaceSe
 }
 
 public sealed class ReplaceSectionOutlineHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<ReplaceSectionOutline, SectionView>
 {
     public async Task<SectionView> Handle(ReplaceSectionOutline command, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var section = await layouts.FindSectionAsync(command.SectionId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("section.not_found");
         var outline = LayoutMaps.Polygon(command.Outline) ?? throw new ValidationFailedException(["geometry.ring_invalid"]);
@@ -126,15 +118,13 @@ public sealed class AddGraveRowValidator : AbstractValidator<AddGraveRow>
 }
 
 public sealed class AddGraveRowHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<AddGraveRow, GraveRowView>
 {
     public async Task<GraveRowView> Handle(AddGraveRow command, CancellationToken cancellationToken)
     {
-        var organizationId = await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         _ = await layouts.FindSectionAsync(command.SectionId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("section.not_found");
         var row = GraveRow.Add(organizationId, command.SectionId, command.Label);
@@ -147,14 +137,12 @@ public sealed class AddGraveRowHandler(
 public sealed record ListGraveRows(Guid SectionId);
 
 public sealed class ListGraveRowsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts) : IQueryHandler<ListGraveRows, IReadOnlyList<GraveRowView>>
 {
     public async Task<IReadOnlyList<GraveRowView>> Handle(ListGraveRows query, CancellationToken cancellationToken)
     {
-        await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var rows = await layouts.ListRowsAsync(query.SectionId, cancellationToken).ConfigureAwait(false);
         return rows.Select(LayoutMaps.ToView).ToArray();
     }

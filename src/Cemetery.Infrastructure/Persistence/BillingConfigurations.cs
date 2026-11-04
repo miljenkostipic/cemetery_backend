@@ -21,7 +21,7 @@ public sealed class FeeScheduleConfiguration : IEntityTypeConfiguration<FeeSched
 
     private static void Columns(EntityTypeBuilder<FeeSchedule> builder)
     {
-        builder.Property(entity => entity.Kind).HasMaxLength(FeeKinds.MaxLength);
+        builder.Property(entity => entity.Kind).HasConversion<string>(new SnakeCaseEnumConverter<FeeKind>()).HasMaxLength(FeeKinds.MaxLength);
         builder.Property(entity => entity.Name).HasMaxLength(FeeName.MaxLength);
         builder.Property(entity => entity.Amount).HasPrecision(FeeAmount.Precision, FeeAmount.Scale);
         builder.Property(entity => entity.Currency).HasMaxLength(FeeCurrencies.MaxLength);
@@ -46,11 +46,11 @@ public sealed class ChargeConfiguration : IEntityTypeConfiguration<Charge>
     {
         builder.Property(entity => entity.GraveSiteCode).HasMaxLength(GraveSite.CodeMaxLength);
         builder.Property(entity => entity.HolderName).HasMaxLength(Charge.HolderMaxLength);
-        builder.Property(entity => entity.Kind).HasMaxLength(FeeKinds.MaxLength);
+        builder.Property(entity => entity.Kind).HasConversion<string>(new SnakeCaseEnumConverter<FeeKind>()).HasMaxLength(FeeKinds.MaxLength);
         builder.Property(entity => entity.Description).HasMaxLength(FeeName.MaxLength);
         builder.Property(entity => entity.Amount).HasPrecision(FeeAmount.Precision, FeeAmount.Scale);
         builder.Property(entity => entity.Currency).HasMaxLength(FeeCurrencies.MaxLength);
-        builder.Property(entity => entity.Status).HasMaxLength(ChargeStatuses.MaxLength);
+        builder.Property(entity => entity.Status).HasConversion<string>(new SnakeCaseEnumConverter<ChargeStatus>()).HasMaxLength(ChargeStatuses.MaxLength);
     }
 
     private static void Relate(EntityTypeBuilder<Charge> builder)
@@ -70,7 +70,7 @@ public sealed class MerchantAccountConfiguration : IEntityTypeConfiguration<Merc
     {
         builder.ToTable("merchant_accounts");
         builder.HasKey(entity => entity.Id);
-        builder.Property(entity => entity.Provider).HasMaxLength(BillingProviders.MaxLength);
+        builder.Property(entity => entity.Provider).HasConversion<string>(new SnakeCaseEnumConverter<BillingProvider>()).HasMaxLength(BillingProviders.MaxLength);
         builder.Property(entity => entity.MerchantId).HasMaxLength(MerchantCode.MaxLength);
         builder.Property(entity => entity.Secret).HasMaxLength(ProviderSecret.MaxLength);
         builder.HasIndex(entity => new { entity.TenantId, entity.Provider }).IsUnique().HasDatabaseName("merchant_accounts_provider_key");
@@ -92,10 +92,10 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 
     private static void Columns(EntityTypeBuilder<Payment> builder)
     {
-        builder.Property(entity => entity.Method).HasMaxLength(ManualMethods.MaxLength);
+        builder.Property(entity => entity.Method).HasConversion<string>(new SnakeCaseEnumConverter<ManualMethod>()).HasMaxLength(ManualMethods.MaxLength);
         builder.Property(entity => entity.Amount).HasPrecision(FeeAmount.Precision, FeeAmount.Scale);
         builder.Property(entity => entity.Currency).HasMaxLength(FeeCurrencies.MaxLength);
-        builder.Property(entity => entity.Status).HasMaxLength(PaymentStatuses.MaxLength);
+        builder.Property(entity => entity.Status).HasConversion<string>(new SnakeCaseEnumConverter<PaymentStatus>()).HasMaxLength(PaymentStatuses.MaxLength);
         builder.Property(entity => entity.Reference).HasMaxLength(PaymentReference.MaxLength);
         builder.Property(entity => entity.ReceiptNumber).HasMaxLength(Payment.ReceiptMaxLength);
         builder.Property(entity => entity.Description).HasMaxLength(Payment.DescriptionMaxLength);

@@ -8,16 +8,14 @@ namespace Cemetery.Application.Operations;
 public sealed record ListFieldTasks;
 
 public sealed class ListFieldTasksHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IOperationsRepository store,
     TimeProvider clock) : IQueryHandler<ListFieldTasks, IReadOnlyList<FieldTaskView>>
 {
     public async Task<IReadOnlyList<FieldTaskView>> Handle(ListFieldTasks query, CancellationToken cancellationToken)
     {
-        _ = await OperationsAccess.RequireFieldAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var orders = await store.ListOpenOnAsync(OperationsClock.Today(clock), cancellationToken).ConfigureAwait(false);
         var cemeteries = OperationsIndex.ById(await layouts.ListCemeteriesAsync(cancellationToken).ConfigureAwait(false), cemetery => cemetery.Id);
         var sites = await Sites(cemeteries.Values, cancellationToken).ConfigureAwait(false);

@@ -8,21 +8,19 @@ namespace Cemetery.Application.Billing;
 public sealed record ListPaymentProviders;
 
 public sealed class ListPaymentProvidersHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IBillingRepository billing) : IQueryHandler<ListPaymentProviders, IReadOnlyList<PaymentProviderView>>
 {
     public async Task<IReadOnlyList<PaymentProviderView>> Handle(ListPaymentProviders query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var saved = await billing.ListProvidersAsync(cancellationToken).ConfigureAwait(false);
         return BillingProviders.All.Select(name => Map(name, saved)).ToArray();
     }
 
     private static PaymentProviderView Map(string name, IReadOnlyList<MerchantAccount> saved)
     {
-        var account = saved.FirstOrDefault(item => item.Provider == name);
+        var account = saved.FirstOrDefault(item => item.Provider == BillingProviders.Require(name));
         if (account is null)
             return BillingMaps.Missing(name);
 
@@ -43,15 +41,13 @@ public sealed class SavePaymentProviderValidator : AbstractValidator<SavePayment
 }
 
 public sealed class SavePaymentProviderHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IBillingRepository billing,
     IUnitOfWork unitOfWork) : ICommandHandler<SavePaymentProvider, PaymentProviderView>
 {
     public async Task<PaymentProviderView> Handle(SavePaymentProvider command, CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         var account = await billing.FindProviderAsync(command.Provider, cancellationToken).ConfigureAwait(false);
         var saved = await StoreAsync(organizationId, command, account, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

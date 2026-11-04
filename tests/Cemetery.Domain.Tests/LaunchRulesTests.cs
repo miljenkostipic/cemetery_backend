@@ -73,7 +73,7 @@ public sealed class LaunchRulesTests
         var at = new DateTimeOffset(2026, 10, 15, 8, 0, 0, TimeSpan.Zero);
         var delivery = WebhookDelivery.Queue(Guid.CreateVersion7(), Guid.CreateVersion7(), WebhookEvents.FuneralScheduled, Guid.CreateVersion7(), at);
 
-        Assert.Equal(WebhookDelivery.Pending, delivery.Status);
+        Assert.Equal(WebhookDeliveryStatus.Pending, delivery.Status);
         Assert.Equal(at, delivery.CreatedAt);
     }
 
@@ -101,7 +101,7 @@ public sealed class LaunchRulesTests
     public void The_processing_register_uses_stable_codes()
     {
         Assert.Equal(["holders", "payments", "documents", "audit"], GdprCatalog.Records.Select(record => record.Purpose));
-        Assert.Equal(GdprExport.Requested, GdprExport.Open(Guid.CreateVersion7(), DateTimeOffset.UnixEpoch).Status);
+        Assert.Equal(GdprExportStatus.Requested, GdprExport.Open(Guid.CreateVersion7(), DateTimeOffset.UnixEpoch).Status);
     }
 
     [Fact]

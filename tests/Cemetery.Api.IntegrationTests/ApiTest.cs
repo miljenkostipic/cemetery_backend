@@ -4,6 +4,8 @@ public abstract class ApiTest(ApiFixture api) : IAsyncLifetime
 {
     protected ApiFixture Api { get; } = api;
 
+    protected static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
     public async ValueTask InitializeAsync()
     {
         if (!Api.IsReady)

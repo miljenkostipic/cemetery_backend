@@ -28,17 +28,18 @@ public static class BillingYear
     public static DateOnly DueOn(int year) => new(year, DueMonth, DueDay);
 }
 
+public enum ChargeStatus
+{
+    Open = 1,
+    Reminded = 2,
+    Paid = 3,
+}
+
 public static class ChargeStatuses
 {
-    public const string Open = "open";
-
-    public const string Reminded = "reminded";
-
-    public const string Paid = "paid";
-
     public const int MaxLength = 16;
 
-    public static bool IsArrears(string status) => status is Open or Reminded;
+    public static bool IsArrears(ChargeStatus status) => status is ChargeStatus.Open or ChargeStatus.Reminded;
 }
 
 public readonly record struct ChargeKey(Guid GraveSiteId, Guid FeeScheduleId);
@@ -51,10 +52,8 @@ public sealed class Charge : TenantEntity
     {
         GraveSiteCode = "";
         HolderName = "";
-        Kind = "";
         Description = "";
         Currency = "";
-        Status = "";
     }
 
     public Guid CemeteryId { get; private set; }
@@ -67,7 +66,7 @@ public sealed class Charge : TenantEntity
 
     public string HolderName { get; private set; }
 
-    public string Kind { get; private set; }
+    public FeeKind Kind { get; private set; }
 
     public string Description { get; private set; }
 
@@ -75,7 +74,7 @@ public sealed class Charge : TenantEntity
 
     public string Currency { get; private set; }
 
-    public string Status { get; private set; }
+    public ChargeStatus Status { get; private set; }
 
     public DateOnly DueOn { get; private set; }
 
@@ -113,17 +112,17 @@ public sealed class Charge : TenantEntity
             Description = fee.Name,
             Amount = fee.Amount,
             Currency = fee.Currency,
-            Status = ChargeStatuses.Open,
+            Status = ChargeStatus.Open,
             DueOn = BillingYear.DueOn(year),
             Year = year,
         };
 
     public bool Remind()
     {
-        if (Status != ChargeStatuses.Open)
+        if (Status != ChargeStatus.Open)
             return false;
 
-        Status = ChargeStatuses.Reminded;
+        Status = ChargeStatus.Reminded;
         return true;
     }
 
@@ -131,19 +130,19 @@ public sealed class Charge : TenantEntity
     {
         if (paymentId == Guid.Empty)
             throw new DomainRuleException("payment.not_found");
-        if (Status is not (ChargeStatuses.Open or ChargeStatuses.Reminded))
+        if (Status is not (ChargeStatus.Open or ChargeStatus.Reminded))
             throw new DomainRuleException("charge.already_paid");
 
-        Status = ChargeStatuses.Paid;
+        Status = ChargeStatus.Paid;
         LatestPaymentId = paymentId;
     }
 
     public void Reopen()
     {
-        if (Status != ChargeStatuses.Paid)
+        if (Status != ChargeStatus.Paid)
             throw new DomainRuleException("payment.not_voidable");
 
-        Status = ChargeStatuses.Open;
+        Status = ChargeStatus.Open;
         LatestPaymentId = null;
     }
 }
@@ -203,7 +202,7 @@ public static class YearlyBilling
         FeeSchedule fee,
         IReadOnlySet<ChargeKey> already)
     {
-        if (fee.CemeteryId != site.CemeteryId || fee.Kind != FeeKinds.Annual)
+        if (fee.CemeteryId != site.CemeteryId || fee.Kind != FeeKind.Annual)
             return;
         if (already.Contains(new ChargeKey(site.Id, fee.Id)))
             return;

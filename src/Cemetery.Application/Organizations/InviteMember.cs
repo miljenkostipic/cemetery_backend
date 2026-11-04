@@ -23,9 +23,7 @@ public sealed class InviteMemberValidator : AbstractValidator<InviteMember>
 }
 
 public sealed class InviteMemberHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IInvitationRepository invitations,
     IInvitationTokenFactory tokens,
     IEmailSender email,
@@ -35,18 +33,11 @@ public sealed class InviteMemberHandler(
 {
     public async Task<InvitationIssued> Handle(InviteMember command, CancellationToken cancellationToken)
     {
-        var userId = current.UserId ?? throw new UnauthorizedException("auth.required");
-        var organizationId = tenant.OrganizationId ?? throw new ForbiddenException("tenant.required");
-        await RequireAdminAsync(userId, cancellationToken).ConfigureAwait(false);
-        var issued = await IssueAsync(command, organizationId, cancellationToken).ConfigureAwait(false);
-        return issued;
-    }
+        if (caller.Role != MembershipRole.OrganizationAdmin)
+            throw new ForbiddenException("access.forbidden");
 
-    private async Task RequireAdminAsync(Guid userId, CancellationToken cancellationToken)
-    {
-        var role = await memberships.RoleInCurrentTenantAsync(userId, cancellationToken).ConfigureAwait(false);
-        if (role != MembershipRole.OrganizationAdmin)
-            throw new ForbiddenException("auth.forbidden");
+        var issued = await IssueAsync(command, caller.OrganizationId, cancellationToken).ConfigureAwait(false);
+        return issued;
     }
 
     private async Task<InvitationIssued> IssueAsync(InviteMember command, Guid organizationId, CancellationToken cancellationToken)

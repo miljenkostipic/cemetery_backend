@@ -43,14 +43,16 @@ public sealed class WebhookSubscription : TenantEntity
     }
 }
 
+public enum WebhookDeliveryStatus
+{
+    Pending = 1,
+}
+
 public sealed class WebhookDelivery : TenantEntity
 {
-    public const string Pending = "pending";
-
     private WebhookDelivery()
     {
         Event = "";
-        Status = "";
     }
 
     public Guid SubscriptionId { get; private set; }
@@ -61,7 +63,7 @@ public sealed class WebhookDelivery : TenantEntity
 
     public DateTimeOffset CreatedAt { get; private set; }
 
-    public string Status { get; private set; }
+    public WebhookDeliveryStatus Status { get; private set; }
 
     public static WebhookDelivery Queue(Guid tenantId, Guid subscriptionId, string eventName, Guid subjectId, DateTimeOffset at)
     {
@@ -78,7 +80,7 @@ public sealed class WebhookDelivery : TenantEntity
             Event = eventName,
             SubjectId = subjectId,
             CreatedAt = at,
-            Status = Pending,
+            Status = WebhookDeliveryStatus.Pending,
         };
     }
 }

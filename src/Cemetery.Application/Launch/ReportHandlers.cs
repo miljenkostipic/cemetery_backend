@@ -26,16 +26,14 @@ public sealed record CemeteryReportView(
 public sealed record GetCemeteryReport(Guid CemeteryId);
 
 public sealed class GetCemeteryReportHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     TimeProvider clock) : IQueryHandler<GetCemeteryReport, CemeteryReportView>
 {
     public async Task<CemeteryReportView> Handle(GetCemeteryReport query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var cemetery = await layouts.FindCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("report.not_found");
         var sites = await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);

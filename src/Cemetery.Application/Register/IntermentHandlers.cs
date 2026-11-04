@@ -9,16 +9,14 @@ namespace Cemetery.Application.Register;
 public sealed record ListFreePositions(Guid CemeteryId, Guid? GraveSiteId);
 
 public sealed class ListFreePositionsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     TimeProvider clock) : IQueryHandler<ListFreePositions, IReadOnlyList<FreePositionView>>
 {
     public async Task<IReadOnlyList<FreePositionView>> Handle(ListFreePositions query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var cemetery = await layouts.FindCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("cemetery.not_found");
         var sites = await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
@@ -41,9 +39,7 @@ public sealed class RecordIntermentValidator : AbstractValidator<RecordInterment
 }
 
 public sealed class RecordIntermentHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IWebhookRepository webhooks,
@@ -52,7 +48,7 @@ public sealed class RecordIntermentHandler(
 {
     public async Task<IntermentView> Handle(RecordInterment command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var created = await PlaceAsync(command, cancellationToken).ConfigureAwait(false);
         await webhooks.EnqueueAsync(WebhookEvents.IntermentRecorded, created.Id, clock.GetUtcNow(), cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -85,9 +81,7 @@ public sealed class ExhumeIntermentValidator : AbstractValidator<ExhumeInterment
 }
 
 public sealed class ExhumeIntermentHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
@@ -95,7 +89,7 @@ public sealed class ExhumeIntermentHandler(
 {
     public async Task<IntermentView> Handle(ExhumeInterment command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var interment = await register.FindIntermentAsync(command.IntermentId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("interment.not_found");
         var deceased = await register.FindDeceasedAsync(interment.DeceasedId, cancellationToken).ConfigureAwait(false)
@@ -122,9 +116,7 @@ public sealed class TransferIntermentValidator : AbstractValidator<TransferInter
 }
 
 public sealed class TransferIntermentHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
@@ -132,7 +124,7 @@ public sealed class TransferIntermentHandler(
 {
     public async Task<IntermentView> Handle(TransferInterment command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var moved = await MoveAsync(command, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return moved;
@@ -159,15 +151,13 @@ public sealed class TransferIntermentHandler(
 public sealed record ListSiteInterments(Guid GraveSiteId);
 
 public sealed class ListSiteIntermentsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register) : IQueryHandler<ListSiteInterments, IReadOnlyList<IntermentView>>
 {
     public async Task<IReadOnlyList<IntermentView>> Handle(ListSiteInterments query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var site = await layouts.FindGraveSiteAsync(query.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         var interments = await register.ListIntermentsBySiteAsync(site.Id, cancellationToken).ConfigureAwait(false);

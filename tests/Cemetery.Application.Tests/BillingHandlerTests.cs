@@ -24,16 +24,16 @@ public sealed class BillingHandlerTests
         billing.AddFeeAsync(Arg.Any<FeeSchedule>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var layouts = Layouts(cemetery);
         var unit = Unit();
-        var added = new AddFeeScheduleHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, billing, unit);
+        var added = new AddFeeScheduleHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, billing, unit);
 
         var created = await added.Handle(new AddFeeSchedule(cemetery.Id, "service", "  Wreath  ", "15.50", "CHF"), CancellationToken.None);
-        var listed = await new ListFeeSchedulesHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), layouts, billing)
+        var listed = await new ListFeeSchedulesHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), layouts, billing)
             .Handle(new ListFeeSchedules(cemetery.Id), CancellationToken.None);
 
         Assert.Equal("Wreath", created.Name);
         Assert.Equal("15.50", created.Amount);
         Assert.Equal("CHF", created.Currency);
-        Assert.Equal("service", created.Kind);
+        Assert.Equal(FeeKind.Service, created.Kind);
         Assert.Equal("Upkeep", listed[0].Name);
         Assert.Equal("25.00", listed[0].Amount);
         await unit.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -43,31 +43,13 @@ public sealed class BillingHandlerTests
     public async Task A_missing_cemetery_has_no_fees()
     {
         var handler = new ListFeeSchedulesHandler(
-            User(),
-            Tenant(Guid.CreateVersion7()),
-            Membership(MembershipRole.CemeteryClerk),
+            Callers.For(Guid.CreateVersion7(), MembershipRole.CemeteryClerk),
             Substitute.For<ILayoutRepository>(),
             Substitute.For<IBillingRepository>());
 
         var error = await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new ListFeeSchedules(Guid.CreateVersion7()), CancellationToken.None));
 
         Assert.Equal("cemetery.not_found", error.Code);
-    }
-
-    [Fact]
-    public async Task A_field_worker_cannot_add_a_fee()
-    {
-        var handler = new AddFeeScheduleHandler(
-            User(),
-            Tenant(Guid.CreateVersion7()),
-            Membership(MembershipRole.FieldWorker),
-            Substitute.For<ILayoutRepository>(),
-            Substitute.For<IBillingRepository>(),
-            Substitute.For<IUnitOfWork>());
-
-        var error = await Assert.ThrowsAsync<ForbiddenException>(() => handler.Handle(new AddFeeSchedule(Guid.CreateVersion7(), "annual", "Upkeep", "25.00", "EUR"), CancellationToken.None));
-
-        Assert.Equal("register.forbidden", error.Code);
     }
 
     [Fact]
@@ -79,7 +61,7 @@ public sealed class BillingHandlerTests
         billing.FindFeeAsync(fee.Id, Arg.Any<CancellationToken>()).Returns(fee);
         billing.FeeIsChargedAsync(fee.Id, Arg.Any<CancellationToken>()).Returns(false);
         var unit = Unit();
-        var handler = new RemoveFeeScheduleHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), billing, unit);
+        var handler = new RemoveFeeScheduleHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), billing, unit);
 
         var removed = await handler.Handle(new RemoveFeeSchedule(fee.Id), CancellationToken.None);
 
@@ -97,7 +79,7 @@ public sealed class BillingHandlerTests
         billing.FindFeeAsync(fee.Id, Arg.Any<CancellationToken>()).Returns(fee);
         billing.FeeIsChargedAsync(fee.Id, Arg.Any<CancellationToken>()).Returns(true);
         var unit = Substitute.For<IUnitOfWork>();
-        var handler = new RemoveFeeScheduleHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), billing, unit);
+        var handler = new RemoveFeeScheduleHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), billing, unit);
 
         var error = await Assert.ThrowsAsync<ConflictException>(() => handler.Handle(new RemoveFeeSchedule(fee.Id), CancellationToken.None));
 
@@ -111,7 +93,7 @@ public sealed class BillingHandlerTests
     {
         var billing = Substitute.For<IBillingRepository>();
         billing.FindFeeAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((FeeSchedule?)null);
-        var handler = new RemoveFeeScheduleHandler(User(), Tenant(Guid.CreateVersion7()), Membership(MembershipRole.CemeteryClerk), billing, Substitute.For<IUnitOfWork>());
+        var handler = new RemoveFeeScheduleHandler(Callers.For(Guid.CreateVersion7(), MembershipRole.CemeteryClerk), billing, Substitute.For<IUnitOfWork>());
 
         var error = await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new RemoveFeeSchedule(Guid.CreateVersion7()), CancellationToken.None));
 
@@ -132,22 +114,22 @@ public sealed class BillingHandlerTests
         billing.AddChargesAsync(Arg.Do<IReadOnlyList<Charge>>(rows => stored = rows), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var layouts = Layouts(cemetery);
         layouts.ListByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { site });
-        var raised = await new RunYearHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, billing, Unit())
+        var raised = await new RunYearHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, billing, Unit())
             .Handle(new RunYear(cemetery.Id, 2026), CancellationToken.None);
         Assert.NotNull(stored);
         billing.ListChargesAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(stored);
         billing.ListArrearsAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(stored);
 
-        var charges = await new ListChargesHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, billing)
+        var charges = await new ListChargesHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, billing)
             .Handle(new ListCharges(cemetery.Id), CancellationToken.None);
-        var arrears = await new ListArrearsHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), layouts, billing)
+        var arrears = await new ListArrearsHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, billing)
             .Handle(new ListArrears(cemetery.Id), CancellationToken.None);
 
         Assert.Equal(1, raised.ChargeCount);
         Assert.Equal(2026, raised.Year);
         Assert.Equal("A-1", charges[0].GraveSiteCode);
         Assert.Equal("25.00", charges[0].Amount);
-        Assert.Equal("open", charges[0].Status);
+        Assert.Equal(ChargeStatus.Open, charges[0].Status);
         Assert.Equal(new DateOnly(2026, 3, 31), charges[0].DueOn);
         Assert.Null(charges[0].LatestPaymentId);
         Assert.Equal(charges[0].Id, arrears[0].ChargeId);
@@ -160,7 +142,7 @@ public sealed class BillingHandlerTests
         var tenant = Guid.CreateVersion7();
         var cemetery = CemeteryPlace.Open(tenant, "Pilot", true, Now);
         var billing = Substitute.For<IBillingRepository>();
-        var handler = new RunYearHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), Layouts(cemetery), billing, Unit());
+        var handler = new RunYearHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), Layouts(cemetery), billing, Unit());
 
         var error = await Assert.ThrowsAsync<DomainRuleException>(() => handler.Handle(new RunYear(cemetery.Id, 1999), CancellationToken.None));
 
@@ -172,9 +154,7 @@ public sealed class BillingHandlerTests
     public async Task A_missing_cemetery_cannot_be_charged()
     {
         var handler = new RunYearHandler(
-            User(),
-            Tenant(Guid.CreateVersion7()),
-            Membership(MembershipRole.OrganizationAdmin),
+            Callers.For(Guid.CreateVersion7(), MembershipRole.OrganizationAdmin),
             Substitute.For<ILayoutRepository>(),
             Substitute.For<IBillingRepository>(),
             Substitute.For<IUnitOfWork>());
@@ -194,12 +174,12 @@ public sealed class BillingHandlerTests
         var billing = Substitute.For<IBillingRepository>();
         billing.ListOpenChargesAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { charge });
         var unit = Unit();
-        var handler = new SendRemindersHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), Layouts(cemetery), billing, unit);
+        var handler = new SendRemindersHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), Layouts(cemetery), billing, unit);
 
         var result = await handler.Handle(new SendReminders(cemetery.Id), CancellationToken.None);
 
         Assert.Equal(1, result.RemindedCount);
-        Assert.Equal("reminded", charge.Status);
+        Assert.Equal(ChargeStatus.Reminded, charge.Status);
         await unit.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -214,22 +194,22 @@ public sealed class BillingHandlerTests
         Payment? stored = null;
         billing.When(repository => repository.AddPayment(Arg.Any<Payment>())).Do(call => stored = call.Arg<Payment>());
         var unit = Unit();
-        var recorded = await new RecordManualPaymentHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), billing, unit)
+        var recorded = await new RecordManualPaymentHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), billing, unit)
             .Handle(new RecordManualPayment(charge.Id, "bank", "25.00", new DateOnly(2026, 10, 7), "HR12"), CancellationToken.None);
         Assert.NotNull(stored);
         billing.FindPaymentAsync(stored.Id, Arg.Any<CancellationToken>()).Returns(stored);
 
-        var receipt = await new GetReceiptHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), billing)
+        var receipt = await new GetReceiptHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), billing)
             .Handle(new GetReceipt(stored.Id), CancellationToken.None);
-        var reopened = await new VoidPaymentHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), billing, unit)
+        var reopened = await new VoidPaymentHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), billing, unit)
             .Handle(new VoidPayment(stored.Id, "Wrong year"), CancellationToken.None);
 
-        Assert.Equal("succeeded", recorded.Status);
+        Assert.Equal(PaymentStatus.Succeeded, recorded.Status);
         Assert.StartsWith("R-", recorded.ReceiptNumber, StringComparison.Ordinal);
         Assert.Equal(recorded.ReceiptNumber, receipt.ReceiptNumber);
-        Assert.Equal("open", reopened.Status);
+        Assert.Equal(ChargeStatus.Open, reopened.Status);
         Assert.Null(reopened.LatestPaymentId);
-        Assert.Equal("voided", stored.Status);
+        Assert.Equal(PaymentStatus.Voided, stored.Status);
     }
 
     [Fact]
@@ -237,7 +217,7 @@ public sealed class BillingHandlerTests
     {
         var billing = Substitute.For<IBillingRepository>();
         billing.FindPaymentAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Payment?)null);
-        var handler = new VoidPaymentHandler(User(), Tenant(Guid.CreateVersion7()), Membership(MembershipRole.CemeteryClerk), billing, Substitute.For<IUnitOfWork>());
+        var handler = new VoidPaymentHandler(Callers.For(Guid.CreateVersion7(), MembershipRole.CemeteryClerk), billing, Substitute.For<IUnitOfWork>());
 
         var error = await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new VoidPayment(Guid.CreateVersion7(), "Wrong year"), CancellationToken.None));
 
@@ -254,22 +234,22 @@ public sealed class BillingHandlerTests
         billing.FindProviderAsync("monri", Arg.Any<CancellationToken>()).Returns((MerchantAccount?)null);
         billing.AddProviderAsync(Arg.Any<MerchantAccount>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var unit = Unit();
-        var listed = await new ListPaymentProvidersHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), billing)
+        var listed = await new ListPaymentProvidersHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), billing)
             .Handle(new ListPaymentProviders(), CancellationToken.None);
-        var saved = await new SavePaymentProviderHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), billing, unit)
+        var saved = await new SavePaymentProviderHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), billing, unit)
             .Handle(new SavePaymentProvider("monri", "merchant-9", "secret-ok", true), CancellationToken.None);
 
         Assert.Equal(3, listed.Count);
-        Assert.False(listed.Single(row => row.Provider == "paypal").Enabled);
-        Assert.True(listed.Single(row => row.Provider == "paypal").Connected);
-        Assert.Equal("paypal-1", listed.Single(row => row.Provider == "paypal").MerchantId);
-        Assert.False(listed.Single(row => row.Provider == "monri").Connected);
-        Assert.Null(listed.Single(row => row.Provider == "payrexx").MerchantId);
-        Assert.Equal("monri", saved.Provider);
+        Assert.False(listed.Single(row => row.Provider == BillingProvider.Paypal).Enabled);
+        Assert.True(listed.Single(row => row.Provider == BillingProvider.Paypal).Connected);
+        Assert.Equal("paypal-1", listed.Single(row => row.Provider == BillingProvider.Paypal).MerchantId);
+        Assert.False(listed.Single(row => row.Provider == BillingProvider.Monri).Connected);
+        Assert.Null(listed.Single(row => row.Provider == BillingProvider.Payrexx).MerchantId);
+        Assert.Equal(BillingProvider.Monri, saved.Provider);
         Assert.True(saved.Connected);
         Assert.True(saved.Enabled);
         Assert.Equal("merchant-9", saved.MerchantId);
-        await billing.Received(1).AddProviderAsync(Arg.Is<MerchantAccount>(account => account.Secret == "secret-ok" && account.Provider == "monri"), Arg.Any<CancellationToken>());
+        await billing.Received(1).AddProviderAsync(Arg.Is<MerchantAccount>(account => account.Secret == "secret-ok" && account.Provider == BillingProvider.Monri), Arg.Any<CancellationToken>());
         await unit.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -280,7 +260,7 @@ public sealed class BillingHandlerTests
         var billing = Substitute.For<IBillingRepository>();
         var existing = MerchantAccount.Connect(tenant, "monri", new MerchantCredentials("merchant-1", "secret-ok", true));
         billing.FindProviderAsync("monri", Arg.Any<CancellationToken>()).Returns(existing);
-        var saved = await new SavePaymentProviderHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), billing, Unit())
+        var saved = await new SavePaymentProviderHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), billing, Unit())
             .Handle(new SavePaymentProvider("monri", "merchant-2", "next-secret", false), CancellationToken.None);
 
         Assert.Equal("merchant-2", existing.MerchantId);
@@ -296,7 +276,7 @@ public sealed class BillingHandlerTests
         var billing = Substitute.For<IBillingRepository>();
         billing.FindProviderAsync("stripe", Arg.Any<CancellationToken>()).Returns((MerchantAccount?)null);
         var unit = Substitute.For<IUnitOfWork>();
-        var handler = new SavePaymentProviderHandler(User(), Tenant(Guid.CreateVersion7()), Membership(MembershipRole.CemeteryClerk), billing, unit);
+        var handler = new SavePaymentProviderHandler(Callers.For(Guid.CreateVersion7(), MembershipRole.CemeteryClerk), billing, unit);
 
         var error = await Assert.ThrowsAsync<DomainRuleException>(() => handler.Handle(new SavePaymentProvider("stripe", "merchant-1", "secret-ok", true), CancellationToken.None));
 
@@ -349,26 +329,8 @@ public sealed class BillingHandlerTests
         return unit;
     }
 
-    private static ICurrentUser User()
-    {
-        var current = Substitute.For<ICurrentUser>();
-        current.UserId.Returns(Guid.CreateVersion7());
-        return current;
-    }
 
-    private static ITenantContext Tenant(Guid organizationId)
-    {
-        var tenant = Substitute.For<ITenantContext>();
-        tenant.OrganizationId.Returns(organizationId);
-        return tenant;
-    }
 
-    private static IMembershipRepository Membership(MembershipRole role)
-    {
-        var memberships = Substitute.For<IMembershipRepository>();
-        memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(role);
-        return memberships;
-    }
 
     private static GeoPolygon Box() =>
         GeoPolygon.Create([

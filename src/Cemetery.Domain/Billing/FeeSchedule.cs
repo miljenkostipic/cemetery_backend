@@ -4,6 +4,12 @@ using Cemetery.Domain.Identity;
 
 namespace Cemetery.Domain.Billing;
 
+public enum FeeKind
+{
+    Annual = 1,
+    Service = 2,
+}
+
 public static class FeeKinds
 {
     public const string Annual = "annual";
@@ -13,6 +19,13 @@ public static class FeeKinds
     public const int MaxLength = 16;
 
     public static bool IsKnown(string? kind) => kind is Annual or Service;
+
+    public static FeeKind Parse(string? kind) => kind switch
+    {
+        Annual => FeeKind.Annual,
+        Service => FeeKind.Service,
+        _ => throw new DomainRuleException("fee.kind_invalid"),
+    };
 }
 
 public static class FeeCurrencies
@@ -104,14 +117,13 @@ public sealed class FeeSchedule : TenantEntity
 {
     private FeeSchedule()
     {
-        Kind = "";
         Name = "";
         Currency = "";
     }
 
     public Guid CemeteryId { get; private set; }
 
-    public string Kind { get; private set; }
+    public FeeKind Kind { get; private set; }
 
     public string Name { get; private set; }
 
@@ -122,7 +134,7 @@ public sealed class FeeSchedule : TenantEntity
     public static FeeSchedule Add(Guid tenantId, Guid cemeteryId, string? kind, string? name, string? amount, string? currency)
     {
         RequirePlace(tenantId, cemeteryId);
-        return Create(tenantId, cemeteryId, RequireKind(kind), FeeName.Require(name), FeeAmount.Require(amount), RequireCurrency(currency));
+        return Create(tenantId, cemeteryId, ParseKind(kind), FeeName.Require(name), FeeAmount.Require(amount), RequireCurrency(currency));
     }
 
     private static void RequirePlace(Guid tenantId, Guid cemeteryId)
@@ -133,13 +145,7 @@ public sealed class FeeSchedule : TenantEntity
             throw new DomainRuleException("cemetery.not_found");
     }
 
-    private static string RequireKind(string? kind)
-    {
-        if (!FeeKinds.IsKnown(kind))
-            throw new DomainRuleException("fee.kind_invalid");
-
-        return kind!;
-    }
+    private static FeeKind ParseKind(string? kind) => FeeKinds.Parse(kind);
 
     private static string RequireCurrency(string? currency)
     {
@@ -149,7 +155,7 @@ public sealed class FeeSchedule : TenantEntity
         return currency!;
     }
 
-    private static FeeSchedule Create(Guid tenantId, Guid cemeteryId, string kind, string name, decimal amount, string currency) =>
+    private static FeeSchedule Create(Guid tenantId, Guid cemeteryId, FeeKind kind, string name, decimal amount, string currency) =>
         new()
         {
             Id = Guid.CreateVersion7(),

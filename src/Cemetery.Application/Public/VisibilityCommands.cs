@@ -18,9 +18,7 @@ public sealed class PublishRegisterValidator : AbstractValidator<PublishRegister
 }
 
 public sealed class PublishRegisterHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOrganizationRepository organizations,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
@@ -36,7 +34,7 @@ public sealed class PublishRegisterHandler(
     }
 
     private Task<Domain.Identity.Organization> OrganizationOfClerkAsync(CancellationToken cancellationToken) =>
-        ClerkOrganization.RequireAsync(current, tenant, memberships, organizations, cancellationToken);
+        ClerkOrganization.RequireAsync(caller, organizations, cancellationToken);
 
     private Task AuditAsync(Guid organizationId, string action, string? reason, CancellationToken cancellationToken) =>
         register.AddAuditAsync(AuditEntry.Write(organizationId, action, organizationId, reason, clock.GetUtcNow()), cancellationToken);
@@ -52,9 +50,7 @@ public sealed class WithdrawRegisterValidator : AbstractValidator<WithdrawRegist
 }
 
 public sealed class WithdrawRegisterHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOrganizationRepository organizations,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
@@ -62,7 +58,7 @@ public sealed class WithdrawRegisterHandler(
 {
     public async Task<VisibilityView> Handle(WithdrawRegister command, CancellationToken cancellationToken)
     {
-        var organization = await ClerkOrganization.RequireAsync(current, tenant, memberships, organizations, cancellationToken).ConfigureAwait(false);
+        var organization = await ClerkOrganization.RequireAsync(caller, organizations, cancellationToken).ConfigureAwait(false);
         organization.WithdrawRegister();
         await register.AddAuditAsync(AuditEntry.Write(organization.Id, AuditActions.RegisterWithdrawn, organization.Id, null, clock.GetUtcNow()), cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -79,16 +75,14 @@ public sealed class HideGraveFromPublicValidator : AbstractValidator<HideGraveFr
 }
 
 public sealed class HideGraveFromPublicHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<HideGraveFromPublic, GraveSiteView>
 {
     public Task<GraveSiteView> Handle(HideGraveFromPublic command, CancellationToken cancellationToken) =>
-        GraveVisibility.HideAsync(current, tenant, memberships, layouts, register, unitOfWork, clock, command.GraveSiteId, cancellationToken);
+        GraveVisibility.HideAsync(caller, layouts, register, unitOfWork, clock, command.GraveSiteId, cancellationToken);
 }
 
 public sealed record ShowGraveOnPublicMap(Guid GraveSiteId);
@@ -100,16 +94,14 @@ public sealed class ShowGraveOnPublicMapValidator : AbstractValidator<ShowGraveO
 }
 
 public sealed class ShowGraveOnPublicMapHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<ShowGraveOnPublicMap, GraveSiteView>
 {
     public Task<GraveSiteView> Handle(ShowGraveOnPublicMap command, CancellationToken cancellationToken) =>
-        GraveVisibility.ShowAsync(current, tenant, memberships, layouts, register, unitOfWork, clock, command.GraveSiteId, cancellationToken);
+        GraveVisibility.ShowAsync(caller, layouts, register, unitOfWork, clock, command.GraveSiteId, cancellationToken);
 }
 
 public sealed record DescribeMemorial(Guid DeceasedId, string? Epitaph, string? PhotoUrl);
@@ -121,16 +113,14 @@ public sealed class DescribeMemorialValidator : AbstractValidator<DescribeMemori
 }
 
 public sealed class DescribeMemorialHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IRegisterRepository register,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<DescribeMemorial, DeceasedView>
 {
     public async Task<DeceasedView> Handle(DescribeMemorial command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var person = await register.FindDeceasedAsync(command.DeceasedId, cancellationToken).ConfigureAwait(false);
         if (person is null || person.RemovedAt is not null)
             throw new NotFoundException("deceased.not_found");
@@ -144,13 +134,11 @@ public sealed class DescribeMemorialHandler(
 file static class ClerkOrganization
 {
     public static async Task<Domain.Identity.Organization> RequireAsync(
-        ICurrentUser current,
-        ITenantContext tenant,
-        IMembershipRepository memberships,
+        ICallerContext caller,
         IOrganizationRepository organizations,
         CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         return await organizations.FindAsync(organizationId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("organization.not_found");
     }
@@ -159,33 +147,27 @@ file static class ClerkOrganization
 file static class GraveVisibility
 {
     public static Task<GraveSiteView> HideAsync(
-        ICurrentUser current,
-        ITenantContext tenant,
-        IMembershipRepository memberships,
+        ICallerContext caller,
         ILayoutRepository layouts,
         IRegisterRepository register,
         IUnitOfWork unitOfWork,
         TimeProvider clock,
         Guid graveSiteId,
         CancellationToken cancellationToken) =>
-        ChangeAsync(current, tenant, memberships, layouts, register, unitOfWork, clock, graveSiteId, AuditActions.GraveHidden, site => site.HideFromPublic(), cancellationToken);
+        ChangeAsync(caller, layouts, register, unitOfWork, clock, graveSiteId, AuditActions.GraveHidden, site => site.HideFromPublic(), cancellationToken);
 
     public static Task<GraveSiteView> ShowAsync(
-        ICurrentUser current,
-        ITenantContext tenant,
-        IMembershipRepository memberships,
+        ICallerContext caller,
         ILayoutRepository layouts,
         IRegisterRepository register,
         IUnitOfWork unitOfWork,
         TimeProvider clock,
         Guid graveSiteId,
         CancellationToken cancellationToken) =>
-        ChangeAsync(current, tenant, memberships, layouts, register, unitOfWork, clock, graveSiteId, AuditActions.GraveShown, site => site.ShowOnPublicMap(), cancellationToken);
+        ChangeAsync(caller, layouts, register, unitOfWork, clock, graveSiteId, AuditActions.GraveShown, site => site.ShowOnPublicMap(), cancellationToken);
 
     private static async Task<GraveSiteView> ChangeAsync(
-        ICurrentUser current,
-        ITenantContext tenant,
-        IMembershipRepository memberships,
+        ICallerContext caller,
         ILayoutRepository layouts,
         IRegisterRepository register,
         IUnitOfWork unitOfWork,
@@ -195,7 +177,7 @@ file static class GraveVisibility
         Action<Domain.Layout.GraveSite> apply,
         CancellationToken cancellationToken)
     {
-        var organizationId = await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         var site = await layouts.FindGraveSiteAsync(graveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         apply(site);

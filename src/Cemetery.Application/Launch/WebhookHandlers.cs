@@ -16,14 +16,12 @@ public sealed record WebhookBody(string Url, string Event);
 public sealed record ListWebhooks;
 
 public sealed class ListWebhooksHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IWebhookRepository webhooks) : IQueryHandler<ListWebhooks, IReadOnlyList<WebhookView>>
 {
     public async Task<IReadOnlyList<WebhookView>> Handle(ListWebhooks query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var rows = await webhooks.ListAsync(cancellationToken).ConfigureAwait(false);
         return rows.Select(static item => new WebhookView(item.Id, item.Url, item.Event)).ToArray();
     }
@@ -54,15 +52,13 @@ public sealed class AddWebhookValidator : AbstractValidator<AddWebhook>
 }
 
 public sealed class AddWebhookHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IWebhookRepository webhooks,
     IUnitOfWork unitOfWork) : ICommandHandler<AddWebhook, WebhookCreated>
 {
     public async Task<WebhookCreated> Handle(AddWebhook command, CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         var created = WebhookSubscription.Register(organizationId, command.Url, command.Event, WebhookSecrets.Create());
         await webhooks.AddAsync(created, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -79,15 +75,13 @@ public sealed class RemoveWebhookValidator : AbstractValidator<RemoveWebhook>
 }
 
 public sealed class RemoveWebhookHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IWebhookRepository webhooks,
     IUnitOfWork unitOfWork) : ICommandHandler<RemoveWebhook, bool>
 {
     public async Task<bool> Handle(RemoveWebhook command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var subscription = await webhooks.FindAsync(command.WebhookId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("webhook.not_found");
         webhooks.Remove(subscription);

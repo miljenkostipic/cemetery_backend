@@ -126,7 +126,7 @@ public sealed class BillingRulesTests
         Assert.NotEqual(Guid.Empty, fee.Id);
         Assert.Equal(Tenant, fee.TenantId);
         Assert.Equal(CemeteryId, fee.CemeteryId);
-        Assert.Equal(FeeKinds.Annual, fee.Kind);
+        Assert.Equal(FeeKind.Annual, fee.Kind);
         Assert.Equal("Upkeep", fee.Name);
         Assert.Equal(25.00m, fee.Amount);
         Assert.Equal(FeeCurrencies.Euro, fee.Currency);
@@ -155,10 +155,10 @@ public sealed class BillingRulesTests
     }
 
     [Theory]
-    [InlineData("open", true)]
-    [InlineData("reminded", true)]
-    [InlineData("paid", false)]
-    public void Arrears_are_open_or_reminded_charges(string status, bool arrears) =>
+    [InlineData(ChargeStatus.Open, true)]
+    [InlineData(ChargeStatus.Reminded, true)]
+    [InlineData(ChargeStatus.Paid, false)]
+    public void Arrears_are_open_or_reminded_charges(ChargeStatus status, bool arrears) =>
         Assert.Equal(arrears, ChargeStatuses.IsArrears(status));
 
     [Fact]
@@ -181,11 +181,11 @@ public sealed class BillingRulesTests
         Assert.Equal(annual.Id, charge.FeeScheduleId);
         Assert.Equal("A-1", charge.GraveSiteCode);
         Assert.Equal("", charge.HolderName);
-        Assert.Equal(FeeKinds.Annual, charge.Kind);
+        Assert.Equal(FeeKind.Annual, charge.Kind);
         Assert.Equal("Upkeep", charge.Description);
         Assert.Equal(25.00m, charge.Amount);
         Assert.Equal(FeeCurrencies.Euro, charge.Currency);
-        Assert.Equal(ChargeStatuses.Open, charge.Status);
+        Assert.Equal(ChargeStatus.Open, charge.Status);
         Assert.Equal(new DateOnly(2026, BillingYear.DueMonth, BillingYear.DueDay), charge.DueOn);
         Assert.Equal(2026, charge.Year);
         Assert.Null(charge.LatestPaymentId);
@@ -240,7 +240,7 @@ public sealed class BillingRulesTests
 
         var account = MerchantAccount.Connect(Tenant, provider, new MerchantCredentials("merchant-1", "secret-ok", true));
 
-        Assert.Equal(provider, account.Provider);
+        Assert.Equal(BillingProviders.Require(provider), account.Provider);
         Assert.Equal("merchant-1", account.MerchantId);
         Assert.Equal("secret-ok", account.Secret);
         Assert.True(account.Enabled);
@@ -317,7 +317,7 @@ public sealed class BillingRulesTests
 
         account.Replace(new MerchantCredentials("merchant-2", "next-secret", false));
 
-        Assert.Equal("monri", account.Provider);
+        Assert.Equal(BillingProvider.Monri, account.Provider);
         Assert.Equal("merchant-2", account.MerchantId);
         Assert.Equal("next-secret", account.Secret);
         Assert.False(account.Enabled);
@@ -340,7 +340,7 @@ public sealed class BillingRulesTests
         var charge = Charge.Open(Tenant, Site(CemeteryId, "A-1"), Fee("annual", "Upkeep"), 2026);
 
         Assert.True(charge.Remind());
-        Assert.Equal(ChargeStatuses.Reminded, charge.Status);
+        Assert.Equal(ChargeStatus.Reminded, charge.Status);
         Assert.False(charge.Remind());
         Assert.Equal(1, ReminderBilling.Mark([charge, Charge.Open(Tenant, Site(CemeteryId, "A-2"), Fee("annual", "Upkeep"), 2026)]));
     }
@@ -351,18 +351,18 @@ public sealed class BillingRulesTests
         var charge = Charge.Open(Tenant, Site(CemeteryId, "A-1"), Fee("annual", "Upkeep"), 2026);
         var payment = Payment.Record(charge, "cash", "25.00", new DateOnly(2026, 10, 7), " HR12 ");
 
-        Assert.Equal(ChargeStatuses.Paid, charge.Status);
+        Assert.Equal(ChargeStatus.Paid, charge.Status);
         Assert.Equal(payment.Id, charge.LatestPaymentId);
-        Assert.Equal("succeeded", payment.Status);
+        Assert.Equal(PaymentStatus.Succeeded, payment.Status);
         Assert.Equal("HR12", payment.Reference);
         Assert.StartsWith("R-", payment.ReceiptNumber, StringComparison.Ordinal);
 
         payment.Void("  Wrong year ");
         charge.Reopen();
 
-        Assert.Equal("voided", payment.Status);
+        Assert.Equal(PaymentStatus.Voided, payment.Status);
         Assert.Equal("Wrong year", payment.VoidReason);
-        Assert.Equal(ChargeStatuses.Open, charge.Status);
+        Assert.Equal(ChargeStatus.Open, charge.Status);
         Assert.Null(charge.LatestPaymentId);
     }
 

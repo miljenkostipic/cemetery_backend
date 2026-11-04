@@ -34,15 +34,13 @@ public sealed class GenerateGraveSitesValidator : AbstractValidator<GenerateGrav
 }
 
 public sealed class GenerateGraveSitesHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IUnitOfWork unitOfWork) : ICommandHandler<GenerateGraveSites, IReadOnlyList<GraveSiteView>>
 {
     public async Task<IReadOnlyList<GraveSiteView>> Handle(GenerateGraveSites command, CancellationToken cancellationToken)
     {
-        var organizationId = await LayoutAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
         var section = await layouts.FindSectionAsync(command.SectionId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("section.not_found");
         if (!GraveSiteKinds.TryParse(command.Kind, out var kind))

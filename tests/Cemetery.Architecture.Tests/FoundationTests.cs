@@ -151,107 +151,21 @@ public sealed class HostPolicyTests : IClassFixture<CemeteryApiFactory>
         return new KeyValuePair<string, string>($"{method} {endpoint.RoutePattern.RawText}", access);
     }
 
-    private static Dictionary<string, string> ExpectedPolicies() => new(StringComparer.Ordinal)
+    private static Dictionary<string, string> ExpectedPolicies()
     {
-        ["GET /api/v1/health"] = "anonymous",
-        ["POST /api/v1/auth/register"] = "anonymous",
-        ["POST /api/v1/auth/login"] = "anonymous",
-        ["POST /api/v1/auth/password-resets"] = "anonymous",
-        ["POST /api/v1/auth/password-resets/confirm"] = "anonymous",
-        ["POST /api/v1/auth/logout"] = "authenticated",
-        ["GET /api/v1/auth/me"] = "authenticated",
-        ["POST /api/v1/auth/passkeys/creation-options"] = "authenticated",
-        ["POST /api/v1/auth/passkeys"] = "authenticated",
-        ["POST /api/v1/auth/passkeys/request-options"] = "anonymous",
-        ["POST /api/v1/auth/passkeys/login"] = "anonymous",
-        ["POST /api/v1/organizations"] = "authenticated",
-        ["GET /api/v1/organizations"] = "authenticated",
-        ["POST /api/v1/organizations/switch"] = "authenticated",
-        ["POST /api/v1/organizations/invitations"] = "tenant",
-        ["POST /api/v1/invitations/accept"] = "authenticated",
-        ["GET /api/v1/dashboard"] = "tenant",
-        ["POST /api/v1/cemeteries"] = "tenant",
-        ["GET /api/v1/cemeteries"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/plan"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/sections"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/sections"] = "tenant",
-        ["DELETE /api/v1/sections/{sectionId}"] = "tenant",
-        ["PUT /api/v1/sections/{sectionId}/outline"] = "tenant",
-        ["POST /api/v1/sections/{sectionId}/rows"] = "tenant",
-        ["GET /api/v1/sections/{sectionId}/rows"] = "tenant",
-        ["POST /api/v1/sections/{sectionId}/grave-sites"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/grave-sites"] = "tenant",
-        ["GET /api/v1/grave-sites/{graveSiteId}"] = "tenant",
-        ["PUT /api/v1/grave-sites/{graveSiteId}/outline"] = "tenant",
-        ["POST /api/v1/grave-sites/{graveSiteId}/split"] = "tenant",
-        ["POST /api/v1/grave-sites/merge"] = "tenant",
-        ["POST /api/v1/grave-sites/undo-split"] = "tenant",
-        ["POST /api/v1/grave-sites/{graveSiteId}/close"] = "tenant",
-        ["POST /api/v1/grave-sites/{graveSiteId}/reopen"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/deceased"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/deceased"] = "tenant",
-        ["PUT /api/v1/cemeteries/{cemeteryId}/rest-period"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/positions"] = "tenant",
-        ["GET /api/v1/deceased/{deceasedId}"] = "tenant",
-        ["POST /api/v1/deceased/{deceasedId}/corrections"] = "tenant",
-        ["DELETE /api/v1/deceased/{deceasedId}"] = "tenant",
-        ["POST /api/v1/interments"] = "tenant",
-        ["POST /api/v1/interments/{intermentId}/exhumations"] = "tenant",
-        ["POST /api/v1/interments/{intermentId}/transfers"] = "tenant",
-        ["GET /api/v1/grave-sites/{graveSiteId}/interments"] = "tenant",
-        ["GET /api/v1/public/cemeteries"] = "anonymous",
-        ["GET /api/v1/public/search"] = "anonymous",
-        ["GET /api/v1/public/cemeteries/{slug}/{cemeteryId}"] = "anonymous",
-        ["GET /api/v1/public/cemeteries/{slug}/search"] = "anonymous",
-        ["GET /api/v1/public/memorials/{deceasedId}"] = "anonymous",
-        ["GET /api/v1/organizations/visibility"] = "tenant",
-        ["PUT /api/v1/organizations/visibility"] = "tenant",
-        ["DELETE /api/v1/organizations/visibility"] = "tenant",
-        ["POST /api/v1/grave-sites/{graveSiteId}/hide-from-public"] = "tenant",
-        ["POST /api/v1/grave-sites/{graveSiteId}/show-on-public-map"] = "tenant",
-        ["PUT /api/v1/deceased/{deceasedId}/memorial"] = "tenant",
-        ["GET /api/v1/office-requests"] = "tenant",
-        ["GET /api/v1/me/requests"] = "tenant",
-        ["POST /api/v1/me/requests"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/funerals"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/funerals"] = "tenant",
-        ["POST /api/v1/funerals/{funeralId}/cancellations"] = "tenant",
-        ["DELETE /api/v1/funerals/{funeralId}"] = "tenant",
-        ["DELETE /api/v1/chapel-bookings/{bookingId}"] = "tenant",
-        ["DELETE /api/v1/work-orders/{workOrderId}"] = "tenant",
-        ["DELETE /api/v1/monument-permits/{permitId}"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/chapel-bookings"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/chapel-bookings"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/work-orders"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/work-orders"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/monument-permits"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/monument-permits"] = "tenant",
-        ["GET /api/v1/field/today"] = "tenant",
-        ["POST /api/v1/work-orders/{workOrderId}/completions"] = "tenant",
-        ["POST /api/v1/work-orders/{workOrderId}/photos"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/reports"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/interments"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/matica-links"] = "tenant",
-        ["POST /api/v1/interments/{intermentId}/matica-links"] = "tenant",
-        ["GET /api/v1/integrations/webhooks"] = "tenant",
-        ["POST /api/v1/integrations/webhooks"] = "tenant",
-        ["DELETE /api/v1/integrations/webhooks/{webhookId}"] = "tenant",
-        ["GET /api/v1/gdpr/records"] = "tenant",
-        ["POST /api/v1/gdpr/exports"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/fee-schedules"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/fee-schedules"] = "tenant",
-        ["DELETE /api/v1/fee-schedules/{feeScheduleId}"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/charges"] = "tenant",
-        ["GET /api/v1/cemeteries/{cemeteryId}/arrears"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/charges/yearly-runs"] = "tenant",
-        ["POST /api/v1/cemeteries/{cemeteryId}/charges/reminders"] = "tenant",
-        ["POST /api/v1/charges/{chargeId}/payments"] = "tenant",
-        ["GET /api/v1/payments/{paymentId}/receipt"] = "tenant",
-        ["POST /api/v1/payments/{paymentId}/voids"] = "tenant",
-        ["GET /api/v1/payment-providers"] = "tenant",
-        ["PUT /api/v1/payment-providers/{provider}"] = "tenant",
-    };
+        var path = Path.Combine(AppContext.BaseDirectory, "policy-snapshot.txt");
+        var expected = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var line in File.ReadAllLines(path))
+        {
+            if (line.Length == 0)
+                continue;
+
+            var split = line.LastIndexOf(' ');
+            expected[line[..split]] = line[(split + 1)..];
+        }
+
+        return expected;
+    }
 }
 
 public sealed class CemeteryApiFactory : WebApplicationFactory<Program>

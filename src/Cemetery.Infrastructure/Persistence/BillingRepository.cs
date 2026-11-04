@@ -30,7 +30,7 @@ internal sealed class BillingRepository(CemeteryDbContext db) : IBillingReposito
 
     public async Task<IReadOnlyList<Charge>> ListOpenChargesAsync(Guid cemeteryId, CancellationToken cancellationToken) =>
         await db.Charges
-            .Where(charge => charge.CemeteryId == cemeteryId && charge.Status == ChargeStatuses.Open)
+            .Where(charge => charge.CemeteryId == cemeteryId && charge.Status == ChargeStatus.Open)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -52,7 +52,7 @@ internal sealed class BillingRepository(CemeteryDbContext db) : IBillingReposito
 
     public async Task<IReadOnlyList<Charge>> ListArrearsAsync(Guid cemeteryId, CancellationToken cancellationToken) =>
         await db.Charges.AsNoTracking()
-            .Where(charge => charge.CemeteryId == cemeteryId && (charge.Status == ChargeStatuses.Open || charge.Status == ChargeStatuses.Reminded))
+            .Where(charge => charge.CemeteryId == cemeteryId && (charge.Status == ChargeStatus.Open || charge.Status == ChargeStatus.Reminded))
             .OrderBy(charge => charge.GraveSiteCode)
             .ThenBy(charge => charge.Year)
             .ToListAsync(cancellationToken)
@@ -78,7 +78,9 @@ internal sealed class BillingRepository(CemeteryDbContext db) : IBillingReposito
         await db.MerchantAccounts.AsNoTracking().OrderBy(account => account.Provider).ToListAsync(cancellationToken).ConfigureAwait(false);
 
     public Task<MerchantAccount?> FindProviderAsync(string provider, CancellationToken cancellationToken) =>
-        db.MerchantAccounts.FirstOrDefaultAsync(account => account.Provider == provider, cancellationToken);
+        BillingProviders.IsKnown(provider)
+            ? db.MerchantAccounts.FirstOrDefaultAsync(account => account.Provider == BillingProviders.Require(provider), cancellationToken)
+            : Task.FromResult<MerchantAccount?>(null);
 
     public Task AddProviderAsync(MerchantAccount account, CancellationToken cancellationToken)
     {

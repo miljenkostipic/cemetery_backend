@@ -1,3 +1,4 @@
+using Cemetery.Application;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Register;
 using Cemetery.Domain.Billing;
@@ -8,16 +9,14 @@ namespace Cemetery.Application.Billing;
 public sealed record ListCharges(Guid CemeteryId);
 
 public sealed class ListChargesHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IBillingRepository billing) : IQueryHandler<ListCharges, IReadOnlyList<ChargeView>>
 {
     public async Task<IReadOnlyList<ChargeView>> Handle(ListCharges query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await BillingAccess.RequireCemeteryAsync(layouts, query.CemeteryId, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var charges = await billing.ListChargesAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         return charges.Select(BillingMaps.Charge).ToArray();
     }
@@ -26,16 +25,14 @@ public sealed class ListChargesHandler(
 public sealed record ListArrears(Guid CemeteryId);
 
 public sealed class ListArrearsHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IBillingRepository billing) : IQueryHandler<ListArrears, IReadOnlyList<ArrearsRow>>
 {
     public async Task<IReadOnlyList<ArrearsRow>> Handle(ListArrears query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await BillingAccess.RequireCemeteryAsync(layouts, query.CemeteryId, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var charges = await billing.ListArrearsAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         return charges.Select(BillingMaps.Arrears).ToArray();
     }
@@ -50,17 +47,15 @@ public sealed class RunYearValidator : AbstractValidator<RunYear>
 }
 
 public sealed class RunYearHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IBillingRepository billing,
     IUnitOfWork unitOfWork) : ICommandHandler<RunYear, YearlyRunView>
 {
     public async Task<YearlyRunView> Handle(RunYear command, CancellationToken cancellationToken)
     {
-        var organizationId = await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await BillingAccess.RequireCemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var organizationId = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
         var year = BillingYear.Require(command.Year);
         var created = await RaiseAsync(organizationId, command.CemeteryId, year, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -87,17 +82,15 @@ public sealed class SendRemindersValidator : AbstractValidator<SendReminders>
 }
 
 public sealed class SendRemindersHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     ILayoutRepository layouts,
     IBillingRepository billing,
     IUnitOfWork unitOfWork) : ICommandHandler<SendReminders, ReminderRunView>
 {
     public async Task<ReminderRunView> Handle(SendReminders command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
-        await BillingAccess.RequireCemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
+        await Require.CemeteryAsync(layouts, command.CemeteryId, cancellationToken).ConfigureAwait(false);
         var count = await MarkAsync(command.CemeteryId, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new ReminderRunView(count);

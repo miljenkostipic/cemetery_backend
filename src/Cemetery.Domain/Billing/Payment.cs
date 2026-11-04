@@ -2,6 +2,12 @@ using Cemetery.Domain.Identity;
 
 namespace Cemetery.Domain.Billing;
 
+public enum ManualMethod
+{
+    Cash = 1,
+    Bank = 2,
+}
+
 public static class ManualMethods
 {
     public const string Cash = "cash";
@@ -12,21 +18,22 @@ public static class ManualMethods
 
     public static bool IsKnown(string? method) => method is Cash or Bank;
 
-    public static string Require(string? method)
+    public static ManualMethod Require(string? method) => method switch
     {
-        if (!IsKnown(method))
-            throw new DomainRuleException("payment.method_invalid");
+        Cash => ManualMethod.Cash,
+        Bank => ManualMethod.Bank,
+        _ => throw new DomainRuleException("payment.method_invalid"),
+    };
+}
 
-        return method!;
-    }
+public enum PaymentStatus
+{
+    Succeeded = 1,
+    Voided = 2,
 }
 
 public static class PaymentStatuses
 {
-    public const string Succeeded = "succeeded";
-
-    public const string Voided = "voided";
-
     public const int MaxLength = 16;
 }
 
@@ -117,9 +124,7 @@ public sealed class Payment : TenantEntity
 
     private Payment()
     {
-        Method = "";
         Currency = "";
-        Status = "";
         Reference = "";
         ReceiptNumber = "";
         Description = "";
@@ -127,13 +132,13 @@ public sealed class Payment : TenantEntity
 
     public Guid ChargeId { get; private set; }
 
-    public string Method { get; private set; }
+    public ManualMethod Method { get; private set; }
 
     public decimal Amount { get; private set; }
 
     public string Currency { get; private set; }
 
-    public string Status { get; private set; }
+    public PaymentStatus Status { get; private set; }
 
     public DateOnly PaidOn { get; private set; }
 
@@ -154,14 +159,14 @@ public sealed class Payment : TenantEntity
 
     public void Void(string? reason)
     {
-        if (Status != PaymentStatuses.Succeeded || !ManualMethods.IsKnown(Method))
+        if (Status != PaymentStatus.Succeeded)
             throw new DomainRuleException("payment.not_voidable");
 
         VoidReason = BillingReason.Require(reason, "payment.reason_invalid");
-        Status = PaymentStatuses.Voided;
+        Status = PaymentStatus.Voided;
     }
 
-    private static Payment Create(Charge charge, string method, decimal amount, DateOnly paidOn, string reference)
+    private static Payment Create(Charge charge, ManualMethod method, decimal amount, DateOnly paidOn, string reference)
     {
         var payment = new Payment
         {
@@ -171,7 +176,7 @@ public sealed class Payment : TenantEntity
             Method = method,
             Amount = amount,
             Currency = charge.Currency,
-            Status = PaymentStatuses.Succeeded,
+            Status = PaymentStatus.Succeeded,
             PaidOn = paidOn,
             Reference = reference,
             Description = charge.Description,

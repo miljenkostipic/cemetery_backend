@@ -13,15 +13,13 @@ public sealed class RemoveFuneralValidator : AbstractValidator<RemoveFuneral>
 }
 
 public sealed class RemoveFuneralHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOperationsRepository store,
     IUnitOfWork unitOfWork) : ICommandHandler<RemoveFuneral, bool>
 {
     public async Task<bool> Handle(RemoveFuneral command, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var funeral = await store.FindFuneralAsync(command.FuneralId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("funeral.not_found");
         store.RemoveFuneral(funeral);
@@ -39,15 +37,13 @@ public sealed class RemoveChapelBookingValidator : AbstractValidator<RemoveChape
 }
 
 public sealed class RemoveChapelBookingHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOperationsRepository store,
     IUnitOfWork unitOfWork) : ICommandHandler<RemoveChapelBooking, bool>
 {
     public async Task<bool> Handle(RemoveChapelBooking command, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var booking = await store.FindBookingAsync(command.BookingId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("chapel.not_found");
         store.RemoveBooking(booking);
@@ -65,15 +61,13 @@ public sealed class RemoveWorkOrderValidator : AbstractValidator<RemoveWorkOrder
 }
 
 public sealed class RemoveWorkOrderHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOperationsRepository store,
     IUnitOfWork unitOfWork) : ICommandHandler<RemoveWorkOrder, bool>
 {
     public async Task<bool> Handle(RemoveWorkOrder command, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var order = await store.FindWorkOrderAsync(command.WorkOrderId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("work_order.not_found");
         await store.RemoveWorkOrderAsync(order, cancellationToken).ConfigureAwait(false);
@@ -91,15 +85,13 @@ public sealed class RemoveMonumentPermitValidator : AbstractValidator<RemoveMonu
 }
 
 public sealed class RemoveMonumentPermitHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IOperationsRepository store,
     IUnitOfWork unitOfWork) : ICommandHandler<RemoveMonumentPermit, bool>
 {
     public async Task<bool> Handle(RemoveMonumentPermit command, CancellationToken cancellationToken)
     {
-        await OperationsAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var permit = await store.FindPermitAsync(command.PermitId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("permit.not_found");
         await store.RemovePermitAsync(permit, cancellationToken).ConfigureAwait(false);

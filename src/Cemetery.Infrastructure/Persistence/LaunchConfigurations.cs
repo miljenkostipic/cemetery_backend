@@ -25,7 +25,7 @@ public sealed class WebhookDeliveryConfiguration : IEntityTypeConfiguration<Webh
         builder.ToTable("webhook_deliveries");
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.Event).HasMaxLength(64);
-        builder.Property(entity => entity.Status).HasMaxLength(16);
+        builder.Property(entity => entity.Status).HasConversion<string>(new SnakeCaseEnumConverter<WebhookDeliveryStatus>()).HasMaxLength(16);
         builder.HasIndex(entity => new { entity.TenantId, entity.SubscriptionId });
         builder.HasOne<WebhookSubscription>()
             .WithMany()
@@ -53,7 +53,7 @@ public sealed class GdprExportConfiguration : IEntityTypeConfiguration<GdprExpor
     {
         builder.ToTable("gdpr_exports");
         builder.HasKey(entity => entity.Id);
-        builder.Property(entity => entity.Status).HasMaxLength(16);
+        builder.Property(entity => entity.Status).HasConversion<string>(new SnakeCaseEnumConverter<GdprExportStatus>()).HasMaxLength(16);
         builder.HasIndex(entity => new { entity.TenantId, entity.RequestedAt });
     }
 }

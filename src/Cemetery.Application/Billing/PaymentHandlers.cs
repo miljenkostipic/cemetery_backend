@@ -21,15 +21,13 @@ public sealed class RecordManualPaymentValidator : AbstractValidator<RecordManua
 }
 
 public sealed class RecordManualPaymentHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IBillingRepository billing,
     IUnitOfWork unitOfWork) : ICommandHandler<RecordManualPayment, PaymentView>
 {
     public async Task<PaymentView> Handle(RecordManualPayment command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var charge = await billing.FindChargeAsync(command.ChargeId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("charge.not_found");
         var payment = Payment.Record(charge, command.Method, command.Amount, command.PaidOn, command.Reference);
@@ -42,14 +40,12 @@ public sealed class RecordManualPaymentHandler(
 public sealed record GetReceipt(Guid PaymentId);
 
 public sealed class GetReceiptHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IBillingRepository billing) : IQueryHandler<GetReceipt, ReceiptView>
 {
     public async Task<ReceiptView> Handle(GetReceipt query, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var payment = await billing.FindPaymentAsync(query.PaymentId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("payment.not_found");
         return BillingMaps.Receipt(payment);
@@ -68,15 +64,13 @@ public sealed class VoidPaymentValidator : AbstractValidator<VoidPayment>
 }
 
 public sealed class VoidPaymentHandler(
-    ICurrentUser current,
-    ITenantContext tenant,
-    IMembershipRepository memberships,
+    ICallerContext caller,
     IBillingRepository billing,
     IUnitOfWork unitOfWork) : ICommandHandler<VoidPayment, ChargeView>
 {
     public async Task<ChargeView> Handle(VoidPayment command, CancellationToken cancellationToken)
     {
-        await RegisterAccess.RequireClerkAsync(current, tenant, memberships, cancellationToken).ConfigureAwait(false);
+        _ = caller.OrganizationId;
         var payment = await FindAsync(command.PaymentId, cancellationToken).ConfigureAwait(false);
         var charge = await billing.FindChargeAsync(payment.ChargeId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("charge.not_found");

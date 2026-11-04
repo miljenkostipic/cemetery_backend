@@ -72,23 +72,13 @@ public sealed class PublicHandlerTests
         var organizations = Substitute.For<IOrganizationRepository>();
         organizations.FindAsync(tenant, Arg.Any<CancellationToken>()).Returns(organization);
         var register = Substitute.For<IRegisterRepository>();
-        var handler = new PublishRegisterHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), organizations, register, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new PublishRegisterHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), organizations, register, Substitute.For<IUnitOfWork>(), Clock());
 
         var view = await handler.Handle(new PublishRegister(30), CancellationToken.None);
 
         Assert.True(view.PublishesRegister);
         Assert.Equal(30, view.HideRecentDeathsDays);
         await register.Received(1).AddAuditAsync(Arg.Is<AuditEntry>(entry => entry.Action == AuditActions.RegisterPublished), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task A_field_worker_cannot_publish_the_register()
-    {
-        var handler = new PublishRegisterHandler(User(), Tenant(Guid.CreateVersion7()), Membership(MembershipRole.FieldWorker), Substitute.For<IOrganizationRepository>(), Substitute.For<IRegisterRepository>(), Substitute.For<IUnitOfWork>(), Clock());
-
-        var error = await Assert.ThrowsAsync<ForbiddenException>(() => handler.Handle(new PublishRegister(0), CancellationToken.None));
-
-        Assert.Equal("register.forbidden", error.Code);
     }
 
     [Fact]
@@ -99,7 +89,7 @@ public sealed class PublicHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindGraveSiteAsync(site.Id, Arg.Any<CancellationToken>()).Returns(site);
         var register = Substitute.For<IRegisterRepository>();
-        var handler = new HideGraveFromPublicHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), layouts, register, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new HideGraveFromPublicHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), layouts, register, Substitute.For<IUnitOfWork>(), Clock());
 
         var view = await handler.Handle(new HideGraveFromPublic(site.Id), CancellationToken.None);
 
@@ -114,7 +104,7 @@ public sealed class PublicHandlerTests
         var person = Deceased.Record(tenant, Guid.CreateVersion7(), "Ana", "Horvat", null, new DateOnly(2020, 1, 1), Now);
         var register = Substitute.For<IRegisterRepository>();
         register.FindDeceasedAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
-        var handler = new DescribeMemorialHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), register, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new DescribeMemorialHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), register, Substitute.For<IUnitOfWork>(), Clock());
 
         var view = await handler.Handle(new DescribeMemorial(person.Id, " Rest ", "https://example.com/a.jpg"), CancellationToken.None);
 
@@ -132,7 +122,7 @@ public sealed class PublicHandlerTests
         var organizations = Substitute.For<IOrganizationRepository>();
         organizations.FindAsync(tenant, Arg.Any<CancellationToken>()).Returns(organization);
         var register = Substitute.For<IRegisterRepository>();
-        var handler = new WithdrawRegisterHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), organizations, register, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new WithdrawRegisterHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), organizations, register, Substitute.For<IUnitOfWork>(), Clock());
 
         var view = await handler.Handle(new WithdrawRegister(), CancellationToken.None);
 
@@ -149,7 +139,7 @@ public sealed class PublicHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindGraveSiteAsync(site.Id, Arg.Any<CancellationToken>()).Returns(site);
         var register = Substitute.For<IRegisterRepository>();
-        var handler = new ShowGraveOnPublicMapHandler(User(), Tenant(tenant), Membership(MembershipRole.OrganizationAdmin), layouts, register, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new ShowGraveOnPublicMapHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), layouts, register, Substitute.For<IUnitOfWork>(), Clock());
 
         var view = await handler.Handle(new ShowGraveOnPublicMap(site.Id), CancellationToken.None);
 
@@ -165,7 +155,7 @@ public sealed class PublicHandlerTests
         organization.PublishRegister(7);
         var organizations = Substitute.For<IOrganizationRepository>();
         organizations.FindAsync(tenant, Arg.Any<CancellationToken>()).Returns(organization);
-        var handler = new GetVisibilityHandler(User(), Tenant(tenant), Membership(MembershipRole.CemeteryClerk), organizations);
+        var handler = new GetVisibilityHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), organizations);
 
         var view = await handler.Handle(new GetVisibility(), CancellationToken.None);
 
@@ -196,26 +186,8 @@ public sealed class PublicHandlerTests
         Assert.Equal(summary, Assert.Single(listed));
     }
 
-    private static ICurrentUser User()
-    {
-        var current = Substitute.For<ICurrentUser>();
-        current.UserId.Returns(Guid.CreateVersion7());
-        return current;
-    }
 
-    private static ITenantContext Tenant(Guid organizationId)
-    {
-        var tenant = Substitute.For<ITenantContext>();
-        tenant.OrganizationId.Returns(organizationId);
-        return tenant;
-    }
 
-    private static IMembershipRepository Membership(MembershipRole role)
-    {
-        var memberships = Substitute.For<IMembershipRepository>();
-        memberships.RoleInCurrentTenantAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(role);
-        return memberships;
-    }
 
     private static TimeProvider Clock()
     {
