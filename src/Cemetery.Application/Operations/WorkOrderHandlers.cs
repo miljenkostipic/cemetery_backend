@@ -56,19 +56,19 @@ public sealed class OpenWorkOrderHandler(
     }
 }
 
-public sealed record ListWorkOrders(Guid CemeteryId);
+public sealed record ListWorkOrders(Guid CemeteryId, string? Query = null, string? Status = null, string? Cursor = null, int? Limit = null);
 
 public sealed class ListWorkOrdersHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
-    IOperationsRepository store) : IQueryHandler<ListWorkOrders, IReadOnlyList<WorkOrderView>>
+    IOperationsRepository store) : IQueryHandler<ListWorkOrders, Page<WorkOrderView>>
 {
-    public async Task<IReadOnlyList<WorkOrderView>> Handle(ListWorkOrders query, CancellationToken cancellationToken)
+    public async Task<Page<WorkOrderView>> Handle(ListWorkOrders query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
-        var orders = await store.ListWorkOrdersAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var page = await store.PageWorkOrdersAsync(query.CemeteryId, new WorkOrderFilter(query.Query, query.Status), new PageRequest(query.Cursor, query.Limit), cancellationToken).ConfigureAwait(false);
         var sites = OperationsIndex.ById(await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false), site => site.Id);
-        return orders.Select(order => Map(order, sites)).ToArray();
+        return new Page<WorkOrderView>(page.Items.Select(order => Map(order, sites)).ToArray(), page.NextCursor);
     }
 
     private static WorkOrderView Map(WorkOrder order, Dictionary<Guid, GraveSite> sites)

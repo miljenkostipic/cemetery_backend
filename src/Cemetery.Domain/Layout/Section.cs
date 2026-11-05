@@ -2,7 +2,7 @@ using Cemetery.Domain.Identity;
 
 namespace Cemetery.Domain.Layout;
 
-public sealed class Section : TenantEntity
+public sealed class Section : TenantEntity, IStampable
 {
     public const int NameMinLength = 1;
     public const int NameMaxLength = 80;
@@ -21,6 +21,8 @@ public sealed class Section : TenantEntity
     public string Code { get; private set; }
 
     public GeoPolygon? Outline { get; private set; }
+
+    public DateTimeOffset UpdatedAt { get; private set; }
 
     public static bool IsValidName(string? name)
     {
@@ -61,4 +63,6 @@ public sealed class Section : TenantEntity
     }
 
     public void ReplaceOutline(GeoPolygon outline) => Outline = outline;
+
+    public void Stamp(DateTimeOffset at) => UpdatedAt = at;
 }

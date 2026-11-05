@@ -33,22 +33,23 @@ public sealed class ListMaticaLinksHandler(
     }
 }
 
-public sealed record ListCemeteryInterments(Guid CemeteryId);
+public sealed record ListCemeteryInterments(Guid CemeteryId, string? Query = null, Guid? GraveSiteId = null, DateOnly? BuriedFrom = null, DateOnly? BuriedTo = null, string? Cursor = null, int? Limit = null);
 
 public sealed class ListCemeteryIntermentsHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
-    IRegisterRepository register) : IQueryHandler<ListCemeteryInterments, IReadOnlyList<IntermentView>>
+    IRegisterRepository register) : IQueryHandler<ListCemeteryInterments, Page<IntermentView>>
 {
-    public async Task<IReadOnlyList<IntermentView>> Handle(ListCemeteryInterments query, CancellationToken cancellationToken)
+    public async Task<Page<IntermentView>> Handle(ListCemeteryInterments query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
         _ = await layouts.FindCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("cemetery.not_found");
-        var interments = await register.ListIntermentsByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var filter = new IntermentFilter(query.Query, query.GraveSiteId, query.BuriedFrom, query.BuriedTo);
+        var page = await register.PageIntermentsAsync(query.CemeteryId, filter, new PageRequest(query.Cursor, query.Limit), cancellationToken).ConfigureAwait(false);
         var people = await register.ListDeceasedAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var sites = await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        return MaticaMaps.Interments(interments, people, sites);
+        return new Page<IntermentView>(MaticaMaps.Interments(page.Items, people, sites), page.NextCursor);
     }
 }
 

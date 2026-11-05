@@ -44,8 +44,11 @@ public static class CemeteryHost
 
     private static void ConfigureServices(WebApplicationBuilder builder, bool headless)
     {
-        builder.Host.UseSerilog((_, configuration) =>
-            configuration.MinimumLevel.Information().WriteTo.Console(formatProvider: System.Globalization.CultureInfo.InvariantCulture));
+        builder.Host.UseSerilog((context, configuration) => configuration
+            .MinimumLevel.Is(context.HostingEnvironment.IsEnvironment("Testing")
+                ? Serilog.Events.LogEventLevel.Warning
+                : Serilog.Events.LogEventLevel.Information)
+            .WriteTo.Console(formatProvider: System.Globalization.CultureInfo.InvariantCulture));
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration, headless);
         builder.Services.AddHttpContextAccessor();
@@ -111,7 +114,7 @@ public static class CemeteryHost
         if (app.Environment.IsDevelopment())
             ConfigureApiDocUis(app);
 
-        app.MapGroup("/api/v1").MapAuthEndpoints().MapOrganizationEndpoints().MapLayoutEndpoints().MapRegisterEndpoints().MapPublicEndpoints().MapRightsEndpoints().MapOperationsEndpoints().MapReportsEndpoints().MapLaunchEndpoints().MapBillingEndpoints();
+        app.MapGroup("/api/v1").MapAuthEndpoints().MapOrganizationEndpoints().MapLayoutEndpoints().MapRegisterEndpoints().MapPublicEndpoints().MapRightsEndpoints().MapOperationsEndpoints().MapReportsEndpoints().MapLaunchEndpoints().MapBillingEndpoints().MapPhase4Endpoints();
     }
 
     private static void ConfigureApiDocUis(WebApplication app)

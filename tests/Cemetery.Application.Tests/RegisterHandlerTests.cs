@@ -49,7 +49,7 @@ public sealed class RegisterHandlerTests
         register.ListIntermentsByDeceasedAsync(person.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<Interment>());
         var webhooks = Substitute.For<IWebhookRepository>();
         webhooks.EnqueueAsync(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-        var handler = new RecordIntermentHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), layouts, register, webhooks, Substitute.For<IUnitOfWork>(), Clock());
+        var handler = new RecordIntermentHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), layouts, register, Substitute.For<IRightsRepository>(), webhooks, Substitute.For<IUnitOfWork>(), Clock());
 
         var buried = await handler.Handle(new RecordInterment(person.Id, site.Id, 1, "coffin", new DateOnly(2020, 4, 1)), CancellationToken.None);
 
@@ -88,12 +88,11 @@ public sealed class RegisterHandlerTests
         var cemetery = CemeteryPlace.Open(tenant, "Pilot", true, Now);
         var site = GraveSite.Place(tenant, cemetery.Id, Guid.CreateVersion7(), null, "A-0001", GraveSiteKind.SingleGrave, Rectangle());
         var buried = Interment.Record(tenant, cemetery.Id, Guid.CreateVersion7(), site.Id, 1, IntermentKind.Coffin, new DateOnly(2024, 1, 1));
+        site.Apply(SiteOccupancy.Describe(site, false, [buried], new DateOnly(2026, 6, 1), cemetery.RestPeriodYears));
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(cemetery);
         layouts.ListByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { site });
-        var register = Substitute.For<IRegisterRepository>();
-        register.ListIntermentsByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { buried });
-        var handler = new ListGraveSitesHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, register, Clock());
+        var handler = new ListGraveSitesHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts);
 
         var sites = await handler.Handle(new ListGraveSites(cemetery.Id), CancellationToken.None);
 

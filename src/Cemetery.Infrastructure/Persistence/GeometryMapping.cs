@@ -12,6 +12,14 @@ internal static class GeometryMapping
         polygon => ToPolygon(polygon),
         polygon => FromPolygon(polygon));
 
+    public static readonly ValueConverter<GeoPoint, Point> PointConverter = new(
+        point => Factory.CreatePoint(new Coordinate(point.Longitude, point.Latitude)),
+        point => new GeoPoint(point.X, point.Y));
+
+    public static readonly ValueConverter<GeoLine, LineString> LineConverter = new(
+        line => Factory.CreateLineString(line.Points.Select(point => new Coordinate(point.Longitude, point.Latitude)).ToArray()),
+        line => GeoLine.Create(line.Coordinates.Select(coordinate => new GeoPoint(coordinate.X, coordinate.Y)).ToArray()));
+
     public static Polygon? ToPolygon(GeoPolygon? polygon)
     {
         if (polygon is null)

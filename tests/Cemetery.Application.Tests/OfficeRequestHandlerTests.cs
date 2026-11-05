@@ -18,13 +18,13 @@ public sealed class OfficeRequestHandlerTests
         var author = Guid.CreateVersion7();
         var stored = OfficeRequest.Send(tenant, author, "Please call", null, new DateOnly(2026, 10, 7));
         var requests = Substitute.For<IOfficeRequestRepository>();
-        requests.ListAsync(Arg.Any<CancellationToken>()).Returns(new[] { stored });
+        requests.PageAsync(Arg.Any<string?>(), Arg.Any<PageRequest>(), Arg.Any<CancellationToken>()).Returns(new Page<OfficeRequest>([stored], null));
         var handler = new ListOfficeRequestsHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), requests);
 
         var listed = await handler.Handle(new ListOfficeRequests(), CancellationToken.None);
 
-        Assert.Equal([stored.Id], listed.Select(item => item.Id));
-        Assert.Equal("Please call", listed[0].Message);
+        Assert.Equal([stored.Id], listed.Items.Select(item => item.Id));
+        Assert.Equal("Please call", listed.Items[0].Message);
     }
 
     [Fact]

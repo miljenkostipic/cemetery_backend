@@ -15,6 +15,8 @@ public sealed class MonumentPermit : TenantEntity
 
     public string HolderName { get; private set; }
 
+    public Guid? HolderId { get; private set; }
+
     public DateOnly IssuedOn { get; private set; }
 
     public DateOnly ExpiresOn { get; private set; }
@@ -25,11 +27,12 @@ public sealed class MonumentPermit : TenantEntity
         Guid graveSiteId,
         string? holderName,
         DateOnly issuedOn,
-        DateOnly expiresOn)
+        DateOnly expiresOn,
+        Guid? holderId = null)
     {
         RequireParties(tenantId, cemeteryId, graveSiteId);
-        if (issuedOn == default || expiresOn == default || expiresOn < issuedOn)
-            throw new DomainRuleException("permit.date_invalid");
+        if (issuedOn == default || expiresOn == default || expiresOn < issuedOn || holderId == Guid.Empty)
+            throw new DomainRuleException(holderId == Guid.Empty ? "holder.not_found" : "permit.date_invalid");
 
         return new MonumentPermit
         {
@@ -38,6 +41,7 @@ public sealed class MonumentPermit : TenantEntity
             CemeteryId = cemeteryId,
             GraveSiteId = graveSiteId,
             HolderName = OperationsText.Name(holderName, "permit.name_invalid"),
+            HolderId = holderId,
             IssuedOn = issuedOn,
             ExpiresOn = expiresOn,
         };

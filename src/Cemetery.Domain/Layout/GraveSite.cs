@@ -3,7 +3,7 @@ using Cemetery.Domain.Register;
 
 namespace Cemetery.Domain.Layout;
 
-public sealed class GraveSite : TenantEntity
+public sealed class GraveSite : TenantEntity, IStampable
 {
     public const int CodeMaxLength = 32;
 
@@ -30,7 +30,13 @@ public sealed class GraveSite : TenantEntity
 
     public bool HiddenFromPublic { get; private set; }
 
-    public GraveSiteStatus Status => StatusFor(new SiteUse(0, false));
+    public int Used { get; private set; }
+
+    public GraveSiteStatus Status { get; private set; }
+
+    public DateOnly? RestUntil { get; private set; }
+
+    public DateTimeOffset UpdatedAt { get; private set; }
 
     public GraveSiteStatus StatusFor(SiteUse use) =>
         GraveSiteStatuses.Derive(Closed, Outline is not null, false, use.Occupied, Capacity, use.Reusable);
@@ -67,8 +73,18 @@ public sealed class GraveSite : TenantEntity
             Kind = kind,
             Capacity = resolved,
             Outline = outline,
+            Status = GraveSiteStatus.Available,
         };
     }
+
+    public void Apply(OccupancyStamp stamp)
+    {
+        Used = stamp.Used;
+        Status = stamp.Status;
+        RestUntil = stamp.RestUntil;
+    }
+
+    public void Stamp(DateTimeOffset at) => UpdatedAt = at;
 
     public void ReplaceOutline(GeoPolygon outline)
     {
@@ -77,7 +93,11 @@ public sealed class GraveSite : TenantEntity
         Outline = outline;
     }
 
-    public void Close() => Closed = true;
+    public void Close()
+    {
+        Closed = true;
+        Status = GraveSiteStatus.Closed;
+    }
 
     public void HideFromPublic() => HiddenFromPublic = true;
 
@@ -88,6 +108,7 @@ public sealed class GraveSite : TenantEntity
         if (!Closed)
             throw new DomainRuleException("grave_site.reset_invalid");
         Closed = false;
+        Status = Used <= 0 ? GraveSiteStatus.Available : Used >= Capacity ? GraveSiteStatus.Full : GraveSiteStatus.Occupied;
     }
 
     public (GraveSite Left, GraveSite Right) Split(string leftCode, string rightCode)

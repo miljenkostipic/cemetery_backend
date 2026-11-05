@@ -680,16 +680,41 @@
         "tags": [
           "RightsEndpoints"
         ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/OfficeRequestView"
-                  }
+                  "$ref": "#/components/schemas/PageOfOfficeRequestView"
                 }
               }
             }
@@ -1024,6 +1049,39 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -1032,10 +1090,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WorkOrderView"
-                  }
+                  "$ref": "#/components/schemas/PageOfWorkOrderView"
                 }
               }
             }
@@ -1298,6 +1353,56 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "graveSiteId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "buriedFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "buriedTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -1306,10 +1411,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/IntermentView"
-                  }
+                  "$ref": "#/components/schemas/PageOfIntermentView"
                 }
               }
             }
@@ -1611,6 +1713,51 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -1619,10 +1766,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ChargeView"
-                  }
+                  "$ref": "#/components/schemas/PageOfChargeView"
                 }
               }
             }
@@ -1644,6 +1788,32 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -1652,10 +1822,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ArrearsRow"
-                  }
+                  "$ref": "#/components/schemas/PageOfArrearsRow"
                 }
               }
             }
@@ -1900,6 +2067,1020 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/holders": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOfHolderRecordView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HolderRecordBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolderRecordView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/holders/{holderId}": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "holderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolderRecordView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "holderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HolderRecordBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolderRecordView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/holders/{holderId}/invitations": {
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "holderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationIssued"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/holder": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolderRecordView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/right": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteRightsView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantRightBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveRightView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-rights/{rightId}/renewals": {
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "rightId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenewRightBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveRightView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-rights/{rightId}/transfers": {
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "rightId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConveyRightBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveRightView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-rights/{rightId}/inheritances": {
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "rightId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConveyRightBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveRightView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/reservations": {
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservationBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reservations/{reservationId}/cancellations": {
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteRightsView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/documents": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{documentId}": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/me/grave-sites": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HolderSiteView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/documents": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/documents/{documentId}": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/me/charges": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChargeView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/charges/{chargeId}/payments": {
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "chargeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnlinePaymentBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/payments/{paymentId}": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/map": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/grave-sites/{graveSiteId}/dossier": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "graveSiteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DossierView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cemeteryId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchHit"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/entrances": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EntranceView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntranceBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntranceView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/entrances/{entranceId}": {
+      "delete": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "entranceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/cemeteries/{cemeteryId}/paths": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PathView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "cemeteryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PathBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PathView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/paths/{pathId}": {
+      "delete": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "pathId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/work-orders/{workOrderId}/photos/{photoId}": {
+      "get": {
+        "tags": [
+          "Phase4Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "workOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "photoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -2528,6 +3709,63 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sectionId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "diedFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "diedTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "withoutSite",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -2536,10 +3774,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DeceasedView"
-                  }
+                  "$ref": "#/components/schemas/PageOfDeceasedView"
                 }
               }
             }
@@ -3339,6 +4574,25 @@
           }
         }
       },
+      "ConveyRightBody": {
+        "required": [
+          "on",
+          "holders"
+        ],
+        "type": "object",
+        "properties": {
+          "on": {
+            "type": "string",
+            "format": "date"
+          },
+          "holders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HolderBody"
+            }
+          }
+        }
+      },
       "CorrectionBody": {
         "required": [
           "givenName",
@@ -3539,6 +4793,315 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "DocumentBody": {
+        "required": [
+          "fileName",
+          "contentType",
+          "contentBase64",
+          "kind"
+        ],
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "contentBase64": {
+            "type": "string"
+          },
+          "kind": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DocumentView": {
+        "required": [
+          "id",
+          "graveSiteId",
+          "fileName",
+          "contentType",
+          "byteSize"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "byteSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "DossierBurial": {
+        "required": [
+          "name",
+          "bornYear",
+          "diedYear",
+          "buriedOn"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "bornYear": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "diedYear": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "buriedOn": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "DossierHolder": {
+        "required": [
+          "name",
+          "email",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DossierOrder": {
+        "required": [
+          "id",
+          "kind",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "DossierRight": {
+        "required": [
+          "id",
+          "status",
+          "holders"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "holders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DossierHolder"
+            }
+          }
+        }
+      },
+      "DossierSlot": {
+        "required": [
+          "position",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "position": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      },
+      "DossierView": {
+        "required": [
+          "site",
+          "slots",
+          "interments",
+          "right",
+          "feeStatus",
+          "primaryPhotoUrl",
+          "openWorkOrders"
+        ],
+        "type": "object",
+        "properties": {
+          "site": {
+            "$ref": "#/components/schemas/GraveSiteView"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DossierSlot"
+            }
+          },
+          "interments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DossierBurial"
+            }
+          },
+          "right": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DossierRight"
+              }
+            ]
+          },
+          "feeStatus": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "primaryPhotoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "openWorkOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DossierOrder"
+            }
+          }
+        }
+      },
+      "EntranceBody": {
+        "required": [
+          "name",
+          "longitude",
+          "latitude"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "longitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "latitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "EntranceView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "name",
+          "longitude",
+          "latitude"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "longitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "latitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
@@ -3986,6 +5549,79 @@
           }
         }
       },
+      "GrantRightBody": {
+        "required": [
+          "perpetual",
+          "termYears",
+          "holders"
+        ],
+        "type": "object",
+        "properties": {
+          "perpetual": {
+            "type": "boolean"
+          },
+          "termYears": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "holders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HolderBody"
+            }
+          }
+        }
+      },
+      "GraveRightView": {
+        "required": [
+          "id",
+          "graveSiteId",
+          "status",
+          "perpetual",
+          "startsOn",
+          "endsOn",
+          "holders"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "perpetual": {
+            "type": "boolean"
+          },
+          "startsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "endsOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "holders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HolderView"
+            }
+          }
+        }
+      },
       "GraveRowView": {
         "required": [
           "id",
@@ -4077,6 +5713,212 @@
         "properties": {
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "HolderBody": {
+        "required": [
+          "givenName",
+          "familyName",
+          "email",
+          "share"
+        ],
+        "type": "object",
+        "properties": {
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "share": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "HolderRecordBody": {
+        "required": [
+          "givenName",
+          "familyName",
+          "oib",
+          "address",
+          "email",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "oib": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "address": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "HolderRecordView": {
+        "required": [
+          "id",
+          "givenName",
+          "familyName",
+          "oib",
+          "address",
+          "email",
+          "phone",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "oib": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "address": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "userId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "HolderSiteView": {
+        "required": [
+          "graveSiteId",
+          "cemeteryId",
+          "cemeteryName",
+          "code",
+          "share",
+          "perpetual",
+          "endsOn"
+        ],
+        "type": "object",
+        "properties": {
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryName": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "share": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "perpetual": {
+            "type": "boolean"
+          },
+          "endsOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          }
+        }
+      },
+      "HolderView": {
+        "required": [
+          "id",
+          "givenName",
+          "familyName",
+          "email",
+          "share"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "share": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -4216,7 +6058,8 @@
       "ManualMethod": {
         "enum": [
           "cash",
-          "bank"
+          "bank",
+          "online"
         ]
       },
       "ManualPaymentBody": {
@@ -4487,6 +6330,17 @@
           }
         }
       },
+      "OnlinePaymentBody": {
+        "required": [
+          "provider"
+        ],
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          }
+        }
+      },
       "OpenCemetery": {
         "required": [
           "name",
@@ -4564,6 +6418,153 @@
           }
         }
       },
+      "PageOfArrearsRow": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArrearsRow"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PageOfChargeView": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChargeView"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PageOfDeceasedView": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeceasedView"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PageOfHolderRecordView": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HolderRecordView"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PageOfIntermentView": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntermentView"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PageOfOfficeRequestView": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OfficeRequestView"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PageOfWorkOrderView": {
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkOrderView"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "PasskeyCredential": {
         "required": [
           "credentialJson"
@@ -4572,6 +6573,52 @@
         "properties": {
           "credentialJson": {
             "type": "string"
+          }
+        }
+      },
+      "PathBody": {
+        "required": [
+          "name",
+          "line"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "line": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
+          }
+        }
+      },
+      "PathView": {
+        "required": [
+          "id",
+          "cemeteryId",
+          "name",
+          "line"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cemeteryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "line": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
           }
         }
       },
@@ -4623,7 +6670,8 @@
       "PaymentStatus": {
         "enum": [
           "succeeded",
-          "voided"
+          "voided",
+          "pending"
         ]
       },
       "PaymentView": {
@@ -4763,6 +6811,26 @@
           }
         }
       },
+      "PublicCompanion": {
+        "required": [
+          "deceasedId",
+          "givenName",
+          "familyName"
+        ],
+        "type": "object",
+        "properties": {
+          "deceasedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          }
+        }
+      },
       "PublicMap": {
         "required": [
           "organizationSlug",
@@ -4835,7 +6903,14 @@
           "schematic",
           "graveSiteId",
           "graveSiteCode",
-          "outline"
+          "outline",
+          "centroidLongitude",
+          "centroidLatitude",
+          "sectionName",
+          "entranceName",
+          "entranceLongitude",
+          "entranceLatitude",
+          "others"
         ],
         "type": "object",
         "properties": {
@@ -4908,6 +6983,60 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GeoPointView"
+            }
+          },
+          "centroidLongitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "centroidLatitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "sectionName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entranceName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entranceLongitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "entranceLatitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "others": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicCompanion"
             }
           }
         }
@@ -5102,6 +7231,22 @@
           }
         }
       },
+      "RenewRightBody": {
+        "required": [
+          "years"
+        ],
+        "type": "object",
+        "properties": {
+          "years": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "RequestPasswordReset": {
         "required": [
           "email"
@@ -5110,6 +7255,64 @@
         "properties": {
           "email": {
             "type": "string"
+          }
+        }
+      },
+      "ReservationBody": {
+        "required": [
+          "givenName",
+          "familyName",
+          "email",
+          "until"
+        ],
+        "type": "object",
+        "properties": {
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "until": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "ReservationView": {
+        "required": [
+          "id",
+          "graveSiteId",
+          "givenName",
+          "familyName",
+          "email",
+          "until"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "graveSiteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "until": {
+            "type": "string",
+            "format": "date"
           }
         }
       },
@@ -5190,6 +7393,54 @@
         "properties": {
           "label": {
             "type": "string"
+          }
+        }
+      },
+      "SearchHit": {
+        "required": [
+          "kind",
+          "id",
+          "label",
+          "siteId",
+          "longitude",
+          "latitude"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "siteId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "longitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "latitude": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
@@ -5288,6 +7539,35 @@
             "type": [
               "null",
               "string"
+            ]
+          }
+        }
+      },
+      "SiteRightsView": {
+        "required": [
+          "right",
+          "reservation"
+        ],
+        "type": "object",
+        "properties": {
+          "right": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/GraveRightView"
+              }
+            ]
+          },
+          "reservation": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ReservationView"
+              }
             ]
           }
         }
@@ -5619,6 +7899,9 @@
     },
     {
       "name": "BillingEndpoints"
+    },
+    {
+      "name": "Phase4Endpoints"
     }
   ]
 }

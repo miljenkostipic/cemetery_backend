@@ -11,17 +11,13 @@ public sealed record ListGraveSites(Guid CemeteryId);
 
 public sealed class ListGraveSitesHandler(
     ICallerContext caller,
-    ILayoutRepository layouts,
-    IRegisterRepository register,
-    TimeProvider clock) : IQueryHandler<ListGraveSites, IReadOnlyList<GraveSiteView>>
+    ILayoutRepository layouts) : IQueryHandler<ListGraveSites, IReadOnlyList<GraveSiteView>>
 {
     public async Task<IReadOnlyList<GraveSiteView>> Handle(ListGraveSites query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
         var sites = await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        var cemetery = await layouts.FindCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        var interments = await register.ListIntermentsByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        return RegisterMaps.SiteViews(sites, interments, RestYears.Of(cemetery), RegisterClock.Today(clock));
+        return RegisterMaps.SiteViews(sites);
     }
 }
 
@@ -29,19 +25,14 @@ public sealed record GetGraveSite(Guid GraveSiteId);
 
 public sealed class GetGraveSiteHandler(
     ICallerContext caller,
-    ILayoutRepository layouts,
-    IRegisterRepository register,
-    TimeProvider clock) : IQueryHandler<GetGraveSite, GraveSiteView>
+    ILayoutRepository layouts) : IQueryHandler<GetGraveSite, GraveSiteView>
 {
     public async Task<GraveSiteView> Handle(GetGraveSite query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
         var site = await layouts.FindGraveSiteAsync(query.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
-        var cemetery = await layouts.FindCemeteryAsync(site.CemeteryId, cancellationToken).ConfigureAwait(false);
-        var interments = await register.ListIntermentsBySiteAsync(site.Id, cancellationToken).ConfigureAwait(false);
-        var use = SiteOccupancy.Summarize(site.Id, site.Capacity, interments, RegisterClock.Today(clock), RestYears.Of(cemetery));
-        return LayoutMaps.ToView(site, use);
+        return LayoutMaps.ToView(site);
     }
 }
 

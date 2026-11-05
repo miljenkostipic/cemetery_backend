@@ -8,17 +8,17 @@ namespace Cemetery.Application.Rights;
 
 public sealed record OfficeRequestView(Guid Id, string Message, DateOnly CreatedOn, Guid? GraveSiteId);
 
-public sealed record ListOfficeRequests;
+public sealed record ListOfficeRequests(string? Query = null, string? Cursor = null, int? Limit = null);
 
 public sealed class ListOfficeRequestsHandler(
     ICallerContext caller,
-    IOfficeRequestRepository requests) : IQueryHandler<ListOfficeRequests, IReadOnlyList<OfficeRequestView>>
+    IOfficeRequestRepository requests) : IQueryHandler<ListOfficeRequests, Page<OfficeRequestView>>
 {
-    public async Task<IReadOnlyList<OfficeRequestView>> Handle(ListOfficeRequests query, CancellationToken cancellationToken)
+    public async Task<Page<OfficeRequestView>> Handle(ListOfficeRequests query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
-        var rows = await requests.ListAsync(cancellationToken).ConfigureAwait(false);
-        return rows.Select(OfficeMaps.View).ToArray();
+        var page = await requests.PageAsync(query.Query, new PageRequest(query.Cursor, query.Limit), cancellationToken).ConfigureAwait(false);
+        return new Page<OfficeRequestView>(page.Items.Select(OfficeMaps.View).ToArray(), page.NextCursor);
     }
 }
 

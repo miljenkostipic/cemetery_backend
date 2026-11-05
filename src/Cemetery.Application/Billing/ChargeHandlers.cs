@@ -6,35 +6,35 @@ using FluentValidation;
 
 namespace Cemetery.Application.Billing;
 
-public sealed record ListCharges(Guid CemeteryId);
+public sealed record ListCharges(Guid CemeteryId, string? Query = null, string? Status = null, int? Year = null, string? Cursor = null, int? Limit = null);
 
 public sealed class ListChargesHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
-    IBillingRepository billing) : IQueryHandler<ListCharges, IReadOnlyList<ChargeView>>
+    IBillingRepository billing) : IQueryHandler<ListCharges, Page<ChargeView>>
 {
-    public async Task<IReadOnlyList<ChargeView>> Handle(ListCharges query, CancellationToken cancellationToken)
+    public async Task<Page<ChargeView>> Handle(ListCharges query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
         await Require.CemeteryAsync(layouts, query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        var charges = await billing.ListChargesAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        return charges.Select(BillingMaps.Charge).ToArray();
+        var page = await billing.PageChargesAsync(query.CemeteryId, new ChargeFilter(query.Query, query.Status, query.Year), new PageRequest(query.Cursor, query.Limit), cancellationToken).ConfigureAwait(false);
+        return new Page<ChargeView>(page.Items.Select(BillingMaps.Charge).ToArray(), page.NextCursor);
     }
 }
 
-public sealed record ListArrears(Guid CemeteryId);
+public sealed record ListArrears(Guid CemeteryId, string? Query = null, string? Cursor = null, int? Limit = null);
 
 public sealed class ListArrearsHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
-    IBillingRepository billing) : IQueryHandler<ListArrears, IReadOnlyList<ArrearsRow>>
+    IBillingRepository billing) : IQueryHandler<ListArrears, Page<ArrearsRow>>
 {
-    public async Task<IReadOnlyList<ArrearsRow>> Handle(ListArrears query, CancellationToken cancellationToken)
+    public async Task<Page<ArrearsRow>> Handle(ListArrears query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
         await Require.CemeteryAsync(layouts, query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        var charges = await billing.ListArrearsAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        return charges.Select(BillingMaps.Arrears).ToArray();
+        var page = await billing.PageArrearsAsync(query.CemeteryId, query.Query, new PageRequest(query.Cursor, query.Limit), cancellationToken).ConfigureAwait(false);
+        return new Page<ArrearsRow>(page.Items.Select(BillingMaps.Arrears).ToArray(), page.NextCursor);
     }
 }
 
@@ -50,6 +50,7 @@ public sealed class RunYearHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
     IBillingRepository billing,
+    IRightsRepository rights,
     IUnitOfWork unitOfWork) : ICommandHandler<RunYear, YearlyRunView>
 {
     public async Task<YearlyRunView> Handle(RunYear command, CancellationToken cancellationToken)
@@ -67,7 +68,8 @@ public sealed class RunYearHandler(
         var fees = await billing.ListFeesAsync(cemeteryId, cancellationToken).ConfigureAwait(false);
         var sites = await layouts.ListByCemeteryAsync(cemeteryId, cancellationToken).ConfigureAwait(false);
         var already = await billing.ChargedPairsAsync(cemeteryId, year, cancellationToken).ConfigureAwait(false);
-        var charges = YearlyBilling.Raise(organizationId, cemeteryId, year, fees, sites, already);
+        var holders = await rights.ActiveBillsAsync(cemeteryId, cancellationToken).ConfigureAwait(false);
+        var charges = YearlyBilling.Raise(organizationId, cemeteryId, year, fees, sites, already, holders);
         await billing.AddChargesAsync(charges, cancellationToken).ConfigureAwait(false);
         return charges.Count;
     }

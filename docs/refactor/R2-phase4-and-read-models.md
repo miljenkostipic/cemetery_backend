@@ -85,3 +85,12 @@ Every new endpoint ships with the three R1 tests (happy, wrong role, other tenan
 ## Found while working
 
 (add items here, do not fix them in this step)
+
+- R1 boxes in `docs/refactor/ISSUES.md` on `main` are still open even though that code is already on `origin/main`.
+- Historical charges and monument permits keep a holder-name snapshot and a null `HolderId`. A clerk match tool can fill them later. This step does not backfill them.
+- `RemoveDeceased` exhumes the interments and does not refresh the stored site occupancy.
+- `IssuePermit` still records the holder name only. The permit row can store `HolderId`, and the issue command does not look a holder up.
+- List responses for the register, interments, charges, arrears, work orders, holders, and office requests are now `{ items, nextCursor }`. The published frontend OpenAPI still describes those lists as JSON arrays, so the frontend needs a matching contract change.
+- `PublicMemorial` now includes the site centroid, section name, nearest entrance, and the other publicly visible people in the same grave. The frontend memorial schema does not list those fields yet.
+- The occupancy backfill counts a slot as used while its rest period is still running. A slot whose rest has ended is counted as reusable. The next interment, exhumation, transfer, reservation, or right change writes the status again from the domain rule.
+- The register and map timing checks live in `Phase4PerformanceTests` and skip when Docker is absent. They were not run on this machine.

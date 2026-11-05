@@ -23,6 +23,8 @@ public static class PositionStates
 
 public readonly record struct SiteUse(int Occupied, bool Reusable);
 
+public readonly record struct OccupancyStamp(int Used, GraveSiteStatus Status, DateOnly? RestUntil);
+
 public readonly record struct OpenSlot(int Position, PositionState State);
 
 public static class BurialPositions
@@ -63,6 +65,13 @@ public static class BurialPositions
 
 public static class SiteOccupancy
 {
+    public static OccupancyStamp Describe(GraveSite site, bool reserved, IEnumerable<Interment> interments, DateOnly on, int restYears)
+    {
+        var use = Summarize(site.Id, site.Capacity, interments, on, restYears);
+        var status = GraveSiteStatuses.Derive(site.Closed, site.Outline is not null, reserved, use.Occupied, site.Capacity, use.Reusable);
+        return new OccupancyStamp(use.Occupied, status, RestUntil(site.Id, interments, restYears));
+    }
+
     public static SiteUse Summarize(Guid graveSiteId, int capacity, IEnumerable<Interment> interments, DateOnly on, int restYears)
     {
         var here = ForSite(graveSiteId, interments);
@@ -89,6 +98,21 @@ public static class SiteOccupancy
         }
 
         return open;
+    }
+
+    private static DateOnly? RestUntil(Guid graveSiteId, IEnumerable<Interment> interments, int restYears)
+    {
+        DateOnly? earliest = null;
+        foreach (var item in interments)
+        {
+            if (item.GraveSiteId != graveSiteId || !item.Occupies)
+                continue;
+            var until = item.BuriedOn.AddYears(restYears);
+            if (earliest is null || until < earliest)
+                earliest = until;
+        }
+
+        return earliest;
     }
 
     private static void Tally(PositionState state, ref int occupied, ref bool reusable)

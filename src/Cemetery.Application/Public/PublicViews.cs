@@ -37,7 +37,16 @@ public sealed record PublicMemorial(
     bool Schematic,
     Guid? GraveSiteId,
     string? GraveSiteCode,
-    IReadOnlyList<GeoPointView> Outline);
+    IReadOnlyList<GeoPointView> Outline,
+    double? CentroidLongitude,
+    double? CentroidLatitude,
+    string? SectionName,
+    string? EntranceName,
+    double? EntranceLongitude,
+    double? EntranceLatitude,
+    IReadOnlyList<PublicCompanion> Others);
+
+public sealed record PublicCompanion(Guid DeceasedId, string GivenName, string FamilyName);
 
 public sealed record PublicSection(Guid Id, string Name, string Code, IReadOnlyList<GeoPointView> Outline);
 

@@ -41,9 +41,7 @@ internal static class LayoutMaps
 
     public static GraveRowView ToView(GraveRow row) => new(row.Id, row.SectionId, row.Label);
 
-    public static GraveSiteView ToView(GraveSite site) => ToView(site, new SiteUse(0, false));
-
-    public static GraveSiteView ToView(GraveSite site, SiteUse use) =>
+    public static GraveSiteView ToView(GraveSite site) =>
         new(
             site.Id,
             site.CemeteryId,
@@ -52,7 +50,7 @@ internal static class LayoutMaps
             site.Code,
             GraveSiteKinds.ToCode(site.Kind),
             site.Capacity,
-            GraveSiteStatuses.ToCode(site.StatusFor(use)),
+            GraveSiteStatuses.ToCode(site.Status),
             Ring(site.Outline),
             site.HiddenFromPublic);
 

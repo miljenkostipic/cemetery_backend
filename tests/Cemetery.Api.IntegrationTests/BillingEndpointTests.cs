@@ -18,10 +18,10 @@ public sealed class BillingEndpointTests(ApiFixture api) : ApiTest(api)
         Assert.True(run.GetProperty("chargeCount").GetInt32() > 0);
         await OfficeWorld.Post(world.Clerk, $"/api/v1/cemeteries/{world.CemeteryId}/charges/reminders", new { }, CancellationToken);
         var charges = await OfficeWorld.Get(world.Clerk, $"/api/v1/cemeteries/{world.CemeteryId}/charges", CancellationToken);
-        var charge = charges.EnumerateArray().First();
+        var charge = ApiAssert.Rows(charges).EnumerateArray().First();
         var chargeId = charge.GetProperty("id").GetGuid();
         var arrears = await OfficeWorld.Get(world.Clerk, $"/api/v1/cemeteries/{world.CemeteryId}/arrears", CancellationToken);
-        Assert.Contains(chargeId, arrears.EnumerateArray().Select(item => item.GetProperty("chargeId").GetGuid()));
+        Assert.Contains(chargeId, ApiAssert.Rows(arrears).EnumerateArray().Select(item => item.GetProperty("chargeId").GetGuid()));
 
         var payment = await OfficeWorld.Post(world.Clerk, $"/api/v1/charges/{chargeId}/payments", new
         {

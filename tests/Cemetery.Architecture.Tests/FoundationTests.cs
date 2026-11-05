@@ -90,6 +90,14 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.charges", RowLevelSecurity.Billing, StringComparison.Ordinal);
         Assert.Contains("cemetery.merchant_accounts", RowLevelSecurity.Billing, StringComparison.Ordinal);
         Assert.Contains("cemetery.payments", RowLevelSecurity.Payments, StringComparison.Ordinal);
+        Assert.Contains("cemetery.holders", RowLevelSecurity.Rights, StringComparison.Ordinal);
+        Assert.Contains("cemetery.grave_rights", RowLevelSecurity.Rights, StringComparison.Ordinal);
+        Assert.Contains("cemetery.grave_right_shares", RowLevelSecurity.Rights, StringComparison.Ordinal);
+        Assert.Contains("cemetery.reservations", RowLevelSecurity.Rights, StringComparison.Ordinal);
+        Assert.Contains("cemetery.site_documents", RowLevelSecurity.Rights, StringComparison.Ordinal);
+        Assert.Contains("cemetery.stored_files", RowLevelSecurity.Rights, StringComparison.Ordinal);
+        Assert.Contains("cemetery.entrances", RowLevelSecurity.Rights, StringComparison.Ordinal);
+        Assert.Contains("cemetery.paths", RowLevelSecurity.Rights, StringComparison.Ordinal);
         Assert.Contains("SECURITY DEFINER", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("hidden_from_public", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("LIMIT 50", PublicCatalogSql.Up, StringComparison.Ordinal);

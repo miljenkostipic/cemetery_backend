@@ -6,6 +6,7 @@ public enum ManualMethod
 {
     Cash = 1,
     Bank = 2,
+    Online = 3,
 }
 
 public static class ManualMethods
@@ -22,6 +23,7 @@ public static class ManualMethods
     {
         Cash => ManualMethod.Cash,
         Bank => ManualMethod.Bank,
+        "online" => ManualMethod.Online,
         _ => throw new DomainRuleException("payment.method_invalid"),
     };
 }
@@ -30,6 +32,7 @@ public enum PaymentStatus
 {
     Succeeded = 1,
     Voided = 2,
+    Pending = 3,
 }
 
 public static class PaymentStatuses
@@ -150,10 +153,21 @@ public sealed class Payment : TenantEntity
 
     public string? VoidReason { get; private set; }
 
+    public string? RedirectUrl { get; private set; }
+
     public static Payment Record(Charge charge, string? method, string? amount, DateOnly paidOn, string? reference)
     {
         var payment = Create(charge, ManualMethods.Require(method), PaymentAmount.RequireMatch(amount, charge.Amount), PaymentDate.Require(paidOn), PaymentReference.Require(reference));
         charge.Pay(payment.Id);
+        return payment;
+    }
+
+    public static Payment BeginCheckout(Charge charge, string provider, DateOnly today)
+    {
+        var payment = Create(charge, ManualMethod.Online, charge.Amount, today, BillingProviders.Require(provider).ToString().ToLowerInvariant());
+        payment.Status = PaymentStatus.Pending;
+        payment.ReceiptNumber = "";
+        payment.RedirectUrl = "https://pay.invalid/" + provider + "/" + payment.Id.ToString("N");
         return payment;
     }
 

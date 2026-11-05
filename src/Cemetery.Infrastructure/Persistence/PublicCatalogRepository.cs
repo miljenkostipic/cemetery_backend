@@ -76,7 +76,7 @@ internal sealed class PublicCatalogRepository(CemeteryDbContext db, ISessionHint
     private async Task<PublicMemorial?> MemorialAsync(Guid deceasedId, DateOnly today, CancellationToken cancellationToken)
     {
         const string sql = """
-            SELECT deceased_id, given_name, family_name, born_on, died_on, epitaph, photo_url, organization_slug, organization_name, cemetery_id, cemetery_name, schematic, grave_site_id, grave_site_code, outline_json
+            SELECT deceased_id, given_name, family_name, born_on, died_on, epitaph, photo_url, organization_slug, organization_name, cemetery_id, cemetery_name, schematic, grave_site_id, grave_site_code, outline_json, centroid_longitude, centroid_latitude, section_name, entrance_name, entrance_longitude, entrance_latitude, others_json
             FROM cemetery.public_memorial(@deceasedId, @today)
             """;
         var rows = await QueryAsync(sql, CatalogRows.Memorial, cancellationToken, Parameter("deceasedId", deceasedId), Parameter("today", today)).ConfigureAwait(false);
@@ -150,7 +150,29 @@ file static class CatalogRows
         new(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), Date(reader, 3), Date(reader, 4), reader.GetString(5), reader.GetString(6), reader.GetGuid(7), reader.GetString(8), GuidOrNull(reader, 9), Text(reader, 10));
 
     public static PublicMemorial Memorial(DbDataReader reader) =>
-        new(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), Date(reader, 3), Date(reader, 4), Text(reader, 5), Text(reader, 6), reader.GetString(7), reader.GetString(8), reader.GetGuid(9), reader.GetString(10), reader.GetBoolean(11), GuidOrNull(reader, 12), Text(reader, 13), GeoJsonRing.Parse(Text(reader, 14)));
+        new(
+            reader.GetGuid(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            Date(reader, 3),
+            Date(reader, 4),
+            Text(reader, 5),
+            Text(reader, 6),
+            reader.GetString(7),
+            reader.GetString(8),
+            reader.GetGuid(9),
+            reader.GetString(10),
+            reader.GetBoolean(11),
+            GuidOrNull(reader, 12),
+            Text(reader, 13),
+            GeoJsonRing.Parse(Text(reader, 14)),
+            Number(reader, 15),
+            Number(reader, 16),
+            Text(reader, 17),
+            Text(reader, 18),
+            Number(reader, 19),
+            Number(reader, 20),
+            Companions(Text(reader, 21)));
 
     public static PlaceRow Place(DbDataReader reader) =>
         new(reader.GetString(0), reader.GetString(1), reader.GetGuid(2), reader.GetString(3), reader.GetBoolean(4), Text(reader, 5), Text(reader, 6));
@@ -166,6 +188,20 @@ file static class CatalogRows
     private static Guid? GuidOrNull(DbDataReader reader, int ordinal) => reader.IsDBNull(ordinal) ? null : reader.GetGuid(ordinal);
 
     private static DateOnly? Date(DbDataReader reader, int ordinal) => reader.IsDBNull(ordinal) ? null : reader.GetFieldValue<DateOnly>(ordinal);
+
+    private static double? Number(DbDataReader reader, int ordinal) => reader.IsDBNull(ordinal) ? null : reader.GetDouble(ordinal);
+
+    private static PublicCompanion[] Companions(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return [];
+
+        using var document = JsonDocument.Parse(json);
+        var people = new List<PublicCompanion>();
+        foreach (var item in document.RootElement.EnumerateArray())
+            people.Add(new PublicCompanion(item.GetProperty("deceasedId").GetGuid(), item.GetProperty("givenName").GetString() ?? "", item.GetProperty("familyName").GetString() ?? ""));
+        return people.ToArray();
+    }
 }
 
 file sealed record PlaceRow(string OrganizationSlug, string OrganizationName, Guid CemeteryId, string CemeteryName, bool Schematic, string? PlanImageUrl, string? PlanJson);

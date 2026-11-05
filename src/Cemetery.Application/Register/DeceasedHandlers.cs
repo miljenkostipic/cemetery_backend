@@ -40,20 +40,21 @@ public sealed class RecordDeceasedHandler(
     }
 }
 
-public sealed record ListDeceased(Guid CemeteryId);
+public sealed record ListDeceased(Guid CemeteryId, string? Query, Guid? SectionId, DateOnly? DiedFrom, DateOnly? DiedTo, bool WithoutSite, string? Cursor, int? Limit);
 
 public sealed class ListDeceasedHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
-    IRegisterRepository register) : IQueryHandler<ListDeceased, IReadOnlyList<DeceasedView>>
+    IRegisterRepository register) : IQueryHandler<ListDeceased, Page<DeceasedView>>
 {
-    public async Task<IReadOnlyList<DeceasedView>> Handle(ListDeceased query, CancellationToken cancellationToken)
+    public async Task<Page<DeceasedView>> Handle(ListDeceased query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
-        var people = await register.ListDeceasedAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
+        var filter = new DeceasedFilter(query.Query, query.SectionId, query.DiedFrom, query.DiedTo, query.WithoutSite);
+        var page = await register.PageDeceasedAsync(query.CemeteryId, filter, new PageRequest(query.Cursor, query.Limit), cancellationToken).ConfigureAwait(false);
         var interments = await register.ListIntermentsByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
         var sites = await layouts.ListByCemeteryAsync(query.CemeteryId, cancellationToken).ConfigureAwait(false);
-        return people.Select(person => View(person, interments, sites)).ToArray();
+        return new Page<DeceasedView>(page.Items.Select(person => View(person, interments, sites)).ToArray(), page.NextCursor);
     }
 
     private static DeceasedView View(Deceased person, IReadOnlyList<Interment> interments, IReadOnlyList<Domain.Layout.GraveSite> sites)
