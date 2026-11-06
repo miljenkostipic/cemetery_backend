@@ -85,3 +85,13 @@ Every new endpoint ships with the three R1 tests (happy, wrong role, other tenan
 ## Found while working
 
 (add items here, do not fix them in this step)
+
+- R1 boxes in `docs/refactor/ISSUES.md` on `main` are still open even though that code is already on `origin/main`.
+- Historical charges and monument permits keep a holder-name snapshot and a null `HolderId`. A clerk match tool can fill them later. This step does not backfill them.
+- `RemoveDeceased` exhumes the interments and does not refresh the stored site occupancy.
+- `IssuePermit` still records the holder name only. The permit row can store `HolderId`, and the issue command does not look a holder up.
+- List responses for the register, interments, charges, arrears, work orders, holders, and office requests are now `{ items, nextCursor }`. The published frontend OpenAPI still describes those lists as JSON arrays, so the frontend needs a matching contract change.
+- `PublicMemorial` now includes the site centroid, section name, nearest entrance, and the other publicly visible people in the same grave. The frontend memorial schema does not list those fields yet.
+- The occupancy backfill counts a slot as used while its rest period is still running. A slot whose rest has ended is counted as reusable. The next interment, exhumation, transfer, reservation, or right change writes the status again from the domain rule.
+- The register page of 10,000 rows and the 5,000-site map passed their time and size checks on local PostgreSQL database `cemetery_test`. The integration suite was 58 passed, 0 skipped.
+- These R2 checks are still open, so their boxes stay unchecked: a GraveHolder seeing only their own holder (R2.1); map status flipping to reserved and back (R2.3); a holder downloading a document and another tenant getting 404 (R2.4); one holder with two sites seeing nothing of a second holder (R2.5); `SiteOccupancy.Summarize` is still called while reading reports (R2.7); the frontend OpenAPI still describes the paged lists as arrays (R2.8); the field dossier test does not assert that email and phone are absent (R2.10); the public memorial test does not assert the nearest entrance or that a hidden companion is omitted (R2.12).

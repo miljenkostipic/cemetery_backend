@@ -12,7 +12,7 @@ public sealed class WalkingSkeletonTests(ApiFixture api) : ApiTest(api)
     public async Task A_user_cannot_read_another_organizations_dashboard()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
-        Assert.Equal(1, ApiFixture.ContainersStarted);
+        Assert.Equal(ApiFixture.UsesLocalServer ? 0 : 1, ApiFixture.ContainersStarted);
         var alpha = await Api.SignedInClientAsync(MembershipRole.OrganizationAdmin, "Alpha", cancellationToken);
         var beta = await Api.SignedInClientAsync(MembershipRole.OrganizationAdmin, "Beta", cancellationToken);
         await AssertIsolatedAsync(alpha, beta, cancellationToken);

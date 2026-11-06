@@ -46,17 +46,25 @@ public static class BillingEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Ok<IReadOnlyList<ChargeView>>> GetCharges(
+    private static async Task<Ok<Page<ChargeView>>> GetCharges(
         Guid cemeteryId,
-        IQueryHandler<ListCharges, IReadOnlyList<ChargeView>> handler,
+        string? q,
+        string? status,
+        int? year,
+        string? cursor,
+        int? limit,
+        IQueryHandler<ListCharges, Page<ChargeView>> handler,
         CancellationToken cancellationToken) =>
-        TypedResults.Ok(await handler.Handle(new ListCharges(cemeteryId), cancellationToken).ConfigureAwait(false));
+        TypedResults.Ok(await handler.Handle(new ListCharges(cemeteryId, q, status, year, cursor, limit), cancellationToken).ConfigureAwait(false));
 
-    private static async Task<Ok<IReadOnlyList<ArrearsRow>>> GetArrears(
+    private static async Task<Ok<Page<ArrearsRow>>> GetArrears(
         Guid cemeteryId,
-        IQueryHandler<ListArrears, IReadOnlyList<ArrearsRow>> handler,
+        string? q,
+        string? cursor,
+        int? limit,
+        IQueryHandler<ListArrears, Page<ArrearsRow>> handler,
         CancellationToken cancellationToken) =>
-        TypedResults.Ok(await handler.Handle(new ListArrears(cemeteryId), cancellationToken).ConfigureAwait(false));
+        TypedResults.Ok(await handler.Handle(new ListArrears(cemeteryId, q, cursor, limit), cancellationToken).ConfigureAwait(false));
 
     private static async Task<Ok<YearlyRunView>> PostYear(
         Guid cemeteryId,

@@ -70,6 +70,23 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
 
     public DbSet<Payment> Payments => Set<Payment>();
 
+    public DbSet<Holder> Holders => Set<Holder>();
+
+    public DbSet<GraveRight> GraveRights => Set<GraveRight>();
+
+    public DbSet<Reservation> Reservations => Set<Reservation>();
+
+    public DbSet<SiteDocument> SiteDocuments => Set<SiteDocument>();
+
+    public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
+
+    public DbSet<Entrance> Entrances => Set<Entrance>();
+
+    public DbSet<CemeteryPath> Paths => Set<CemeteryPath>();
+
+    [DbFunction("fold_text", Schema = "cemetery")]
+    public static string Fold(string value) => value;
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("cemetery");
@@ -90,6 +107,18 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         FilterOperations(builder);
         FilterLaunch(builder);
         FilterBilling(builder);
+        FilterRights(builder);
+    }
+
+    private void FilterRights(ModelBuilder builder)
+    {
+        builder.Entity<Holder>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<GraveRight>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<Reservation>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<SiteDocument>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<StoredFile>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<Entrance>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<CemeteryPath>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
     }
 
     private void FilterBilling(ModelBuilder builder)
@@ -122,6 +151,7 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         RejectUnstampedTenants();
+        StampUpdates();
         try
         {
             return await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -129,6 +159,16 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         catch (DbUpdateException exception) when (UniqueViolation.ToErrorCode(exception) is string code)
         {
             throw new ConflictException(code);
+        }
+    }
+
+    private void StampUpdates()
+    {
+        var now = DateTimeOffset.UtcNow;
+        foreach (var entry in ChangeTracker.Entries<IStampable>())
+        {
+            if (entry.State is EntityState.Added or EntityState.Modified)
+                entry.Entity.Stamp(now);
         }
     }
 

@@ -24,6 +24,7 @@ public sealed class AcceptInvitationHandler(
     IInvitationTokenFactory tokens,
     IInvitationRepository invitations,
     IMembershipRepository memberships,
+    IRightsRepository holders,
     IOrganizationRepository organizations,
     IUnitOfWork unitOfWork,
     IActiveOrganizationStore active,
@@ -36,6 +37,7 @@ public sealed class AcceptInvitationHandler(
         var invitation = await FindAsync(command.Token, cancellationToken).ConfigureAwait(false);
         invitation.Accept(email, clock.GetUtcNow());
         await AddMembershipAsync(invitation, userId, cancellationToken).ConfigureAwait(false);
+        await holders.LinkHolderAsync(email.Value, userId, cancellationToken).ConfigureAwait(false);
         tenant.Use(invitation.TenantId);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         active.Remember(invitation.TenantId);

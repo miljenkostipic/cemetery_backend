@@ -114,11 +114,12 @@ public sealed class BillingHandlerTests
         billing.AddChargesAsync(Arg.Do<IReadOnlyList<Charge>>(rows => stored = rows), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var layouts = Layouts(cemetery);
         layouts.ListByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { site });
-        var raised = await new RunYearHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, billing, Unit())
+        var rights = Substitute.For<IRightsRepository>();
+        var raised = await new RunYearHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, billing, rights, Unit())
             .Handle(new RunYear(cemetery.Id, 2026), CancellationToken.None);
         Assert.NotNull(stored);
-        billing.ListChargesAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(stored);
-        billing.ListArrearsAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(stored);
+        billing.PageChargesAsync(cemetery.Id, Arg.Any<ChargeFilter>(), Arg.Any<PageRequest>(), Arg.Any<CancellationToken>()).Returns(_ => new Page<Charge>(stored!, null));
+        billing.PageArrearsAsync(cemetery.Id, Arg.Any<string?>(), Arg.Any<PageRequest>(), Arg.Any<CancellationToken>()).Returns(_ => new Page<Charge>(stored!, null));
 
         var charges = await new ListChargesHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, billing)
             .Handle(new ListCharges(cemetery.Id), CancellationToken.None);
@@ -127,13 +128,13 @@ public sealed class BillingHandlerTests
 
         Assert.Equal(1, raised.ChargeCount);
         Assert.Equal(2026, raised.Year);
-        Assert.Equal("A-1", charges[0].GraveSiteCode);
-        Assert.Equal("25.00", charges[0].Amount);
-        Assert.Equal(ChargeStatus.Open, charges[0].Status);
-        Assert.Equal(new DateOnly(2026, 3, 31), charges[0].DueOn);
-        Assert.Null(charges[0].LatestPaymentId);
-        Assert.Equal(charges[0].Id, arrears[0].ChargeId);
-        Assert.Equal("A-1", arrears[0].GraveSiteCode);
+        Assert.Equal("A-1", charges.Items[0].GraveSiteCode);
+        Assert.Equal("25.00", charges.Items[0].Amount);
+        Assert.Equal(ChargeStatus.Open, charges.Items[0].Status);
+        Assert.Equal(new DateOnly(2026, 3, 31), charges.Items[0].DueOn);
+        Assert.Null(charges.Items[0].LatestPaymentId);
+        Assert.Equal(charges.Items[0].Id, arrears.Items[0].ChargeId);
+        Assert.Equal("A-1", arrears.Items[0].GraveSiteCode);
     }
 
     [Fact]
@@ -142,7 +143,7 @@ public sealed class BillingHandlerTests
         var tenant = Guid.CreateVersion7();
         var cemetery = CemeteryPlace.Open(tenant, "Pilot", true, Now);
         var billing = Substitute.For<IBillingRepository>();
-        var handler = new RunYearHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), Layouts(cemetery), billing, Unit());
+        var handler = new RunYearHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), Layouts(cemetery), billing, Substitute.For<IRightsRepository>(), Unit());
 
         var error = await Assert.ThrowsAsync<DomainRuleException>(() => handler.Handle(new RunYear(cemetery.Id, 1999), CancellationToken.None));
 
@@ -157,6 +158,7 @@ public sealed class BillingHandlerTests
             Callers.For(Guid.CreateVersion7(), MembershipRole.OrganizationAdmin),
             Substitute.For<ILayoutRepository>(),
             Substitute.For<IBillingRepository>(),
+            Substitute.For<IRightsRepository>(),
             Substitute.For<IUnitOfWork>());
 
         var error = await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new RunYear(Guid.CreateVersion7(), 2026), CancellationToken.None));

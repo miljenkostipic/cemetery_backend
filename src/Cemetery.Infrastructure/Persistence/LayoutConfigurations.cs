@@ -31,6 +31,7 @@ public sealed class SectionConfiguration : IEntityTypeConfiguration<Section>
         builder.Property(entity => entity.Name).HasMaxLength(Section.NameMaxLength);
         builder.Property(entity => entity.Code).HasMaxLength(Section.CodeMaxLength);
         builder.Property(entity => entity.Outline).HasConversion(GeometryMapping.PolygonConverter).HasColumnType("geometry(Polygon,4326)");
+        builder.Property(entity => entity.UpdatedAt).HasDefaultValueSql("now()");
         builder.HasIndex(entity => new { entity.TenantId, entity.CemeteryId, entity.Code }).IsUnique().HasDatabaseName("sections_tenant_code_key");
         builder.HasOne<CemeteryPlace>()
             .WithMany()
@@ -70,7 +71,9 @@ public sealed class GraveSiteConfiguration : IEntityTypeConfiguration<GraveSite>
             .HasMaxLength(32);
         builder.Property(entity => entity.Outline).HasConversion(GeometryMapping.PolygonConverter).HasColumnType("geometry(Polygon,4326)");
         builder.Property(entity => entity.HiddenFromPublic).HasDefaultValue(false);
-        builder.Ignore(entity => entity.Status);
+        builder.Property(entity => entity.Used).HasDefaultValue(0);
+        builder.Property(entity => entity.Status).HasConversion<string>(new SnakeCaseEnumConverter<GraveSiteStatus>()).HasMaxLength(16).HasDefaultValue(GraveSiteStatus.Available);
+        builder.Property(entity => entity.UpdatedAt).HasDefaultValueSql("now()");
         builder.HasIndex(entity => entity.Outline).HasMethod("gist");
         builder.HasIndex(entity => new { entity.TenantId, entity.CemeteryId, entity.Code }).IsUnique().HasDatabaseName("grave_sites_tenant_code_key");
         builder.HasOne<Section>()

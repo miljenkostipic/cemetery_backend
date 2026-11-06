@@ -39,18 +39,18 @@ Gate: Every endpoint has happy / 403 / cross-tenant tests; policy snapshot pinne
 
 Gate: The frontend's OpenAPI has 0 paths this API lacks
 
-- [ ] **R2.1** Holder aggregate · finding B1 · [task](R2-phase4-and-read-models.md#r21-holder-aggregate) · PR: 
-- [ ] **R2.2** Grave right: grant, renew, transfer, inherit · finding B1 · [task](R2-phase4-and-read-models.md#r22-grave-right) · PR: 
-- [ ] **R2.3** Reservations · finding B1 · [task](R2-phase4-and-read-models.md#r23-reservations) · PR: 
-- [ ] **R2.4** Site documents · finding B1 · [task](R2-phase4-and-read-models.md#r24-site-documents) · PR: 
-- [ ] **R2.5** Holder portal endpoints (`/me/...`) · finding B1 · [task](R2-phase4-and-read-models.md#r25-holder-portal-endpoints) · PR: 
-- [ ] **R2.6** Charges and permits reference `HolderId` · finding B1 · [task](R2-phase4-and-read-models.md#r26-charges-and-permits-reference-holderid) · PR: 
-- [ ] **R2.7** Persisted occupancy on grave sites · finding B4 · [task](R2-phase4-and-read-models.md#r27-persisted-occupancy) · PR: 
-- [ ] **R2.8** Paging + filters on lists · finding B4 · [task](R2-phase4-and-read-models.md#r28-paging-and-filters) · PR: 
-- [ ] **R2.9** `GET /cemeteries/{id}/map` · finding API-C · [task](R2-phase4-and-read-models.md#r29-get-cemeteriesidmap) · PR: 
-- [ ] **R2.10** `GET /grave-sites/{id}/dossier` · finding API-C · [task](R2-phase4-and-read-models.md#r210-get-grave-sitesiddossier) · PR: 
-- [ ] **R2.11** `GET /search` · finding API-C · [task](R2-phase4-and-read-models.md#r211-get-search) · PR: 
-- [ ] **R2.12** Entrances, paths, extended public memorial · finding API-C · [task](R2-phase4-and-read-models.md#r212-entrances-paths-extended-public-memorial) · PR: 
+- [ ] **R2.1** Holder aggregate · finding B1 · [task](R2-phase4-and-read-models.md#r21-holder-aggregate) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [x] **R2.2** Grave right: grant, renew, transfer, inherit · finding B1 · [task](R2-phase4-and-read-models.md#r22-grave-right) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [ ] **R2.3** Reservations · finding B1 · [task](R2-phase4-and-read-models.md#r23-reservations) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [ ] **R2.4** Site documents · finding B1 · [task](R2-phase4-and-read-models.md#r24-site-documents) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [ ] **R2.5** Holder portal endpoints (`/me/...`) · finding B1 · [task](R2-phase4-and-read-models.md#r25-holder-portal-endpoints) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [x] **R2.6** Charges and permits reference `HolderId` · finding B1 · [task](R2-phase4-and-read-models.md#r26-charges-and-permits-reference-holderid) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [ ] **R2.7** Persisted occupancy on grave sites · finding B4 · [task](R2-phase4-and-read-models.md#r27-persisted-occupancy) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [ ] **R2.8** Paging + filters on lists · finding B4 · [task](R2-phase4-and-read-models.md#r28-paging-and-filters) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [x] **R2.9** `GET /cemeteries/{id}/map` · finding API-C · [task](R2-phase4-and-read-models.md#r29-get-cemeteriesidmap) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [ ] **R2.10** `GET /grave-sites/{id}/dossier` · finding API-C · [task](R2-phase4-and-read-models.md#r210-get-grave-sitesiddossier) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [x] **R2.11** `GET /search` · finding API-C · [task](R2-phase4-and-read-models.md#r211-get-search) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
+- [ ] **R2.12** Entrances, paths, extended public memorial · finding API-C · [task](R2-phase4-and-read-models.md#r212-entrances-paths-extended-public-memorial) · PR: [#18](https://github.com/miljenkostipic/cemetery_backend/pull/18)
 
 ## R5 Integrations
 

@@ -146,7 +146,7 @@ public sealed class OperationsHandlerTests
         var world = new World();
         var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, Guid.CreateVersion7(), "maintenance", new DateOnly(2026, 6, 1), "trim");
         var permit = MonumentPermit.Issue(world.TenantId, world.Cemetery.Id, Guid.CreateVersion7(), "Ana", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 2));
-        world.Store.ListWorkOrdersAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns([order]);
+        world.Store.PageWorkOrdersAsync(world.Cemetery.Id, Arg.Any<WorkOrderFilter>(), Arg.Any<PageRequest>(), Arg.Any<CancellationToken>()).Returns(new Page<WorkOrder>([order], null));
         world.Store.ListPermitsAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns([permit]);
         world.Layouts.ListByCemeteryAsync(world.Cemetery.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveSite>());
         var orders = await new ListWorkOrdersHandler(world.Caller, world.Layouts, world.Store)
@@ -154,7 +154,7 @@ public sealed class OperationsHandlerTests
         var permits = await new ListPermitsHandler(world.Caller, world.Layouts, world.Store, Clock())
             .Handle(new ListPermits(world.Cemetery.Id), CancellationToken.None);
 
-        Assert.Equal("", orders[0].GraveSiteCode);
+        Assert.Equal("", orders.Items[0].GraveSiteCode);
         Assert.Equal("expired", permits[0].Status);
         Assert.Equal("", permits[0].GraveSiteCode);
     }

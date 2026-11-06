@@ -88,7 +88,16 @@ internal static class BillingMaps
             charge.LatestPaymentId);
 
     public static PaymentView Payment(Payment payment) =>
-        new(payment.Id, payment.ChargeId, payment.Method, FeeAmount.Text(payment.Amount), payment.Currency, payment.Status, payment.PaidOn, null, payment.ReceiptNumber);
+        new(
+            payment.Id,
+            payment.ChargeId,
+            payment.Method,
+            FeeAmount.Text(payment.Amount),
+            payment.Currency,
+            payment.Status,
+            payment.Status == PaymentStatus.Pending ? null : payment.PaidOn,
+            payment.RedirectUrl,
+            payment.ReceiptNumber.Length == 0 ? null : payment.ReceiptNumber);
 
     public static ReceiptView Receipt(Payment payment) =>
         new(payment.Id, payment.ReceiptNumber, FeeAmount.Text(payment.Amount), payment.Currency, payment.PaidOn, payment.Method, payment.Description);

@@ -83,7 +83,7 @@ public sealed class OperationsEndpointTests(ApiFixture api) : ApiTest(api)
         Assert.DoesNotContain(funeral, ApiAssert.Ids(funerals));
         Assert.Equal(HttpStatusCode.NotFound, (await world.Other.PostAsync($"/api/v1/funerals/{funeral}/cancellations", null, CancellationToken)).StatusCode);
         var orders = await OfficeWorld.Get(world.Other, $"/api/v1/cemeteries/{world.CemeteryId}/work-orders", CancellationToken);
-        Assert.Empty(orders.EnumerateArray());
+        Assert.Empty(ApiAssert.Rows(orders).EnumerateArray());
         var today = await OfficeWorld.Get(world.Other, "/api/v1/field/today", CancellationToken);
         Assert.DoesNotContain(world.CemeteryId, today.EnumerateArray().Select(item => item.GetProperty("cemeteryId").GetGuid()));
     }

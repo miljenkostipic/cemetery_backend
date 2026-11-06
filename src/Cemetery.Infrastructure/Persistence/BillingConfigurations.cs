@@ -36,9 +36,15 @@ public sealed class ChargeConfiguration : IEntityTypeConfiguration<Charge>
         builder.HasKey(entity => entity.Id);
         builder.HasAlternateKey(entity => new { entity.TenantId, entity.Id });
         Columns(builder);
+        builder.Property(entity => entity.HolderId);
         builder.HasIndex(entity => new { entity.TenantId, entity.CemeteryId, entity.GraveSiteId, entity.FeeScheduleId, entity.Year })
             .IsUnique()
+            .HasFilter("holder_id IS NULL")
             .HasDatabaseName("charges_year_key");
+        builder.HasIndex(entity => new { entity.TenantId, entity.CemeteryId, entity.GraveSiteId, entity.FeeScheduleId, entity.Year, entity.HolderId })
+            .IsUnique()
+            .HasFilter("holder_id IS NOT NULL")
+            .HasDatabaseName("charges_holder_year_key");
         Relate(builder);
     }
 

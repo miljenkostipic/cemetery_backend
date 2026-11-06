@@ -94,6 +94,10 @@ public interface IRegisterRepository
 
     Task<IReadOnlyList<Deceased>> ListDeceasedAsync(Guid cemeteryId, CancellationToken cancellationToken);
 
+    Task<Page<Deceased>> PageDeceasedAsync(Guid cemeteryId, DeceasedFilter filter, PageRequest page, CancellationToken cancellationToken);
+
+    Task<Page<Interment>> PageIntermentsAsync(Guid cemeteryId, IntermentFilter filter, PageRequest page, CancellationToken cancellationToken);
+
     Task AddRevisionAsync(DeceasedRevision revision, CancellationToken cancellationToken);
 
     Task AddIntermentAsync(Interment interment, CancellationToken cancellationToken);
@@ -133,6 +137,8 @@ public interface IOperationsRepository
 
     Task<IReadOnlyList<WorkOrder>> ListWorkOrdersAsync(Guid cemeteryId, CancellationToken cancellationToken);
 
+    Task<Page<WorkOrder>> PageWorkOrdersAsync(Guid cemeteryId, WorkOrderFilter filter, PageRequest page, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<WorkOrder>> ListOpenOnAsync(DateOnly day, CancellationToken cancellationToken);
 
     Task RemoveWorkOrderAsync(WorkOrder order, CancellationToken cancellationToken);
@@ -153,6 +159,8 @@ public interface IOfficeRequestRepository
     Task AddAsync(OfficeRequest request, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<OfficeRequest>> ListAsync(CancellationToken cancellationToken);
+
+    Task<Page<OfficeRequest>> PageAsync(string? query, PageRequest page, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<OfficeRequest>> ListForAuthorAsync(Guid authorId, CancellationToken cancellationToken);
 }

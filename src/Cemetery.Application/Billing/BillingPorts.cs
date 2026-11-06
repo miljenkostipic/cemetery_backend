@@ -16,6 +16,14 @@ public interface IBillingRepository
 
     Task<IReadOnlyList<Charge>> ListChargesAsync(Guid cemeteryId, CancellationToken cancellationToken);
 
+    Task<Page<Charge>> PageChargesAsync(Guid cemeteryId, ChargeFilter filter, PageRequest page, CancellationToken cancellationToken);
+
+    Task<Page<Charge>> PageArrearsAsync(Guid cemeteryId, string? query, PageRequest page, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<Charge>> ListChargesForHolderAsync(Guid holderId, CancellationToken cancellationToken);
+
+    Task<Charge?> FindChargeForHolderAsync(Guid chargeId, Guid holderId, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<Charge>> ListOpenChargesAsync(Guid cemeteryId, CancellationToken cancellationToken);
 
     Task<Charge?> FindChargeAsync(Guid chargeId, CancellationToken cancellationToken);

@@ -16,6 +16,8 @@ public sealed partial class ApiFixture : IAsyncLifetime
 {
     public static int ContainersStarted { get; private set; }
 
+    public static bool UsesLocalServer { get; private set; }
+
     private readonly InvitationInbox inbox = new();
     private readonly List<HttpClient> clients = [];
     private readonly Dictionary<string, HttpClient> admins = [];
@@ -36,9 +38,17 @@ public sealed partial class ApiFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        if (!DockerProbe.EnsureAvailable())
+        if (DockerProbe.EnsureAvailable())
+        {
+            await StartContainerAsync().ConfigureAwait(false);
             return;
+        }
 
+        await StartLocalServerAsync().ConfigureAwait(false);
+    }
+
+    private async Task StartContainerAsync()
+    {
         container = new PostgreSqlBuilder("postgis/postgis:17-3.5")
             .WithDatabase("cemetery")
             .WithUsername("postgres")
@@ -48,10 +58,74 @@ public sealed partial class ApiFixture : IAsyncLifetime
         ContainersStarted++;
         ownerConnection = container.GetConnectionString();
         appConnection = AppConnection(ownerConnection);
-        await DatabaseInitializer.ApplyAsync(ownerConnection, appConnection, CancellationToken.None);
-        respawner = await CreateRespawnerAsync(ownerConnection);
-        factory = CreateFactory();
+        await PrepareAsync().ConfigureAwait(false);
         Console.WriteLine($"ApiFixture started one PostGIS container ({container.Name}). ContainersStarted={ContainersStarted}.");
+    }
+
+    private async Task StartLocalServerAsync()
+    {
+        const string database = "cemetery_test";
+        var owner = LocalConnection("ConnectionStrings:Owner", database);
+        await EnsureLocalDatabaseAsync(owner, database).ConfigureAwait(false);
+        ownerConnection = owner.ConnectionString;
+        appConnection = LocalConnection("ConnectionStrings:App", database).ConnectionString;
+        UsesLocalServer = true;
+        await PrepareAsync().ConfigureAwait(false);
+        Console.WriteLine($"ApiFixture is using local PostgreSQL database {database}.");
+    }
+
+    private async Task PrepareAsync()
+    {
+        await DatabaseInitializer.ApplyAsync(ownerConnection!, appConnection!, CancellationToken.None).ConfigureAwait(false);
+        respawner = await CreateRespawnerAsync(ownerConnection!);
+        factory = CreateFactory();
+    }
+
+    private static NpgsqlConnectionStringBuilder LocalConnection(string key, string database)
+    {
+        var configured = ReadSecret(key)
+            ?? "Host=localhost;Port=5432;Database=cemetery;Username=postgres;Password=postgres";
+        return new NpgsqlConnectionStringBuilder(configured) { Database = database };
+    }
+
+    private static string? ReadSecret(string key)
+    {
+        var path = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "Microsoft",
+            "UserSecrets",
+            "a082eb8d-4c2d-45ca-aa0d-3cc997c18bc1",
+            "secrets.json");
+        if (!File.Exists(path))
+            return null;
+
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        if (document.RootElement.TryGetProperty(key, out var flat))
+            return flat.GetString();
+
+        var parts = key.Split(':');
+        var node = document.RootElement;
+        foreach (var part in parts)
+        {
+            if (!node.TryGetProperty(part, out node))
+                return null;
+        }
+
+        return node.GetString();
+    }
+
+    private static async Task EnsureLocalDatabaseAsync(NpgsqlConnectionStringBuilder owner, string database)
+    {
+        var admin = new NpgsqlConnectionStringBuilder(owner.ConnectionString) { Database = "postgres" };
+        await using var connection = new NpgsqlConnection(admin.ConnectionString);
+        await connection.OpenAsync().ConfigureAwait(false);
+        await using var exists = new NpgsqlCommand("SELECT 1 FROM pg_database WHERE datname = @name", connection);
+        exists.Parameters.AddWithValue("name", database);
+        if (await exists.ExecuteScalarAsync().ConfigureAwait(false) is not null)
+            return;
+
+        await using var create = new NpgsqlCommand($"CREATE DATABASE {database}", connection);
+        await create.ExecuteNonQueryAsync().ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()
@@ -169,6 +243,6 @@ public sealed partial class ApiFixture : IAsyncLifetime
     {
         await EnsureOkAsync(response);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken);
-        return body.EnumerateArray().First().GetProperty("id").GetGuid();
+        return ApiAssert.Rows(body).EnumerateArray().First().GetProperty("id").GetGuid();
     }
 }

@@ -2,6 +2,7 @@ using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Launch;
 using Cemetery.Domain.Register;
+using Cemetery.Domain.Rights;
 using FluentValidation;
 
 namespace Cemetery.Application.Register;
@@ -42,6 +43,7 @@ public sealed class RecordIntermentHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
+    IRightsRepository rights,
     IWebhookRepository webhooks,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<RecordInterment, IntermentView>
@@ -65,8 +67,10 @@ public sealed class RecordIntermentHandler(
             ?? throw new NotFoundException("cemetery.not_found");
         var atSite = await register.ListIntermentsBySiteAsync(site.Id, cancellationToken).ConfigureAwait(false);
         var ofPerson = await register.ListIntermentsByDeceasedAsync(deceased.Id, cancellationToken).ConfigureAwait(false);
+        BurialGuard.RefuseReserved(await rights.FindActiveReservationAsync(site.Id, cancellationToken).ConfigureAwait(false) is not null);
         var created = BurialBook.Place(deceased, site, command.Position, IntermentKinds.Parse(command.Kind), command.BuriedOn, atSite, ofPerson, RestYears.Of(cemetery));
         await register.AddIntermentAsync(created, cancellationToken).ConfigureAwait(false);
+        await OccupancySync.Refresh(site, layouts, register, rights, clock, false, [created], cancellationToken).ConfigureAwait(false);
         await register.AddAuditAsync(AuditEntry.Write(created.TenantId, AuditActions.IntermentRecorded, created.Id, null, clock.GetUtcNow()), cancellationToken).ConfigureAwait(false);
         return RegisterMaps.ToView(created, deceased, site.Code);
     }
@@ -84,6 +88,7 @@ public sealed class ExhumeIntermentHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
+    IRightsRepository rights,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<ExhumeInterment, IntermentView>
 {
@@ -97,6 +102,7 @@ public sealed class ExhumeIntermentHandler(
         var site = await layouts.FindGraveSiteAsync(interment.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         interment.Exhume(command.On);
+        await OccupancySync.Refresh(site, layouts, register, rights, clock, cancellationToken).ConfigureAwait(false);
         await register.AddAuditAsync(AuditEntry.Write(interment.TenantId, AuditActions.IntermentExhumed, interment.Id, null, clock.GetUtcNow()), cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return RegisterMaps.ToView(interment, deceased, site.Code);
@@ -119,6 +125,7 @@ public sealed class TransferIntermentHandler(
     ICallerContext caller,
     ILayoutRepository layouts,
     IRegisterRepository register,
+    IRightsRepository rights,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<TransferInterment, IntermentView>
 {
@@ -141,8 +148,13 @@ public sealed class TransferIntermentHandler(
         var deceased = await register.FindDeceasedAsync(source.DeceasedId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("deceased.not_found");
         var atDestination = await register.ListIntermentsBySiteAsync(destination.Id, cancellationToken).ConfigureAwait(false);
+        BurialGuard.RefuseReserved(await rights.FindActiveReservationAsync(destination.Id, cancellationToken).ConfigureAwait(false) is not null);
         var created = BurialBook.Transfer(source, destination, command.Position, command.On, atDestination, RestYears.Of(cemetery));
         await register.AddIntermentAsync(created, cancellationToken).ConfigureAwait(false);
+        var sourceSite = await layouts.FindGraveSiteAsync(source.GraveSiteId, cancellationToken).ConfigureAwait(false);
+        if (sourceSite is not null)
+            await OccupancySync.Refresh(sourceSite, layouts, register, rights, clock, cancellationToken).ConfigureAwait(false);
+        await OccupancySync.Refresh(destination, layouts, register, rights, clock, false, [created], cancellationToken).ConfigureAwait(false);
         await register.AddAuditAsync(AuditEntry.Write(created.TenantId, AuditActions.IntermentTransferred, created.Id, null, clock.GetUtcNow()), cancellationToken).ConfigureAwait(false);
         return RegisterMaps.ToView(created, deceased, destination.Code);
     }

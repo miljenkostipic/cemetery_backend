@@ -288,6 +288,73 @@ public static class RowLevelSecurity
         $body$;
         """;
 
+    public const string Rights = """
+        ALTER TABLE cemetery.holders ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.holders FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS holders_tenant ON cemetery.holders;
+        CREATE POLICY holders_tenant ON cemetery.holders
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.grave_rights ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.grave_rights FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS grave_rights_tenant ON cemetery.grave_rights;
+        CREATE POLICY grave_rights_tenant ON cemetery.grave_rights
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.grave_right_shares ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.grave_right_shares FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS grave_right_shares_tenant ON cemetery.grave_right_shares;
+        CREATE POLICY grave_right_shares_tenant ON cemetery.grave_right_shares
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.reservations ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.reservations FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS reservations_tenant ON cemetery.reservations;
+        CREATE POLICY reservations_tenant ON cemetery.reservations
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.site_documents ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.site_documents FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS site_documents_tenant ON cemetery.site_documents;
+        CREATE POLICY site_documents_tenant ON cemetery.site_documents
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.stored_files ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.stored_files FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS stored_files_tenant ON cemetery.stored_files;
+        CREATE POLICY stored_files_tenant ON cemetery.stored_files
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.entrances ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.entrances FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS entrances_tenant ON cemetery.entrances;
+        CREATE POLICY entrances_tenant ON cemetery.entrances
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        ALTER TABLE cemetery.paths ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.paths FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS paths_tenant ON cemetery.paths;
+        CREATE POLICY paths_tenant ON cemetery.paths
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
+
     /// <summary>AspNetUserPasskeys is an Identity table: no tenant column, so no policy, only the grants.</summary>
     public const string Passkeys = """
         DO $body$

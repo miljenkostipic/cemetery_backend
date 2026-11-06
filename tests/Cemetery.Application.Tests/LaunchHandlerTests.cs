@@ -196,6 +196,7 @@ public sealed class LaunchHandlerTests
         var layouts = Layouts(cemetery, site);
         var register = Substitute.For<IRegisterRepository>();
         register.ListIntermentsByCemeteryAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(new[] { buried, later });
+        register.PageIntermentsAsync(cemetery.Id, Arg.Any<IntermentFilter>(), Arg.Any<PageRequest>(), Arg.Any<CancellationToken>()).Returns(new Page<Interment>([buried, later], null));
         register.ListDeceasedAsync(cemetery.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<Deceased>());
         var links = Substitute.For<IMaticaLinkRepository>();
         var missing = MaticaLink.Create(tenant, cemetery.Id, Guid.CreateVersion7(), Guid.CreateVersion7());
@@ -207,7 +208,7 @@ public sealed class LaunchHandlerTests
         var linked = await listedLinks.Handle(new ListMaticaLinks(cemetery.Id), CancellationToken.None);
         var report = await new GetCemeteryReportHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, register, Clock()).Handle(new GetCemeteryReport(cemetery.Id), CancellationToken.None);
 
-        Assert.Empty(rows);
+        Assert.Empty(rows.Items);
         Assert.Equal("", linked[0].DeceasedName);
         Assert.Equal("A-1", linked[0].GraveSiteCode);
         Assert.Equal("", linked[1].GraveSiteCode);

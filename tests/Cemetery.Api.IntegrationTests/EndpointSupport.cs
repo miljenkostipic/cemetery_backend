@@ -33,9 +33,12 @@ internal static class ApiAssert
             Assert.Equal(code, errorCode ?? errors.FirstOrDefault());
     }
 
+    public static JsonElement Rows(JsonElement body) =>
+        body.ValueKind == JsonValueKind.Object && body.TryGetProperty("items", out var items) ? items : body;
+
     public static IEnumerable<Guid> Ids(JsonElement list)
     {
-        foreach (var item in list.EnumerateArray())
+        foreach (var item in Rows(list).EnumerateArray())
         {
             if (item.TryGetProperty("id", out var id))
                 yield return id.GetGuid();
@@ -44,7 +47,7 @@ internal static class ApiAssert
 
     public static Guid Id(JsonElement body) => body.GetProperty("id").GetGuid();
 
-    public static Guid FirstId(JsonElement list) => list.EnumerateArray().First().GetProperty("id").GetGuid();
+    public static Guid FirstId(JsonElement list) => Rows(list).EnumerateArray().First().GetProperty("id").GetGuid();
 }
 
 internal sealed class OfficeWorld
@@ -133,7 +136,7 @@ internal sealed class OfficeWorld
         if (hidden is { } id)
             Assert.DoesNotContain(id, ApiAssert.Ids(list));
         else
-            Assert.Empty(list.EnumerateArray());
+            Assert.Empty(ApiAssert.Rows(list).EnumerateArray());
     }
 
     public static object Grid(int columns) => new

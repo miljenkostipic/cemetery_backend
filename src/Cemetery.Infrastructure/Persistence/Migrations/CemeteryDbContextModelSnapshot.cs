@@ -71,6 +71,10 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("grave_site_id");
 
+                    b.Property<Guid?>("HolderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("holder_id");
+
                     b.Property<string>("HolderName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -115,7 +119,13 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId", "CemeteryId", "GraveSiteId", "FeeScheduleId", "Year")
                         .IsUnique()
-                        .HasDatabaseName("charges_year_key");
+                        .HasDatabaseName("charges_year_key")
+                        .HasFilter("holder_id IS NULL");
+
+                    b.HasIndex("TenantId", "CemeteryId", "GraveSiteId", "FeeScheduleId", "Year", "HolderId")
+                        .IsUnique()
+                        .HasDatabaseName("charges_holder_year_key")
+                        .HasFilter("holder_id IS NOT NULL");
 
                     b.ToTable("charges", "cemetery");
                 });
@@ -256,6 +266,10 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)")
                         .HasColumnName("receipt_number");
+
+                    b.Property<string>("RedirectUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("redirect_url");
 
                     b.Property<string>("Reference")
                         .IsRequired()
@@ -620,6 +634,93 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                     b.ToTable("cemeteries", "cemetery");
                 });
 
+            modelBuilder.Entity("Cemetery.Domain.Layout.CemeteryPath", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<LineString>("Line")
+                        .IsRequired()
+                        .HasColumnType("geometry(LineString,4326)")
+                        .HasColumnName("line");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_paths");
+
+                    b.HasIndex("TenantId", "CemeteryId")
+                        .HasDatabaseName("ix_paths_tenant_id_cemetery_id");
+
+                    b.ToTable("paths", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Layout.Entrance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CemeteryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cemetery_id");
+
+                    b.Property<Point>("Location")
+                        .IsRequired()
+                        .HasColumnType("geometry(Point,4326)")
+                        .HasColumnName("location");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_entrances");
+
+                    b.HasIndex("Location")
+                        .HasDatabaseName("ix_entrances_location");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Location"), "gist");
+
+                    b.HasIndex("TenantId", "CemeteryId")
+                        .HasDatabaseName("ix_entrances_tenant_id_cemetery_id");
+
+                    b.ToTable("entrances", "cemetery");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Layout.GraveRow", b =>
                 {
                     b.Property<Guid>("Id")
@@ -695,6 +796,10 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasColumnType("geometry(Polygon,4326)")
                         .HasColumnName("outline");
 
+                    b.Property<DateOnly?>("RestUntil")
+                        .HasColumnType("date")
+                        .HasColumnName("rest_until");
+
                     b.Property<Guid?>("RowId")
                         .HasColumnType("uuid")
                         .HasColumnName("row_id");
@@ -703,9 +808,29 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("section_id");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("available")
+                        .HasColumnName("status");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Used")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("used");
 
                     b.HasKey("Id")
                         .HasName("pk_grave_sites");
@@ -761,6 +886,12 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id")
                         .HasName("pk_sections");
@@ -892,6 +1023,10 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("GraveSiteId")
                         .HasColumnType("uuid")
                         .HasColumnName("grave_site_id");
+
+                    b.Property<Guid?>("HolderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("holder_id");
 
                     b.Property<string>("HolderName")
                         .IsRequired()
@@ -1268,6 +1403,110 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                     b.ToTable("interments", "cemetery");
                 });
 
+            modelBuilder.Entity("Cemetery.Domain.Rights.GraveRight", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("GraveSiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_site_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateOnly>("ValidFrom")
+                        .HasColumnType("date")
+                        .HasColumnName("valid_from");
+
+                    b.Property<DateOnly?>("ValidTo")
+                        .HasColumnType("date")
+                        .HasColumnName("valid_to");
+
+                    b.HasKey("Id")
+                        .HasName("pk_grave_rights");
+
+                    b.HasIndex("TenantId", "GraveSiteId")
+                        .IsUnique()
+                        .HasDatabaseName("grave_rights_one_active")
+                        .HasFilter("status = 'active'");
+
+                    b.ToTable("grave_rights", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Rights.Holder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("address");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("FamilyName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("family_name");
+
+                    b.Property<string>("GivenName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("given_name");
+
+                    b.Property<string>("Oib")
+                        .HasMaxLength(11)
+                        .HasColumnType("character varying(11)")
+                        .HasColumnName("oib");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("phone");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_holders");
+
+                    b.HasAlternateKey("TenantId", "Id")
+                        .HasName("ak_holders_tenant_id_id");
+
+                    b.HasIndex("TenantId", "Email")
+                        .IsUnique()
+                        .HasDatabaseName("holders_email_key")
+                        .HasFilter("email IS NOT NULL");
+
+                    b.HasIndex("TenantId", "FamilyName", "GivenName", "Id")
+                        .HasDatabaseName("ix_holders_tenant_id_family_name_given_name_id");
+
+                    b.ToTable("holders", "cemetery");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Rights.OfficeRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1307,6 +1546,125 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_office_requests_tenant_id_grave_site_id");
 
                     b.ToTable("office_requests", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Rights.Reservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.Property<Guid>("GraveSiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_site_id");
+
+                    b.Property<Guid>("HolderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("holder_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateOnly>("Until")
+                        .HasColumnType("date")
+                        .HasColumnName("until");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reservations");
+
+                    b.HasIndex("TenantId", "GraveSiteId")
+                        .IsUnique()
+                        .HasDatabaseName("reservations_one_active")
+                        .HasFilter("active");
+
+                    b.HasIndex("TenantId", "HolderId")
+                        .HasDatabaseName("ix_reservations_tenant_id_holder_id");
+
+                    b.ToTable("reservations", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Rights.SiteDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("ByteSize")
+                        .HasColumnType("integer")
+                        .HasColumnName("byte_size");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("content_type");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("file_name");
+
+                    b.Property<Guid?>("GraveRightId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_right_id");
+
+                    b.Property<Guid>("GraveSiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_site_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("storage_key");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_site_documents");
+
+                    b.HasIndex("TenantId", "GraveSiteId")
+                        .HasDatabaseName("ix_site_documents_tenant_id_grave_site_id");
+
+                    b.ToTable("site_documents", "cemetery");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Rights.StoredFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("content");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stored_files");
+
+                    b.ToTable("stored_files", "cemetery");
                 });
 
             modelBuilder.Entity("Cemetery.Infrastructure.Identity.ApplicationUser", b =>
@@ -1562,6 +1920,28 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_webhook_deliveries_webhook_subscriptions_tenant_id_subscrip");
                 });
 
+            modelBuilder.Entity("Cemetery.Domain.Layout.CemeteryPath", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.Cemetery", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CemeteryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_paths_cemeteries_tenant_id_cemetery_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Layout.Entrance", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.Cemetery", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "CemeteryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_entrances_cemeteries_tenant_id_cemetery_id");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Layout.GraveRow", b =>
                 {
                     b.HasOne("Cemetery.Domain.Layout.Section", null)
@@ -1753,6 +2133,55 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_interments_grave_sites_tenant_id_grave_site_id");
                 });
 
+            modelBuilder.Entity("Cemetery.Domain.Rights.GraveRight", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "GraveSiteId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_grave_rights_grave_sites_tenant_id_grave_site_id");
+
+                    b.OwnsMany("Cemetery.Domain.Rights.RightShare", "Shares", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<Guid>("GraveRightId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("grave_right_id");
+
+                            b1.Property<Guid>("HolderId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("holder_id");
+
+                            b1.Property<int>("Percent")
+                                .HasColumnType("integer")
+                                .HasColumnName("percent");
+
+                            b1.Property<Guid>("TenantId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("tenant_id");
+
+                            b1.HasKey("Id")
+                                .HasName("pk_grave_right_shares");
+
+                            b1.HasIndex("GraveRightId", "HolderId")
+                                .HasDatabaseName("ix_grave_right_shares_grave_right_id_holder_id");
+
+                            b1.ToTable("grave_right_shares", "cemetery");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GraveRightId")
+                                .HasConstraintName("fk_grave_right_shares_grave_rights_grave_right_id");
+                        });
+
+                    b.Navigation("Shares");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Rights.OfficeRequest", b =>
                 {
                     b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
@@ -1761,6 +2190,36 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasPrincipalKey("TenantId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_office_requests_grave_sites_tenant_id_grave_site_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Rights.Reservation", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "GraveSiteId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reservations_grave_sites_tenant_id_grave_site_id");
+
+                    b.HasOne("Cemetery.Domain.Rights.Holder", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "HolderId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reservations_holders_tenant_id_holder_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Rights.SiteDocument", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "GraveSiteId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_site_documents_grave_sites_tenant_id_grave_site_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>

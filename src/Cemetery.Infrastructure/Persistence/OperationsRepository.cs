@@ -1,3 +1,4 @@
+using System.Globalization;
 using Cemetery.Application.Abstractions;
 using Cemetery.Domain.Operations;
 using Microsoft.EntityFrameworkCore;
@@ -90,5 +91,24 @@ internal sealed class OperationsRepository(CemeteryDbContext db) : IOperationsRe
     {
         db.WorkOrderPhotos.Add(photo);
         return Task.CompletedTask;
+    }
+
+    public async Task<Page<WorkOrder>> PageWorkOrdersAsync(Guid cemeteryId, WorkOrderFilter filter, PageRequest page, CancellationToken cancellationToken)
+    {
+        var size = Pages.Size(page.Limit);
+        var query = db.WorkOrders.Where(order => order.CemeteryId == cemeteryId);
+        if (!string.IsNullOrWhiteSpace(filter.Query))
+            query = query.Where(order => order.Notes.Contains(filter.Query));
+        if (filter.Status is "open" or "completed")
+        {
+            var status = WorkOrderStatuses.Parse(filter.Status);
+            query = query.Where(order => order.Status == status);
+        }
+
+        var cursor = KeysetCursor.Decode(page.Cursor);
+        if (cursor is { } key && DateOnly.TryParse(key.Sort, out var on))
+            query = query.Where(order => order.ScheduledOn > on || (order.ScheduledOn == on && order.Id.CompareTo(key.Id) > 0));
+        var rows = await query.OrderBy(order => order.ScheduledOn).ThenBy(order => order.Id).Take(size + 1).ToListAsync(cancellationToken).ConfigureAwait(false);
+        return KeysetPage.Pack(rows, size, order => order.ScheduledOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), order => order.Id);
     }
 }

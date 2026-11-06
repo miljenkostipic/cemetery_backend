@@ -1,3 +1,4 @@
+using System.Globalization;
 using Cemetery.Application.Abstractions;
 using Cemetery.Domain.Billing;
 using Microsoft.EntityFrameworkCore;
@@ -86,5 +87,51 @@ internal sealed class BillingRepository(CemeteryDbContext db) : IBillingReposito
     {
         db.MerchantAccounts.Add(account);
         return Task.CompletedTask;
+    }
+
+    public async Task<Page<Charge>> PageChargesAsync(Guid cemeteryId, ChargeFilter filter, PageRequest page, CancellationToken cancellationToken)
+    {
+        var size = Pages.Size(page.Limit);
+        var query = Filtered(db.Charges.Where(charge => charge.CemeteryId == cemeteryId), filter);
+        var rows = await After(query, page).OrderBy(charge => charge.DueOn).ThenBy(charge => charge.Id).Take(size + 1).ToListAsync(cancellationToken).ConfigureAwait(false);
+        return KeysetPage.Pack(rows, size, charge => charge.DueOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), charge => charge.Id);
+    }
+
+    public async Task<Page<Charge>> PageArrearsAsync(Guid cemeteryId, string? query, PageRequest page, CancellationToken cancellationToken)
+    {
+        var size = Pages.Size(page.Limit);
+        var rows = db.Charges.Where(charge => charge.CemeteryId == cemeteryId && (charge.Status == ChargeStatus.Open || charge.Status == ChargeStatus.Reminded));
+        if (!string.IsNullOrWhiteSpace(query))
+            rows = rows.Where(charge => charge.GraveSiteCode.Contains(query) || charge.HolderName.Contains(query));
+        var cursor = KeysetCursor.Decode(page.Cursor);
+        if (cursor is { } key && DateOnly.TryParse(key.Sort, CultureInfo.InvariantCulture, out var due))
+            rows = rows.Where(charge => charge.DueOn > due || (charge.DueOn == due && charge.Id.CompareTo(key.Id) > 0));
+        var taken = await rows.OrderBy(charge => charge.DueOn).ThenBy(charge => charge.Id).Take(size + 1).ToListAsync(cancellationToken).ConfigureAwait(false);
+        return KeysetPage.Pack(taken, size, charge => charge.DueOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), charge => charge.Id);
+    }
+
+    public async Task<IReadOnlyList<Charge>> ListChargesForHolderAsync(Guid holderId, CancellationToken cancellationToken) =>
+        await db.Charges.Where(charge => charge.HolderId == holderId).OrderBy(charge => charge.DueOn).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+    public Task<Charge?> FindChargeForHolderAsync(Guid chargeId, Guid holderId, CancellationToken cancellationToken) =>
+        db.Charges.FirstOrDefaultAsync(charge => charge.Id == chargeId && charge.HolderId == holderId, cancellationToken);
+
+    private static IQueryable<Charge> Filtered(IQueryable<Charge> query, ChargeFilter filter)
+    {
+        if (!string.IsNullOrWhiteSpace(filter.Query))
+            query = query.Where(charge => charge.GraveSiteCode.Contains(filter.Query) || charge.HolderName.Contains(filter.Query));
+        if (filter.Year is int year)
+            query = query.Where(charge => charge.Year == year);
+        if (filter.Status is not null && Enum.TryParse<ChargeStatus>(filter.Status, true, out var status))
+            query = query.Where(charge => charge.Status == status);
+        return query;
+    }
+
+    private static IQueryable<Charge> After(IQueryable<Charge> query, PageRequest page)
+    {
+        var cursor = KeysetCursor.Decode(page.Cursor);
+        if (cursor is { } key && DateOnly.TryParse(key.Sort, CultureInfo.InvariantCulture, out var due))
+            return query.Where(charge => charge.DueOn > due || (charge.DueOn == due && charge.Id.CompareTo(key.Id) > 0));
+        return query;
     }
 }

@@ -100,11 +100,15 @@ public static class OperationsEndpoints
             new BookChapel(cemeteryId, body.Place, body.StartsAt, body.EndsAt),
             cancellationToken).ConfigureAwait(false));
 
-    private static async Task<Ok<IReadOnlyList<WorkOrderView>>> GetOrders(
+    private static async Task<Ok<Page<WorkOrderView>>> GetOrders(
         Guid cemeteryId,
-        IQueryHandler<ListWorkOrders, IReadOnlyList<WorkOrderView>> handler,
+        string? q,
+        string? status,
+        string? cursor,
+        int? limit,
+        IQueryHandler<ListWorkOrders, Page<WorkOrderView>> handler,
         CancellationToken cancellationToken) =>
-        TypedResults.Ok(await handler.Handle(new ListWorkOrders(cemeteryId), cancellationToken).ConfigureAwait(false));
+        TypedResults.Ok(await handler.Handle(new ListWorkOrders(cemeteryId, q, status, cursor, limit), cancellationToken).ConfigureAwait(false));
 
     private static async Task<Ok<WorkOrderView>> PostOrder(
         Guid cemeteryId,

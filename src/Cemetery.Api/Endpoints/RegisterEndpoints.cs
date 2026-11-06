@@ -36,11 +36,18 @@ public static class RegisterEndpoints
         CancellationToken cancellationToken) =>
         TypedResults.Ok(await handler.Handle(new RecordDeceased(cemeteryId, body.GivenName, body.FamilyName, body.BornOn, body.DiedOn), cancellationToken).ConfigureAwait(false));
 
-    private static async Task<Ok<IReadOnlyList<DeceasedView>>> ListDeceased(
+    private static async Task<Ok<Page<DeceasedView>>> ListDeceased(
         Guid cemeteryId,
-        IQueryHandler<ListDeceased, IReadOnlyList<DeceasedView>> handler,
+        string? q,
+        Guid? sectionId,
+        DateOnly? diedFrom,
+        DateOnly? diedTo,
+        bool? withoutSite,
+        string? cursor,
+        int? limit,
+        IQueryHandler<ListDeceased, Page<DeceasedView>> handler,
         CancellationToken cancellationToken) =>
-        TypedResults.Ok(await handler.Handle(new ListDeceased(cemeteryId), cancellationToken).ConfigureAwait(false));
+        TypedResults.Ok(await handler.Handle(new ListDeceased(cemeteryId, q, sectionId, diedFrom, diedTo, withoutSite ?? false, cursor, limit), cancellationToken).ConfigureAwait(false));
 
     private static async Task<Ok<int>> RestPeriod(
         Guid cemeteryId,

@@ -15,10 +15,13 @@ public static class RightsEndpoints
         return api;
     }
 
-    private static async Task<Ok<IReadOnlyList<OfficeRequestView>>> List(
-        IQueryHandler<ListOfficeRequests, IReadOnlyList<OfficeRequestView>> handler,
+    private static async Task<Ok<Page<OfficeRequestView>>> List(
+        string? q,
+        string? cursor,
+        int? limit,
+        IQueryHandler<ListOfficeRequests, Page<OfficeRequestView>> handler,
         CancellationToken cancellationToken) =>
-        TypedResults.Ok(await handler.Handle(new ListOfficeRequests(), cancellationToken).ConfigureAwait(false));
+        TypedResults.Ok(await handler.Handle(new ListOfficeRequests(q, cursor, limit), cancellationToken).ConfigureAwait(false));
 
     private static async Task<Ok<IReadOnlyList<OfficeRequestView>>> Mine(
         IQueryHandler<ListMyOfficeRequests, IReadOnlyList<OfficeRequestView>> handler,

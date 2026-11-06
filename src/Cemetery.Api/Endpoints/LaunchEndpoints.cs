@@ -21,11 +21,17 @@ public static class LaunchEndpoints
         return api;
     }
 
-    private static async Task<Ok<IReadOnlyList<IntermentView>>> GetInterments(
+    private static async Task<Ok<Page<IntermentView>>> GetInterments(
         Guid cemeteryId,
-        IQueryHandler<ListCemeteryInterments, IReadOnlyList<IntermentView>> handler,
+        string? q,
+        Guid? graveSiteId,
+        DateOnly? buriedFrom,
+        DateOnly? buriedTo,
+        string? cursor,
+        int? limit,
+        IQueryHandler<ListCemeteryInterments, Page<IntermentView>> handler,
         CancellationToken cancellationToken) =>
-        TypedResults.Ok(await handler.Handle(new ListCemeteryInterments(cemeteryId), cancellationToken).ConfigureAwait(false));
+        TypedResults.Ok(await handler.Handle(new ListCemeteryInterments(cemeteryId, q, graveSiteId, buriedFrom, buriedTo, cursor, limit), cancellationToken).ConfigureAwait(false));
 
     private static async Task<Ok<IReadOnlyList<MaticaLinkView>>> GetLinks(
         Guid cemeteryId,

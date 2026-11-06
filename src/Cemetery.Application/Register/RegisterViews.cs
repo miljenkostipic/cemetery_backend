@@ -111,15 +111,11 @@ internal static class RegisterMaps
         return null;
     }
 
-    public static GraveSiteView[] SiteViews(IReadOnlyList<GraveSite> sites, IReadOnlyList<Interment> interments, int restYears, DateOnly today)
+    public static GraveSiteView[] SiteViews(IReadOnlyList<GraveSite> sites)
     {
         var views = new GraveSiteView[sites.Count];
         for (var index = 0; index < sites.Count; index++)
-        {
-            var site = sites[index];
-            var use = SiteOccupancy.Summarize(site.Id, site.Capacity, interments, today, restYears);
-            views[index] = LayoutMaps.ToView(site, use);
-        }
+            views[index] = LayoutMaps.ToView(sites[index]);
 
         return views;
     }
