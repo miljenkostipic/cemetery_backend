@@ -32,13 +32,13 @@ public sealed class LayoutHandlerTests
         var layouts = Substitute.For<ILayoutRepository>();
         layouts.FindSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(section);
         layouts.ListOpenInSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveSite>());
-        layouts.NextSequenceAsync(cemeteryId, Arg.Any<CancellationToken>()).Returns(1);
-        layouts.CountRowsAsync(section.Id, Arg.Any<CancellationToken>()).Returns(0);
+        layouts.CountRowsAsync(section.Id, Arg.Any<CancellationToken>()).Returns(2);
+        layouts.ListGraveSiteCodesAsync(cemeteryId, Arg.Any<CancellationToken>()).Returns(["A-0001"]);
         var handler = new GenerateGraveSitesHandler(Callers.For(tenant, MembershipRole.OrganizationAdmin), layouts, Substitute.For<IUnitOfWork>());
 
         var sites = await handler.Handle(new GenerateGraveSites(section.Id, "single", 1, 2, 16, 45, 2, 1, 0.2, 0), CancellationToken.None);
 
-        Assert.Equal(2, sites.Count);
+        Assert.Equal(["A-03-01", "A-03-02"], sites.Select(site => site.Code));
         Assert.All(sites, site =>
         {
             Assert.NotEqual(Guid.Empty, site.Id);
@@ -48,6 +48,112 @@ public sealed class LayoutHandlerTests
             Assert.True(site.Outline.Count >= 4);
         });
     }
+
+    [Fact]
+    public async Task Generating_refuses_a_code_the_cemetery_already_uses()
+    {
+        var tenant = Guid.CreateVersion7();
+        var section = Section.Add(tenant, Guid.CreateVersion7(), "Field A", "A", null);
+        var layouts = Substitute.For<ILayoutRepository>();
+        layouts.FindSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(section);
+        layouts.ListOpenInSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveSite>());
+        layouts.ListGraveSiteCodesAsync(section.CemeteryId, Arg.Any<CancellationToken>()).Returns(["A-01-02"]);
+        var handler = new GenerateGraveSitesHandler(Callers.For(tenant, MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
+
+        var error = await Assert.ThrowsAsync<ConflictException>(() => handler.Handle(new GenerateGraveSites(section.Id, "single", 1, 2, 16, 45, 2, 1, 0.2, 0), CancellationToken.None));
+
+        Assert.Equal("grave_site.code_taken", error.Code);
+        await layouts.DidNotReceive().AddGraveSiteAsync(Arg.Any<GraveSite>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task A_drawn_grave_without_a_row_takes_the_next_row_less_number()
+    {
+        var (section, layouts) = DrawWorld();
+        layouts.ListRowCodesAsync(section.Id, null, Arg.Any<CancellationToken>()).Returns(["A-007"]);
+        var handler = DrawHandler(section, layouts);
+
+        var site = await handler.Handle(new DrawGraveSite(section.Id, Ring(Grave()), "family", null, null, null), CancellationToken.None);
+
+        Assert.Equal("A-008", site.Code);
+        Assert.Null(site.RowId);
+        Assert.Equal(2, site.Capacity);
+    }
+
+    [Fact]
+    public async Task A_drawn_grave_in_a_row_takes_the_next_place()
+    {
+        var (section, layouts) = DrawWorld();
+        var row = GraveRow.Add(section.TenantId, section.Id, "4");
+        layouts.ListRowsAsync(section.Id, Arg.Any<CancellationToken>()).Returns([row]);
+        layouts.ListRowCodesAsync(section.Id, row.Id, Arg.Any<CancellationToken>()).Returns(["A-04-01"]);
+        var handler = DrawHandler(section, layouts);
+
+        var site = await handler.Handle(new DrawGraveSite(section.Id, Ring(Grave()), "single", 1, null, row.Id), CancellationToken.None);
+
+        Assert.Equal("A-04-02", site.Code);
+        Assert.Equal(row.Id, site.RowId);
+    }
+
+    [Fact]
+    public async Task A_drawn_grave_keeps_a_free_code_and_refuses_a_taken_one()
+    {
+        var (section, layouts) = DrawWorld();
+        layouts.ListGraveSiteCodesAsync(section.CemeteryId, Arg.Any<CancellationToken>()).Returns(["A-001"]);
+        var handler = DrawHandler(section, layouts);
+
+        var site = await handler.Handle(new DrawGraveSite(section.Id, Ring(Grave()), "single", null, " A-OLD-7 ", null), CancellationToken.None);
+        var error = await Assert.ThrowsAsync<ConflictException>(() => handler.Handle(new DrawGraveSite(section.Id, Ring(Grave()), "single", null, "A-001", null), CancellationToken.None));
+
+        Assert.Equal("A-OLD-7", site.Code);
+        Assert.Equal("grave_site.code_taken", error.Code);
+    }
+
+    [Fact]
+    public async Task A_drawn_grave_in_a_row_of_another_section_is_not_found()
+    {
+        var (section, layouts) = DrawWorld();
+        layouts.ListRowsAsync(section.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveRow>());
+        var handler = DrawHandler(section, layouts);
+
+        var error = await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new DrawGraveSite(section.Id, Ring(Grave()), "single", null, null, Guid.CreateVersion7()), CancellationToken.None));
+
+        Assert.Equal("grave_row.not_found", error.Code);
+    }
+
+    [Fact]
+    public async Task Drawing_validates_outline_kind_code_and_capacity()
+    {
+        var validator = new DrawGraveSiteValidator();
+        var tooMany = Enumerable.Range(0, GraveSite.OutlineMaxPoints + 1).Select(_ => new GeoPointView(16, 45)).ToArray();
+
+        var result = await validator.ValidateAsync(new DrawGraveSite(Guid.CreateVersion7(), tooMany, "nope", -1, new string('X', GraveSite.CodeMaxLength + 1), null), TestContext.Current.CancellationToken);
+        var blank = await validator.ValidateAsync(new DrawGraveSite(Guid.CreateVersion7(), Ring(Grave()), "single", null, " ", null), TestContext.Current.CancellationToken);
+        var fine = await validator.ValidateAsync(new DrawGraveSite(Guid.CreateVersion7(), Ring(Grave()), "single", 1, "A-1", null), TestContext.Current.CancellationToken);
+
+        Assert.Equal(
+            ["geometry.ring_invalid", "grave_site.outline_too_complex", "grave_site.kind_invalid", "grave_site.code_invalid", "grave_site.capacity_invalid"],
+            result.Errors.Select(error => error.ErrorCode));
+        Assert.Equal(["grave_site.code_invalid"], blank.Errors.Select(error => error.ErrorCode));
+        Assert.True(fine.IsValid);
+    }
+
+    private static (Section Section, ILayoutRepository Layouts) DrawWorld()
+    {
+        var section = Section.Add(Guid.CreateVersion7(), Guid.CreateVersion7(), "Field A", "A", null);
+        var layouts = Substitute.For<ILayoutRepository>();
+        layouts.FindSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(section);
+        layouts.ListOpenInSectionAsync(section.Id, Arg.Any<CancellationToken>()).Returns(Array.Empty<GraveSite>());
+        layouts.ListGraveSiteCodesAsync(section.CemeteryId, Arg.Any<CancellationToken>()).Returns(Array.Empty<string>());
+        layouts.ListRowCodesAsync(section.Id, Arg.Any<Guid?>(), Arg.Any<CancellationToken>()).Returns(Array.Empty<string>());
+        return (section, layouts);
+    }
+
+    private static DrawGraveSiteHandler DrawHandler(Section section, ILayoutRepository layouts) =>
+        new(Callers.For(section.TenantId, MembershipRole.CemeteryClerk), layouts, Substitute.For<IUnitOfWork>());
+
+    private static GeoPointView[] Ring(GeoPolygon polygon) =>
+        polygon.Ring.Select(point => new GeoPointView(point.Longitude, point.Latitude)).ToArray();
 
     private static OpenCemeteryHandler Handler(MembershipRole role, ILayoutRepository layouts) =>
         new(Callers.For(Guid.CreateVersion7(), role), layouts, Substitute.For<IUnitOfWork>(), TimeProvider.System);
@@ -212,6 +318,16 @@ public sealed class LayoutHandlerTests
             new GeoPoint(16.002, 45),
             new GeoPoint(16.002, 45.001),
             new GeoPoint(16, 45.001),
+            new GeoPoint(16, 45),
+        ]);
+
+    /// <summary>About 1.6 m by 2.2 m.</summary>
+    private static GeoPolygon Grave() =>
+        GeoPolygon.Create([
+            new GeoPoint(16, 45),
+            new GeoPoint(16.00002, 45),
+            new GeoPoint(16.00002, 45.00002),
+            new GeoPoint(16, 45.00002),
             new GeoPoint(16, 45),
         ]);
 

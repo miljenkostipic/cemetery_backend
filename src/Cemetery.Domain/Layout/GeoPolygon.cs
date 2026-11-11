@@ -7,6 +7,7 @@ public readonly record struct GeoPoint(double Longitude, double Latitude);
 public sealed class GeoPolygon
 {
     public const int MinimumRingLength = 4;
+    private const double MetersPerDegreeLatitude = 111_320;
 
     private GeoPolygon(IReadOnlyList<GeoPoint> ring) => Ring = ring;
 
@@ -29,6 +30,17 @@ public sealed class GeoPolygon
             throw new DomainRuleException("geometry.ring_empty");
 
         return new GeoPolygon(ring);
+    }
+
+    /// <summary>
+    /// Approximate area in square metres: the ring projected onto a flat plane at its mean
+    /// latitude. Good to well under a percent for grave-sized shapes.
+    /// </summary>
+    public double AreaSquareMeters()
+    {
+        var latitude = Ring.Take(Ring.Count - 1).Average(point => point.Latitude);
+        var metersPerDegreeLongitude = MetersPerDegreeLatitude * Math.Cos(latitude * Math.PI / 180);
+        return Math.Abs(SignedArea(Ring)) * metersPerDegreeLongitude * MetersPerDegreeLatitude;
     }
 
     public bool InteriorOverlaps(GeoPolygon other) =>

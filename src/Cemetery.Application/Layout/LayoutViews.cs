@@ -54,6 +54,9 @@ internal static class LayoutMaps
             Ring(site.Outline),
             site.HiddenFromPublic);
 
+    public static bool WithinPointLimit(IReadOnlyList<GeoPointView>? ring) =>
+        ring is null || ring.Count <= GraveSite.OutlineMaxPoints;
+
     public static GeoPolygon? Polygon(IReadOnlyList<GeoPointView>? ring) =>
         TryPolygon(ring, out var polygon) ? polygon : null;
 
