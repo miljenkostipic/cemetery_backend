@@ -14,6 +14,8 @@ public interface ISessionHints
     string InvitationHash { get; set; }
 
     bool PublicRead { get; set; }
+
+    bool OutboxDispatch { get; set; }
 }
 
 public interface ICurrentUser

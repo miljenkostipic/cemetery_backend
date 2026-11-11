@@ -1541,6 +1541,28 @@
         }
       }
     },
+    "/api/v1/integrations/webhook-deliveries": {
+      "get": {
+        "tags": [
+          "LaunchEndpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookDeliveryView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/integrations/webhooks/{webhookId}": {
       "delete": {
         "tags": [
@@ -2003,6 +2025,35 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChargeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/callbacks/{provider}": {
+      "post": {
+        "tags": [
+          "BillingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentView"
                 }
               }
             }
@@ -7724,6 +7775,54 @@
           },
           "secret": {
             "type": "string"
+          }
+        }
+      },
+      "WebhookDeliveryStatus": {
+        "enum": [
+          "pending",
+          "delivered",
+          "failed"
+        ]
+      },
+      "WebhookDeliveryView": {
+        "required": [
+          "id",
+          "event",
+          "status",
+          "attempts",
+          "lastError",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "event": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WebhookDeliveryStatus"
+          },
+          "attempts": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "lastError": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },

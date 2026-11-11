@@ -1,5 +1,7 @@
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Auth;
+using Cemetery.Application.Integrations;
+using Cemetery.Application.Launch;
 using Cemetery.Application.Validation;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,8 @@ public static class DependencyInjection
             .AsImplementedInterfaces()
             .WithScopedLifetime());
         services.Decorate(typeof(ICommandHandler<,>), typeof(ValidatingCommandHandler<,>));
+        services.AddScoped<OutboxDispatcher>();
+        services.AddScoped<IOutboxHandler, WebhookDeliveryHandler>();
         return services;
     }
 

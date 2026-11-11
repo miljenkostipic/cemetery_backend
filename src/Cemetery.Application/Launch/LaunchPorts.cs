@@ -10,9 +10,15 @@ public interface IWebhookRepository
 
     Task<IReadOnlyList<WebhookSubscription>> ListAsync(CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<WebhookSubscription>> ListByEventAsync(string eventName, CancellationToken cancellationToken);
+
     void Remove(WebhookSubscription subscription);
 
-    Task EnqueueAsync(string eventName, Guid subjectId, DateTimeOffset at, CancellationToken cancellationToken);
+    void AddDelivery(WebhookDelivery delivery);
+
+    Task<bool> WasDeliveredAsync(Guid subscriptionId, Guid subjectId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<WebhookDelivery>> ListDeliveriesAsync(CancellationToken cancellationToken);
 }
 
 public interface IMaticaLinkRepository

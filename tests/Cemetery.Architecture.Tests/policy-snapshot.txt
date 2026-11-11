@@ -31,6 +31,7 @@ GET /api/v1/gdpr/records office
 GET /api/v1/grave-sites/{graveSiteId} office
 GET /api/v1/grave-sites/{graveSiteId}/interments office
 GET /api/v1/health anonymous
+GET /api/v1/integrations/webhook-deliveries office
 GET /api/v1/integrations/webhooks office
 GET /api/v1/me/requests holder
 GET /api/v1/office-requests office
@@ -85,6 +86,7 @@ POST /api/v1/me/requests holder
 POST /api/v1/organizations authenticated
 POST /api/v1/organizations/invitations office
 POST /api/v1/organizations/switch authenticated
+POST /api/v1/payments/callbacks/{provider} anonymous
 POST /api/v1/payments/{paymentId}/voids office
 POST /api/v1/sections/{sectionId}/grave-sites office
 POST /api/v1/sections/{sectionId}/rows office

@@ -1,4 +1,5 @@
 using Cemetery.Domain.Identity;
+using Cemetery.Domain.Integrations;
 
 namespace Cemetery.Domain.Operations;
 
@@ -113,8 +114,9 @@ public sealed class Funeral : TenantEntity
         Guid graveSiteId,
         DateTime start,
         DateTime end,
-        FuneralPlace place) =>
-        new()
+        FuneralPlace place)
+    {
+        var funeral = new Funeral
         {
             Id = Guid.CreateVersion7(),
             TenantId = tenantId,
@@ -126,6 +128,9 @@ public sealed class Funeral : TenantEntity
             Place = place,
             Status = FuneralStatus.Scheduled,
         };
+        funeral.Raise(new FuneralScheduled(funeral.Id));
+        return funeral;
+    }
 
     private static void RequireParties(Guid tenantId, Guid cemeteryId, Guid deceasedId, Guid graveSiteId)
     {

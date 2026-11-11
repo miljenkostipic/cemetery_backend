@@ -1,7 +1,6 @@
 using Cemetery.Application;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
-using Cemetery.Domain.Launch;
 using Cemetery.Domain.Layout;
 using Cemetery.Domain.Operations;
 using Cemetery.Domain.Register;
@@ -29,9 +28,7 @@ public sealed class ScheduleFuneralHandler(
     ILayoutRepository layouts,
     IRegisterRepository register,
     IOperationsRepository store,
-    IWebhookRepository webhooks,
-    IUnitOfWork unitOfWork,
-    TimeProvider clock) : ICommandHandler<ScheduleFuneral, FuneralView>
+    IUnitOfWork unitOfWork) : ICommandHandler<ScheduleFuneral, FuneralView>
 {
     public async Task<FuneralView> Handle(ScheduleFuneral command, CancellationToken cancellationToken)
     {
@@ -48,7 +45,6 @@ public sealed class ScheduleFuneralHandler(
         var funeral = Funeral.Schedule(organizationId, command.CemeteryId, command.DeceasedId, command.GraveSiteId, command.StartsAt, command.EndsAt, command.Place);
         await RejectClash(command.CemeteryId, funeral, cancellationToken).ConfigureAwait(false);
         await store.AddFuneralAsync(funeral, cancellationToken).ConfigureAwait(false);
-        await webhooks.EnqueueAsync(WebhookEvents.FuneralScheduled, funeral.Id, clock.GetUtcNow(), cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return funeral;
     }

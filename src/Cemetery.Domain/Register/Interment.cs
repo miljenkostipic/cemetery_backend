@@ -1,4 +1,5 @@
 using Cemetery.Domain.Identity;
+using Cemetery.Domain.Integrations;
 
 namespace Cemetery.Domain.Register;
 
@@ -40,7 +41,7 @@ public sealed class Interment : TenantEntity
         if (tenantId == Guid.Empty || cemeteryId == Guid.Empty || deceasedId == Guid.Empty || graveSiteId == Guid.Empty)
             throw new DomainRuleException("interment.location_invalid");
 
-        return new Interment
+        var created = new Interment
         {
             Id = Guid.CreateVersion7(),
             TenantId = tenantId,
@@ -51,6 +52,8 @@ public sealed class Interment : TenantEntity
             Kind = kind,
             BuriedOn = buriedOn,
         };
+        created.Raise(new IntermentRecorded(created.Id));
+        return created;
     }
 
     public void Exhume(DateOnly on)

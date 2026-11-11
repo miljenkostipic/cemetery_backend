@@ -261,6 +261,11 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasColumnType("date")
                         .HasColumnName("paid_on");
 
+                    b.Property<string>("ProviderTransactionId")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("provider_transaction_id");
+
                     b.Property<string>("ReceiptNumber")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -300,6 +305,11 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TenantId", "ChargeId")
                         .HasDatabaseName("ix_payments_tenant_id_charge_id");
+
+                    b.HasIndex("TenantId", "ProviderTransactionId")
+                        .IsUnique()
+                        .HasDatabaseName("payments_provider_transaction_key")
+                        .HasFilter("provider_transaction_id IS NOT NULL");
 
                     b.ToTable("payments", "cemetery");
                 });
@@ -427,6 +437,54 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                     b.ToTable("organizations", "cemetery");
                 });
 
+            modelBuilder.Entity("Cemetery.Domain.Integrations.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_messages");
+
+                    b.HasIndex("ProcessedAt", "OccurredAt")
+                        .HasDatabaseName("ix_outbox_messages_processed_at_occurred_at");
+
+                    b.ToTable("outbox_messages", "cemetery");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Launch.GdprExport", b =>
                 {
                     b.Property<Guid>("Id")
@@ -504,6 +562,10 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -513,6 +575,15 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("event");
+
+                    b.Property<int?>("HttpStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("http_status");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("last_error");
 
                     b.Property<string>("Status")
                         .IsRequired()

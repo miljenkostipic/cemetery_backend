@@ -1,4 +1,5 @@
 using Cemetery.Domain.Identity;
+using Cemetery.Domain.Integrations;
 
 namespace Cemetery.Domain.Billing;
 
@@ -155,20 +156,49 @@ public sealed class Payment : TenantEntity
 
     public string? RedirectUrl { get; private set; }
 
+    public string? ProviderTransactionId { get; private set; }
+
     public static Payment Record(Charge charge, string? method, string? amount, DateOnly paidOn, string? reference)
     {
         var payment = Create(charge, ManualMethods.Require(method), PaymentAmount.RequireMatch(amount, charge.Amount), PaymentDate.Require(paidOn), PaymentReference.Require(reference));
         charge.Pay(payment.Id);
+        payment.Raise(new PaymentReceived(payment.Id));
         return payment;
     }
 
     public static Payment BeginCheckout(Charge charge, string provider, DateOnly today)
     {
-        var payment = Create(charge, ManualMethod.Online, charge.Amount, today, BillingProviders.Require(provider).ToString().ToLowerInvariant());
+        if (charge.Status is not (ChargeStatus.Open or ChargeStatus.Reminded))
+            throw new DomainRuleException("charge.already_paid");
+
+        var payment = Create(charge, ManualMethod.Online, charge.Amount, today, Code(provider));
         payment.Status = PaymentStatus.Pending;
         payment.ReceiptNumber = "";
-        payment.RedirectUrl = "https://pay.invalid/" + provider + "/" + payment.Id.ToString("N");
+        payment.RedirectUrl = null;
         return payment;
+    }
+
+    public void AttachCheckout(string redirectUrl)
+    {
+        if (Status != PaymentStatus.Pending)
+            throw new DomainRuleException("payment.not_found");
+
+        RedirectUrl = PaymentLink.Require(redirectUrl);
+    }
+
+    public bool Accept(string transactionId)
+    {
+        var id = ProviderTransaction.Require(transactionId);
+        if (Status == PaymentStatus.Succeeded && ProviderTransactionId == id)
+            return false;
+        if (Status != PaymentStatus.Pending)
+            throw new DomainRuleException("payment.not_found");
+
+        Status = PaymentStatus.Succeeded;
+        ProviderTransactionId = id;
+        ReceiptNumber = Receipt(Id);
+        Raise(new PaymentReceived(Id));
+        return true;
     }
 
     public void Void(string? reason)
@@ -179,6 +209,14 @@ public sealed class Payment : TenantEntity
         VoidReason = BillingReason.Require(reason, "payment.reason_invalid");
         Status = PaymentStatus.Voided;
     }
+
+    private static string Code(string? provider) => BillingProviders.Require(provider) switch
+    {
+        BillingProvider.Monri => BillingProviders.Monri,
+        BillingProvider.Paypal => BillingProviders.Paypal,
+        BillingProvider.Payrexx => BillingProviders.Payrexx,
+        _ => throw new DomainRuleException("payment.provider_invalid"),
+    };
 
     private static Payment Create(Charge charge, ManualMethod method, decimal amount, DateOnly paidOn, string reference)
     {

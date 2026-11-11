@@ -18,14 +18,20 @@ internal sealed class WebhookRepository(CemeteryDbContext db) : IWebhookReposito
     public async Task<IReadOnlyList<WebhookSubscription>> ListAsync(CancellationToken cancellationToken) =>
         await db.WebhookSubscriptions.OrderBy(entity => entity.Url).ThenBy(entity => entity.Event).ToListAsync(cancellationToken).ConfigureAwait(false);
 
+    public async Task<IReadOnlyList<WebhookSubscription>> ListByEventAsync(string eventName, CancellationToken cancellationToken) =>
+        await db.WebhookSubscriptions.Where(entity => entity.Event == eventName).ToListAsync(cancellationToken).ConfigureAwait(false);
+
     public void Remove(WebhookSubscription subscription) => db.WebhookSubscriptions.Remove(subscription);
 
-    public async Task EnqueueAsync(string eventName, Guid subjectId, DateTimeOffset at, CancellationToken cancellationToken)
-    {
-        var matches = await db.WebhookSubscriptions.Where(entity => entity.Event == eventName).ToListAsync(cancellationToken).ConfigureAwait(false);
-        foreach (var subscription in matches)
-            db.WebhookDeliveries.Add(WebhookDelivery.Queue(subscription.TenantId, subscription.Id, eventName, subjectId, at));
-    }
+    public void AddDelivery(WebhookDelivery delivery) => db.WebhookDeliveries.Add(delivery);
+
+    public Task<bool> WasDeliveredAsync(Guid subscriptionId, Guid subjectId, CancellationToken cancellationToken) =>
+        db.WebhookDeliveries.AnyAsync(
+            entity => entity.SubscriptionId == subscriptionId && entity.SubjectId == subjectId && entity.Status == WebhookDeliveryStatus.Delivered,
+            cancellationToken);
+
+    public async Task<IReadOnlyList<WebhookDelivery>> ListDeliveriesAsync(CancellationToken cancellationToken) =>
+        await db.WebhookDeliveries.OrderByDescending(entity => entity.CreatedAt).Take(50).ToListAsync(cancellationToken).ConfigureAwait(false);
 }
 
 internal sealed class MaticaLinkRepository(CemeteryDbContext db) : IMaticaLinkRepository

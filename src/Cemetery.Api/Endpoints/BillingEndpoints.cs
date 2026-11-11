@@ -1,7 +1,9 @@
 using Cemetery.Api.Tenancy;
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Billing;
+using Cemetery.Domain.Identity;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Cemetery.Api.Endpoints;
 
@@ -19,6 +21,7 @@ public static class BillingEndpoints
         api.MapPost("/charges/{chargeId}/payments", PostPayment).RequireAuthorization(Policies.Office);
         api.MapGet("/payments/{paymentId}/receipt", ReadReceipt).RequireAuthorization(Policies.Office);
         api.MapPost("/payments/{paymentId}/voids", PostVoid).RequireAuthorization(Policies.Office);
+        api.MapPost("/payments/callbacks/{provider}", PostCallback).AllowAnonymous().RequireRateLimiting(PublicRateLimit.Policy);
         api.MapGet("/payment-providers", GetProviders).RequireAuthorization(Policies.Office);
         api.MapPut("/payment-providers/{provider}", PutProvider).RequireAuthorization(Policies.Office);
         return api;
@@ -98,6 +101,22 @@ public static class BillingEndpoints
         ICommandHandler<VoidPayment, ChargeView> handler,
         CancellationToken cancellationToken) =>
         TypedResults.Ok(await handler.Handle(new VoidPayment(paymentId, body.Reason), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<Ok<PaymentView>> PostCallback(
+        string provider,
+        HttpRequest request,
+        IEnumerable<IPaymentGateway> gateways,
+        ICommandHandler<ApplyProviderCallback, PaymentView> handler,
+        CancellationToken cancellationToken)
+    {
+        var gateway = gateways.FirstOrDefault(item => item.Name == provider)
+            ?? throw new DomainRuleException("payment.provider_invalid");
+        using var reader = new StreamReader(request.Body);
+        var payload = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+        var signature = request.Headers[gateway.SignatureHeader].ToString();
+        var payment = await handler.Handle(new ApplyProviderCallback(provider, payload, signature), cancellationToken).ConfigureAwait(false);
+        return TypedResults.Ok(payment);
+    }
 
     private static async Task<Ok<IReadOnlyList<PaymentProviderView>>> GetProviders(
         IQueryHandler<ListPaymentProviders, IReadOnlyList<PaymentProviderView>> handler,

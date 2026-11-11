@@ -1,6 +1,9 @@
 using Cemetery.Application.Abstractions;
 using Cemetery.Domain.Identity;
+using Cemetery.Domain.Integrations;
 using Cemetery.Infrastructure.Identity;
+using Cemetery.Infrastructure.Jobs;
+using Cemetery.Infrastructure.Payments;
 using Cemetery.Infrastructure.Persistence;
 using Cemetery.Infrastructure.Tenancy;
 using Hangfire;
@@ -32,6 +35,17 @@ public static class DependencyInjection
         services.AddScoped<IOfficeRequestRepository, OfficeRequestRepository>();
         services.AddScoped<IOperationsRepository, OperationsRepository>();
         services.AddScoped<IWebhookRepository, WebhookRepository>();
+        services.AddScoped<OutboxInterceptor>();
+        services.AddScoped<IOutboxStore, OutboxStore>();
+        services.AddHttpClient(WebhookPoster.Client, client => client.Timeout = WebhookSignature.Timeout)
+            .ConfigurePrimaryHttpMessageHandler(static () => new SocketsHttpHandler { AllowAutoRedirect = false });
+        services.AddHttpClient(PaymentHttp.Client, client => client.Timeout = WebhookSignature.Timeout)
+            .ConfigurePrimaryHttpMessageHandler(static () => new SocketsHttpHandler { AllowAutoRedirect = false });
+        services.AddScoped<IWebhookPoster, WebhookPoster>();
+        services.AddScoped<IPaymentGateway, MonriGateway>();
+        services.AddScoped<IPaymentGateway, PaypalGateway>();
+        services.AddScoped<IPaymentGateway, PayrexxGateway>();
+        services.AddSingleton<IPaymentLinks, ConfiguredPaymentLinks>();
         services.AddScoped<IBillingRepository, BillingRepository>();
         services.AddScoped<IMaticaLinkRepository, MaticaLinkRepository>();
         services.AddScoped<IGdprExportRepository, GdprExportRepository>();
@@ -72,7 +86,9 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("ConnectionStrings:App is required.");
         options.UseNpgsql(connection, DatabaseInitializer.Configure);
         options.UseSnakeCaseNamingConvention();
-        options.AddInterceptors(provider.GetRequiredService<TenantSessionInterceptor>());
+        options.AddInterceptors(
+            provider.GetRequiredService<TenantSessionInterceptor>(),
+            provider.GetRequiredService<OutboxInterceptor>());
     }
 
     private static void AddIdentity(IServiceCollection services)
@@ -126,5 +142,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("ConnectionStrings:Owner is required.");
         services.AddHangfire(config => config.UsePostgreSqlStorage(options => options.UseNpgsqlConnection(owner)));
         services.AddHangfireServer();
+        services.AddScoped<OutboxJob>();
+        services.AddHostedService<OutboxSchedule>();
     }
 }

@@ -2,6 +2,8 @@ using Cemetery.Application.Abstractions;
 using Cemetery.Application.Billing;
 using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Billing;
+using Cemetery.Domain.Identity;
+using Cemetery.Domain.Integrations;
 using Cemetery.Domain.Rights;
 using FluentValidation;
 
@@ -84,22 +86,46 @@ public sealed class StartMyPaymentHandler(
     ICallerContext caller,
     IRightsRepository rights,
     IBillingRepository billing,
+    IEnumerable<IPaymentGateway> gateways,
+    IPaymentLinks links,
     IUnitOfWork unitOfWork,
     TimeProvider clock) : ICommandHandler<StartMyPayment, PaymentView>
 {
     public async Task<PaymentView> Handle(StartMyPayment command, CancellationToken cancellationToken)
     {
-        var holder = await rights.FindHolderByUserAsync(caller.UserId, cancellationToken).ConfigureAwait(false)
-            ?? throw new NotFoundException("charge.not_found");
-        var charge = await billing.FindChargeForHolderAsync(command.ChargeId, holder.Id, cancellationToken).ConfigureAwait(false)
-            ?? throw new NotFoundException("charge.not_found");
-        var account = await billing.FindProviderAsync(command.Provider, cancellationToken).ConfigureAwait(false);
-        if (account is null || !account.Enabled)
-            throw new NotFoundException("payment.provider_invalid");
+        var charge = await Charge(command.ChargeId, cancellationToken).ConfigureAwait(false);
+        var account = await Account(command.Provider, cancellationToken).ConfigureAwait(false);
         var payment = Payment.BeginCheckout(charge, command.Provider, DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime));
+        await Open(command.Provider, account, payment, cancellationToken).ConfigureAwait(false);
         billing.AddPayment(payment);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return BillingMaps.Payment(payment);
+    }
+
+    private async Task<Charge> Charge(Guid chargeId, CancellationToken cancellationToken)
+    {
+        var holder = await rights.FindHolderByUserAsync(caller.UserId, cancellationToken).ConfigureAwait(false)
+            ?? throw new NotFoundException("charge.not_found");
+        return await billing.FindChargeForHolderAsync(chargeId, holder.Id, cancellationToken).ConfigureAwait(false)
+            ?? throw new NotFoundException("charge.not_found");
+    }
+
+    private async Task<MerchantAccount> Account(string provider, CancellationToken cancellationToken)
+    {
+        var account = await billing.FindProviderAsync(provider, cancellationToken).ConfigureAwait(false);
+        if (account is null || !account.Enabled)
+            throw new NotFoundException("payment.provider_invalid");
+
+        return account;
+    }
+
+    private async Task Open(string provider, MerchantAccount account, Payment payment, CancellationToken cancellationToken)
+    {
+        var gateway = gateways.FirstOrDefault(item => item.Name == provider)
+            ?? throw new DomainRuleException("payment.provider_invalid");
+        var draft = new CheckoutDraft(payment.TenantId, payment.Id, payment.Amount, payment.Currency, payment.Description, links.Callback(provider));
+        var session = await gateway.OpenAsync(draft, new MerchantCredentials(account.MerchantId, account.Secret, account.Enabled), cancellationToken).ConfigureAwait(false);
+        payment.AttachCheckout(session.RedirectUrl);
     }
 }
 
