@@ -31,7 +31,7 @@ Gate: a webhook reaches a test receiver with a valid signature; one payment gate
 
 ## Found while working
 
-- R5.4 is closed on the contract in `plan.md`: Cemetery exposes the link, and Matica calls it. The endpoint is `POST /api/v1/interments/{intermentId}/matica-links` with `{ "deathCertificateId" }`. Cemetery stores that id on a local `MaticaLink`. No Matica base URL exists, so Cemetery does not call out. The settings screen on frontend branch `r5-integrations` labels the section as a manual link until Matica calls the endpoint.
+- R5.4 is closed on the contract in `plan.md`: Cemetery exposes the link, and Matica calls it. The endpoint is `POST /api/v1/interments/{intermentId}/matica-links` with `{ "deathCertificateId" }`. Cemetery stores that id on a local `MaticaLink`. No Matica base URL exists, so Cemetery does not call out. The settings screen in [cemetery_frontend#20](https://github.com/miljenkostipic/cemetery_frontend/pull/20) labels the section as a manual link until Matica calls the endpoint.
 - PayPal callbacks are checked with HMAC-SHA256 of the raw body and the merchant secret. PayPal's own webhooks are verified with a certificate, which this sandbox adapter does not check.
 - The Payrexx adapter posts JSON with an `X-API-Signature` header. Payrexx's gateway API is form-encoded, so a live instance may reject the request.
 - Hangfire is not registered while the host is headless. The dispatcher tests call `OutboxDispatcher` directly; the recurring job is `outbox-dispatch`, once a minute, only when Hangfire starts.
