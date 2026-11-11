@@ -6,6 +6,7 @@ using Cemetery.Domain.Layout;
 using Cemetery.Domain.Integrations;
 using Cemetery.Domain.Launch;
 using Cemetery.Domain.Operations;
+using Cemetery.Domain.Photos;
 using Cemetery.Domain.Register;
 using Cemetery.Domain.Rights;
 using Cemetery.Infrastructure.Identity;
@@ -87,6 +88,8 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
 
     public DbSet<CemeteryPath> Paths => Set<CemeteryPath>();
 
+    public DbSet<GraveSitePhoto> GraveSitePhotos => Set<GraveSitePhoto>();
+
     [DbFunction("fold_text", Schema = "cemetery")]
     public static string Fold(string value) => value;
 
@@ -123,6 +126,7 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.Entity<StoredFile>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<Entrance>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<CemeteryPath>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
+        builder.Entity<GraveSitePhoto>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
     }
 
     private void FilterBilling(ModelBuilder builder)
