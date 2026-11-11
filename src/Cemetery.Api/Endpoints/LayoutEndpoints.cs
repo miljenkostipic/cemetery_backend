@@ -24,6 +24,7 @@ public static class LayoutEndpoints
         sections.MapPost("/{sectionId}/rows", AddRow);
         sections.MapGet("/{sectionId}/rows", ListRows);
         sections.MapPost("/{sectionId}/grave-sites", Generate);
+        sections.MapPost("/{sectionId}/grave-sites/drawn", Draw);
 
         var sites = api.MapGroup("/grave-sites").RequireAuthorization(Policies.Office);
         sites.MapPost("/merge", Merge);
@@ -109,6 +110,13 @@ public static class LayoutEndpoints
         CancellationToken cancellationToken) =>
         TypedResults.Ok(await handler.Handle(new GenerateGraveSites(sectionId, body.Kind, body.Rows, body.Columns, body.OriginLongitude, body.OriginLatitude, body.WidthMeters, body.DepthMeters, body.GapMeters, body.RotationDegrees), cancellationToken).ConfigureAwait(false));
 
+    private static async Task<Ok<GraveSiteView>> Draw(
+        Guid sectionId,
+        DrawGraveSiteBody body,
+        ICommandHandler<DrawGraveSite, GraveSiteView> handler,
+        CancellationToken cancellationToken) =>
+        TypedResults.Ok(await handler.Handle(new DrawGraveSite(sectionId, body.Outline, body.Kind, body.Capacity, body.Code, body.RowId), cancellationToken).ConfigureAwait(false));
+
     private static async Task<Ok<IReadOnlyList<GraveSiteView>>> ListSites(
         Guid cemeteryId,
         IQueryHandler<ListGraveSites, IReadOnlyList<GraveSiteView>> handler,
@@ -166,6 +174,13 @@ public sealed record SectionBody(string Name, string Code, IReadOnlyList<GeoPoin
 public sealed record OutlineBody(IReadOnlyList<GeoPointView> Outline);
 
 public sealed record RowBody(string Label);
+
+public sealed record DrawGraveSiteBody(
+    IReadOnlyList<GeoPointView> Outline,
+    string Kind,
+    int? Capacity = null,
+    string? Code = null,
+    Guid? RowId = null);
 
 public sealed record UndoSplitBody(Guid OriginalId, Guid LeftId, Guid RightId);
 

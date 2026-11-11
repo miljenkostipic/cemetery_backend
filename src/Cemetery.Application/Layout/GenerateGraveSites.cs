@@ -58,19 +58,37 @@ public sealed class GenerateGraveSitesHandler(
         foreach (var cell in cells)
             GraveSite.RejectOverlap(cell, existing);
 
-        var sequence = await layouts.NextSequenceAsync(section.CemeteryId, cancellationToken).ConfigureAwait(false);
         var rowCount = await layouts.CountRowsAsync(section.Id, cancellationToken).ConfigureAwait(false);
-        var created = await PlaceRowsAsync(organizationId, section, kind, cells, sequence, rowCount, command.Columns, cancellationToken).ConfigureAwait(false);
+        var codes = await CodesAsync(section, rowCount, cells.Count, command.Columns, cancellationToken).ConfigureAwait(false);
+        var created = await PlaceRowsAsync(organizationId, section, kind, cells, codes, rowCount, command.Columns, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return created.Select(LayoutMaps.ToView).ToArray();
     }
+
+    /// <summary>
+    /// Field-row-place codes: grid row r becomes section row <c>rowCount + r + 1</c> and column c
+    /// its place <c>c + 1</c>. A code the cemetery already uses is refused rather than duplicated.
+    /// </summary>
+    private async Task<string[]> CodesAsync(Section section, int rowCount, int cellCount, int columns, CancellationToken cancellationToken)
+    {
+        var codes = Enumerable.Range(0, cellCount)
+            .Select(index => GraveSiteCodes.InRow(section.Code, RowLabel(rowCount, index, columns), index % columns + 1))
+            .ToArray();
+        var taken = await layouts.ListGraveSiteCodesAsync(section.CemeteryId, cancellationToken).ConfigureAwait(false);
+        if (codes.Intersect(taken, StringComparer.Ordinal).Any())
+            throw new ConflictException("grave_site.code_taken");
+        return codes;
+    }
+
+    private static string RowLabel(int rowCount, int index, int columns) =>
+        (rowCount + index / columns + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private async Task<List<GraveSite>> PlaceRowsAsync(
         Guid organizationId,
         Section section,
         GraveSiteKind kind,
         IReadOnlyList<GeoPolygon> cells,
-        int sequence,
+        string[] codes,
         int rowCount,
         int columns,
         CancellationToken cancellationToken)
@@ -80,8 +98,8 @@ public sealed class GenerateGraveSitesHandler(
         for (var index = 0; index < cells.Count; index++)
         {
             if (index % columns == 0)
-                rowId = await AddRowAsync(organizationId, section.Id, rowCount + index / columns + 1, cancellationToken).ConfigureAwait(false);
-            var site = GraveSite.Place(organizationId, section.CemeteryId, section.Id, rowId, $"{section.Code}-{sequence + index:0000}", kind, cells[index]);
+                rowId = await AddRowAsync(organizationId, section.Id, RowLabel(rowCount, index, columns), cancellationToken).ConfigureAwait(false);
+            var site = GraveSite.Place(organizationId, section.CemeteryId, section.Id, rowId, codes[index], kind, cells[index]);
             await layouts.AddGraveSiteAsync(site, cancellationToken).ConfigureAwait(false);
             created.Add(site);
         }
@@ -89,9 +107,9 @@ public sealed class GenerateGraveSitesHandler(
         return created;
     }
 
-    private async Task<Guid> AddRowAsync(Guid organizationId, Guid sectionId, int label, CancellationToken cancellationToken)
+    private async Task<Guid> AddRowAsync(Guid organizationId, Guid sectionId, string label, CancellationToken cancellationToken)
     {
-        var row = GraveRow.Add(organizationId, sectionId, label.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        var row = GraveRow.Add(organizationId, sectionId, label);
         await layouts.AddRowAsync(row, cancellationToken).ConfigureAwait(false);
         return row.Id;
     }

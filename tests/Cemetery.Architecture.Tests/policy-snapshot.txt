@@ -89,6 +89,7 @@ POST /api/v1/organizations/switch authenticated
 POST /api/v1/payments/callbacks/{provider} anonymous
 POST /api/v1/payments/{paymentId}/voids office
 POST /api/v1/sections/{sectionId}/grave-sites office
+POST /api/v1/sections/{sectionId}/grave-sites/drawn office
 POST /api/v1/sections/{sectionId}/rows office
 POST /api/v1/work-orders/{workOrderId}/completions field
 POST /api/v1/work-orders/{workOrderId}/photos field

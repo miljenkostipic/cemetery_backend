@@ -3487,6 +3487,46 @@
         }
       }
     },
+    "/api/v1/sections/{sectionId}/grave-sites/drawn": {
+      "post": {
+        "tags": [
+          "LayoutEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "sectionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DrawGraveSiteBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraveSiteView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/grave-sites/merge": {
       "post": {
         "tags": [
@@ -5085,6 +5125,46 @@
             "items": {
               "$ref": "#/components/schemas/DossierOrder"
             }
+          }
+        }
+      },
+      "DrawGraveSiteBody": {
+        "required": [
+          "outline",
+          "kind"
+        ],
+        "type": "object",
+        "properties": {
+          "outline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoPointView"
+            }
+          },
+          "kind": {
+            "type": "string"
+          },
+          "capacity": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rowId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },

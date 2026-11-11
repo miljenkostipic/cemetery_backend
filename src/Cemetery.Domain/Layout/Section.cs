@@ -64,5 +64,12 @@ public sealed class Section : TenantEntity, IStampable
 
     public void ReplaceOutline(GeoPolygon outline) => Outline = outline;
 
+    /// <summary>A grave placed in the section must reach into its outline, when it has one.</summary>
+    public void RejectOutside(GeoPolygon graveOutline)
+    {
+        if (Outline is not null && !Outline.InteriorOverlaps(graveOutline))
+            throw new DomainRuleException("grave_site.outside_section");
+    }
+
     public void Stamp(DateTimeOffset at) => UpdatedAt = at;
 }

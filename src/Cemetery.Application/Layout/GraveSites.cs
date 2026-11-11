@@ -43,6 +43,7 @@ public sealed class ReplaceGraveSiteOutlineValidator : AbstractValidator<Replace
     public ReplaceGraveSiteOutlineValidator()
     {
         RuleFor(command => command.Outline).Must(outline => LayoutMaps.TryPolygon(outline, out _)).WithErrorCode("geometry.ring_invalid");
+        RuleFor(command => command.Outline).Must(LayoutMaps.WithinPointLimit).WithErrorCode("grave_site.outline_too_complex");
     }
 }
 
@@ -57,6 +58,7 @@ public sealed class ReplaceGraveSiteOutlineHandler(
         var site = await layouts.FindGraveSiteAsync(command.GraveSiteId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("grave_site.not_found");
         var outline = LayoutMaps.Polygon(command.Outline) ?? throw new ValidationFailedException(["geometry.ring_invalid"]);
+        GraveSite.RejectDrawnShape(outline);
         var open = await layouts.ListOpenInSectionAsync(site.SectionId, cancellationToken).ConfigureAwait(false);
         GraveSite.RejectOverlap(outline, open, site.Id);
         site.ReplaceOutline(outline);

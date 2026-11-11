@@ -50,7 +50,15 @@ public sealed class LayoutEndpointTests(ApiFixture api) : ApiTest(api)
 
         var site = await OfficeWorld.Get(world.Clerk, $"/api/v1/grave-sites/{world.SiteId}", CancellationToken);
         Assert.Equal(world.SiteId, ApiAssert.Id(site));
-        var redrawn = await world.Clerk.PutAsJsonAsync($"/api/v1/grave-sites/{world.SiteId}/outline", new { outline = OfficeWorld.Ring() }, CancellationToken);
+        var moved = new object[]
+        {
+            new { longitude = 15.9799, latitude = 45.81 },
+            new { longitude = 15.97991, latitude = 45.81 },
+            new { longitude = 15.97991, latitude = 45.81002 },
+            new { longitude = 15.9799, latitude = 45.81002 },
+            new { longitude = 15.9799, latitude = 45.81 },
+        };
+        var redrawn = await world.Clerk.PutAsJsonAsync($"/api/v1/grave-sites/{world.SiteId}/outline", new { outline = moved }, CancellationToken);
         await ApiAssert.Ok(redrawn);
 
         var halves = await OfficeWorld.Post(world.Clerk, $"/api/v1/grave-sites/{world.SecondSiteId}/split", new { }, CancellationToken);
