@@ -145,6 +145,16 @@ internal sealed class DatabaseFileStorage(CemeteryDbContext db) : IFileStorage
         var file = await db.StoredFiles.FirstOrDefaultAsync(item => item.Id == id, cancellationToken).ConfigureAwait(false);
         return file?.Content;
     }
+
+    public async Task DeleteAsync(string key, CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(key, out var id))
+            return;
+
+        var file = await db.StoredFiles.FirstOrDefaultAsync(item => item.Id == id, cancellationToken).ConfigureAwait(false);
+        if (file is not null)
+            db.StoredFiles.Remove(file);
+    }
 }
 
 internal sealed class NoOpVirusScan : IVirusScan

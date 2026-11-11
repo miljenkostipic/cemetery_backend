@@ -2,6 +2,7 @@ using Cemetery.Application.Abstractions;
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Integrations;
 using Cemetery.Infrastructure.Identity;
+using Cemetery.Infrastructure.Imaging;
 using Cemetery.Infrastructure.Jobs;
 using Cemetery.Infrastructure.Payments;
 using Cemetery.Infrastructure.Persistence;
@@ -54,6 +55,8 @@ public static class DependencyInjection
         services.AddScoped<ICemeteryReadModel, CemeteryReadModel>();
         services.AddScoped<IFileStorage, DatabaseFileStorage>();
         services.AddScoped<IVirusScan, NoOpVirusScan>();
+        services.AddScoped<IGraveSitePhotoRepository, GraveSitePhotoRepository>();
+        services.AddSingleton<IImageProcessor, SkiaImageProcessor>();
         services.AddScoped<IUserAccountGateway, UserAccountGateway>();
         services.AddScoped<IPasswordSignIn, PasswordSignInGateway>();
         services.AddScoped<IPasswordReset, PasswordResetGateway>();

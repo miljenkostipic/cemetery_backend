@@ -379,6 +379,24 @@ public static class RowLevelSecurity
         $body$;
         """;
 
+    public const string Photos = """
+        ALTER TABLE cemetery.grave_site_photos ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.grave_site_photos FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS grave_site_photos_tenant ON cemetery.grave_site_photos;
+        CREATE POLICY grave_site_photos_tenant ON cemetery.grave_site_photos
+          USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
+          WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid);
+
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
+
     /// <summary>AspNetUserPasskeys is an Identity table: no tenant column, so no policy, only the grants.</summary>
     public const string Passkeys = """
         DO $body$

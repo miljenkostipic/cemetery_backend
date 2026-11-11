@@ -1238,6 +1238,71 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                     b.ToTable("work_order_photos", "cemetery");
                 });
 
+            modelBuilder.Entity("Cemetery.Domain.Photos.GraveSitePhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("caption");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FullFileId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("full_file_id");
+
+                    b.Property<Guid>("GraveSiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grave_site_id");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer")
+                        .HasColumnName("height");
+
+                    b.Property<bool>("IsCover")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_cover");
+
+                    b.Property<bool>("ShowOnMemorial")
+                        .HasColumnType("boolean")
+                        .HasColumnName("show_on_memorial");
+
+                    b.Property<DateOnly?>("TakenOn")
+                        .HasColumnType("date")
+                        .HasColumnName("taken_on");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("ThumbFileId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("thumb_file_id");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer")
+                        .HasColumnName("width");
+
+                    b.HasKey("Id")
+                        .HasName("pk_grave_site_photos");
+
+                    b.HasIndex("TenantId", "GraveSiteId")
+                        .HasDatabaseName("ix_grave_site_photos_tenant_id_grave_site_id");
+
+                    b.ToTable("grave_site_photos", "cemetery");
+                });
+
             modelBuilder.Entity("Cemetery.Domain.Register.AuditEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2153,6 +2218,17 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_work_order_photos_work_orders_tenant_id_work_order_id");
+                });
+
+            modelBuilder.Entity("Cemetery.Domain.Photos.GraveSitePhoto", b =>
+                {
+                    b.HasOne("Cemetery.Domain.Layout.GraveSite", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId", "GraveSiteId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_grave_site_photos_grave_sites_tenant_id_grave_site_id");
                 });
 
             modelBuilder.Entity("Cemetery.Domain.Register.Deceased", b =>

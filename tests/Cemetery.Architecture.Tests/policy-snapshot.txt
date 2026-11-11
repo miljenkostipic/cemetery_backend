@@ -130,3 +130,9 @@ POST /api/v1/holders/{holderId}/invitations office
 POST /api/v1/me/charges/{chargeId}/payments holder
 POST /api/v1/reservations/{reservationId}/cancellations office
 PUT /api/v1/holders/{holderId} office
+POST /api/v1/grave-sites/{graveSiteId}/photos field
+GET /api/v1/grave-sites/{graveSiteId}/photos field
+GET /api/v1/grave-site-photos/{photoId}/image field
+PUT /api/v1/grave-site-photos/{photoId} office
+POST /api/v1/grave-site-photos/{photoId}/cover office
+DELETE /api/v1/grave-site-photos/{photoId} office
