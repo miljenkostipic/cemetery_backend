@@ -1,3 +1,4 @@
+using Cemetery.Domain.Integrations;
 using Cemetery.Domain.Launch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -26,6 +27,7 @@ public sealed class WebhookDeliveryConfiguration : IEntityTypeConfiguration<Webh
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.Event).HasMaxLength(64);
         builder.Property(entity => entity.Status).HasConversion<string>(new SnakeCaseEnumConverter<WebhookDeliveryStatus>()).HasMaxLength(16);
+        builder.Property(entity => entity.LastError).HasMaxLength(OutboxMessage.ErrorMaxLength);
         builder.HasIndex(entity => new { entity.TenantId, entity.SubscriptionId });
         builder.HasOne<WebhookSubscription>()
             .WithMany()

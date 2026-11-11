@@ -1,4 +1,5 @@
 using Cemetery.Domain.Billing;
+using Cemetery.Domain.Integrations;
 using Cemetery.Domain.Layout;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -106,5 +107,10 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(entity => entity.ReceiptNumber).HasMaxLength(Payment.ReceiptMaxLength);
         builder.Property(entity => entity.Description).HasMaxLength(Payment.DescriptionMaxLength);
         builder.Property(entity => entity.VoidReason).HasMaxLength(BillingReason.MaxLength);
+        builder.Property(entity => entity.ProviderTransactionId).HasMaxLength(ProviderTransaction.MaxLength);
+        builder.HasIndex(entity => new { entity.TenantId, entity.ProviderTransactionId })
+            .IsUnique()
+            .HasFilter("provider_transaction_id IS NOT NULL")
+            .HasDatabaseName("payments_provider_transaction_key");
     }
 }

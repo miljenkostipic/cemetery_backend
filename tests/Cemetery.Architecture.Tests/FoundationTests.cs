@@ -82,6 +82,7 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.work_orders", RowLevelSecurity.Operations, StringComparison.Ordinal);
         Assert.Contains("cemetery.monument_permits", RowLevelSecurity.Operations, StringComparison.Ordinal);
         Assert.Contains("cemetery.work_order_photos", RowLevelSecurity.Operations, StringComparison.Ordinal);
+        Assert.Contains("cemetery.outbox_messages", RowLevelSecurity.Outbox, StringComparison.Ordinal);
         Assert.Contains("cemetery.webhook_subscriptions", RowLevelSecurity.Launch, StringComparison.Ordinal);
         Assert.Contains("cemetery.webhook_deliveries", RowLevelSecurity.Launch, StringComparison.Ordinal);
         Assert.Contains("cemetery.matica_links", RowLevelSecurity.Launch, StringComparison.Ordinal);

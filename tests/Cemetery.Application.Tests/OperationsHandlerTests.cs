@@ -322,7 +322,7 @@ public sealed class OperationsHandlerTests
     }
 
     private static ScheduleFuneralHandler Schedule(World world) =>
-        new(world.Caller, world.Layouts, world.Register, world.Store, world.Webhooks, world.Unit, Clock());
+        new(world.Caller, world.Layouts, world.Register, world.Store, world.Unit);
 
     private static BookChapelHandler Book(World world) =>
         new(world.Caller, world.Layouts, world.Store, world.Unit);
@@ -376,8 +376,6 @@ public sealed class OperationsHandlerTests
             Store.ListWorkOrdersAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Array.Empty<WorkOrder>());
             Store.ListOpenOnAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns(Array.Empty<WorkOrder>());
             Unit = Substitute.For<IUnitOfWork>();
-            Webhooks = Substitute.For<IWebhookRepository>();
-            Webhooks.EnqueueAsync(Arg.Any<string>(), Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         }
 
         public Guid TenantId { get; } = Guid.CreateVersion7();
@@ -397,7 +395,5 @@ public sealed class OperationsHandlerTests
         public IOperationsRepository Store { get; }
 
         public IUnitOfWork Unit { get; }
-
-        public IWebhookRepository Webhooks { get; }
     }
 }

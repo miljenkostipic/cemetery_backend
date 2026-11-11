@@ -3,6 +3,7 @@ using Cemetery.Application.Exceptions;
 using Cemetery.Domain.Billing;
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
+using Cemetery.Domain.Integrations;
 using Cemetery.Domain.Launch;
 using Cemetery.Domain.Operations;
 using Cemetery.Domain.Register;
@@ -54,6 +55,8 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
 
     public DbSet<WorkOrderPhoto> WorkOrderPhotos => Set<WorkOrderPhoto>();
 
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
     public DbSet<WebhookSubscription> WebhookSubscriptions => Set<WebhookSubscription>();
 
     public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
@@ -92,6 +95,7 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.HasDefaultSchema("cemetery");
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(CemeteryDbContext).Assembly);
+        IgnoreEvents(builder);
         builder.Entity<Membership>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<Invitation>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<Organization>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.Id == CurrentTenant);
@@ -138,8 +142,18 @@ public sealed class CemeteryDbContext(DbContextOptions<CemeteryDbContext> option
         builder.Entity<WorkOrderPhoto>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
     }
 
+    private static void IgnoreEvents(ModelBuilder builder)
+    {
+        foreach (var entity in builder.Model.GetEntityTypes().ToList())
+        {
+            if (typeof(TenantEntity).IsAssignableFrom(entity.ClrType))
+                builder.Entity(entity.ClrType).Ignore(nameof(TenantEntity.DomainEvents));
+        }
+    }
+
     private void FilterLaunch(ModelBuilder builder)
     {
+        builder.Entity<OutboxMessage>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<WebhookSubscription>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<WebhookDelivery>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);
         builder.Entity<MaticaLink>().HasQueryFilter(entity => CurrentTenant != Guid.Empty && entity.TenantId == CurrentTenant);

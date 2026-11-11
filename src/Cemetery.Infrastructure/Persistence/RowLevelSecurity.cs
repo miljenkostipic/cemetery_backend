@@ -238,6 +238,30 @@ public static class RowLevelSecurity
         $body$;
         """;
 
+    public const string Outbox = """
+        ALTER TABLE cemetery.outbox_messages ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE cemetery.outbox_messages FORCE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS outbox_messages_tenant ON cemetery.outbox_messages;
+        CREATE POLICY outbox_messages_tenant ON cemetery.outbox_messages
+          USING (
+            tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid
+            OR current_setting('app.outbox_dispatch', true) = 'on'
+          )
+          WITH CHECK (
+            tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid
+            OR current_setting('app.outbox_dispatch', true) = 'on'
+          );
+
+        DO $body$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'cemetery_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cemetery TO cemetery_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA cemetery TO cemetery_app;
+          END IF;
+        END
+        $body$;
+        """;
+
     public const string Billing = """
         ALTER TABLE cemetery.fee_schedules ENABLE ROW LEVEL SECURITY;
         ALTER TABLE cemetery.fee_schedules FORCE ROW LEVEL SECURITY;

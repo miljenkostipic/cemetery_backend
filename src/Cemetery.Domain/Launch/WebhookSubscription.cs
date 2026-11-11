@@ -1,4 +1,5 @@
 using Cemetery.Domain.Identity;
+using Cemetery.Domain.Integrations;
 
 namespace Cemetery.Domain.Launch;
 
@@ -46,6 +47,8 @@ public sealed class WebhookSubscription : TenantEntity
 public enum WebhookDeliveryStatus
 {
     Pending = 1,
+    Delivered = 2,
+    Failed = 3,
 }
 
 public sealed class WebhookDelivery : TenantEntity
@@ -65,6 +68,12 @@ public sealed class WebhookDelivery : TenantEntity
 
     public WebhookDeliveryStatus Status { get; private set; }
 
+    public int Attempts { get; private set; }
+
+    public int? HttpStatus { get; private set; }
+
+    public string? LastError { get; private set; }
+
     public static WebhookDelivery Queue(Guid tenantId, Guid subscriptionId, string eventName, Guid subjectId, DateTimeOffset at)
     {
         if (tenantId == Guid.Empty || subscriptionId == Guid.Empty || subjectId == Guid.Empty)
@@ -82,5 +91,25 @@ public sealed class WebhookDelivery : TenantEntity
             CreatedAt = at,
             Status = WebhookDeliveryStatus.Pending,
         };
+    }
+
+    public void Note(int? statusCode, string? error)
+    {
+        Attempts++;
+        HttpStatus = statusCode;
+        LastError = Clip(error);
+        Status = error is null ? WebhookDeliveryStatus.Delivered : WebhookDeliveryStatus.Failed;
+    }
+
+    private static string? Clip(string? error)
+    {
+        if (error is null)
+            return null;
+
+        var text = error.Trim();
+        if (text.Length > OutboxMessage.ErrorMaxLength)
+            text = text[..OutboxMessage.ErrorMaxLength];
+
+        return text.Length == 0 ? "webhook.delivery_failed" : text;
     }
 }

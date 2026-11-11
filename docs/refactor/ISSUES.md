@@ -56,7 +56,7 @@ Gate: The frontend's OpenAPI has 0 paths this API lacks
 
 Gate: Webhooks delivered, one gateway live in sandbox
 
-- [ ] **R5.1** Outbox + Hangfire dispatcher · finding B5 · [task](R5-integrations.md#r51-outbox--dispatcher) · PR: 
-- [ ] **R5.2** Webhook delivery · finding B5 · [task](R5-integrations.md#r52-webhook-delivery) · PR: 
-- [ ] **R5.3** Payment gateway adapters · finding B5 · [task](R5-integrations.md#r53-payment-gateway-adapters) · PR: 
-- [ ] **R5.4** Matica sync · finding B5 · [task](R5-integrations.md#r54-matica-sync) · PR: 
+- [x] **R5.1** Outbox + Hangfire dispatcher · finding B5 · [task](R5-integrations.md#r51-outbox--dispatcher) · PR: [#20](https://github.com/miljenkostipic/cemetery_backend/pull/20)
+- [x] **R5.2** Webhook delivery · finding B5 · [task](R5-integrations.md#r52-webhook-delivery) · PR: [#20](https://github.com/miljenkostipic/cemetery_backend/pull/20)
+- [x] **R5.3** Payment gateway adapters · finding B5 · [task](R5-integrations.md#r53-payment-gateway-adapters) · PR: [#20](https://github.com/miljenkostipic/cemetery_backend/pull/20)
+- [x] **R5.4** Matica sync · finding B5 · [task](R5-integrations.md#r54-matica-sync) · PR: [#20](https://github.com/miljenkostipic/cemetery_backend/pull/20)

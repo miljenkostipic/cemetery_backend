@@ -14,6 +14,7 @@ public static class LaunchEndpoints
         api.MapGet("/cemeteries/{cemeteryId}/matica-links", GetLinks).RequireAuthorization(Policies.Office);
         api.MapPost("/interments/{intermentId}/matica-links", PostLink).RequireAuthorization(Policies.Office);
         api.MapGet("/integrations/webhooks", GetWebhooks).RequireAuthorization(Policies.Office);
+        api.MapGet("/integrations/webhook-deliveries", GetDeliveries).RequireAuthorization(Policies.Office);
         api.MapPost("/integrations/webhooks", PostWebhook).RequireAuthorization(Policies.Office);
         api.MapDelete("/integrations/webhooks/{webhookId}", DeleteWebhook).RequireAuthorization(Policies.Office);
         api.MapGet("/gdpr/records", GetRecords).RequireAuthorization(Policies.Office);
@@ -50,6 +51,11 @@ public static class LaunchEndpoints
         IQueryHandler<ListWebhooks, IReadOnlyList<WebhookView>> handler,
         CancellationToken cancellationToken) =>
         TypedResults.Ok(await handler.Handle(new ListWebhooks(), cancellationToken).ConfigureAwait(false));
+
+    private static async Task<Ok<IReadOnlyList<WebhookDeliveryView>>> GetDeliveries(
+        IQueryHandler<ListWebhookDeliveries, IReadOnlyList<WebhookDeliveryView>> handler,
+        CancellationToken cancellationToken) =>
+        TypedResults.Ok(await handler.Handle(new ListWebhookDeliveries(), cancellationToken).ConfigureAwait(false));
 
     private static async Task<Ok<WebhookCreated>> PostWebhook(
         WebhookBody body,

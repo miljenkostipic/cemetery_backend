@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Npgsql;
 using Respawn;
 using Respawn.Graph;
@@ -172,8 +173,19 @@ public sealed partial class ApiFixture : IAsyncLifetime
             builder.UseSetting("ConnectionStrings:Owner", ownerConnection);
             builder.UseSetting("ConnectionStrings:App", appConnection);
             builder.UseSetting("App:PublicUrl", "http://localhost:5173");
-            builder.ConfigureTestServices(ReplaceEmail);
+            builder.ConfigureTestServices(services =>
+            {
+                ReplaceEmail(services);
+                Loopback(services, "webhooks");
+                Loopback(services, "payments");
+            });
         });
+
+    public IServiceScope CreateScope() => Factory().Services.CreateScope();
+
+    private static void Loopback(IServiceCollection services, string name) =>
+        services.Configure<HttpClientFactoryOptions>(name, options =>
+            options.HttpMessageHandlerBuilderActions.Add(builder => builder.AdditionalHandlers.Add(new LoopbackHandler())));
 
     private void ReplaceEmail(IServiceCollection services)
     {

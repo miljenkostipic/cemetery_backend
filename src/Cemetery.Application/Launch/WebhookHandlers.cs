@@ -66,6 +66,22 @@ public sealed class AddWebhookHandler(
     }
 }
 
+public sealed record WebhookDeliveryView(Guid Id, string Event, WebhookDeliveryStatus Status, int Attempts, string? LastError, DateTimeOffset CreatedAt);
+
+public sealed record ListWebhookDeliveries;
+
+public sealed class ListWebhookDeliveriesHandler(
+    ICallerContext caller,
+    IWebhookRepository webhooks) : IQueryHandler<ListWebhookDeliveries, IReadOnlyList<WebhookDeliveryView>>
+{
+    public async Task<IReadOnlyList<WebhookDeliveryView>> Handle(ListWebhookDeliveries query, CancellationToken cancellationToken)
+    {
+        _ = caller.OrganizationId;
+        var rows = await webhooks.ListDeliveriesAsync(cancellationToken).ConfigureAwait(false);
+        return rows.Select(static item => new WebhookDeliveryView(item.Id, item.Event, item.Status, item.Attempts, item.LastError, item.CreatedAt)).ToArray();
+    }
+}
+
 public sealed record RemoveWebhook(Guid WebhookId);
 
 public sealed class RemoveWebhookValidator : AbstractValidator<RemoveWebhook>
