@@ -132,12 +132,12 @@ internal sealed class CemeteryReadModel(CemeteryDbContext db) : ICemeteryReadMod
         FROM (
           SELECT updated_at,
                  '{"type":"Feature","id":' || to_json(id)::text || ',"geometry":' || COALESCE(ST_AsGeoJSON(outline), 'null')
-                 || ',"properties":{"layer":"section","name":' || to_json(name)::text || ',"code":' || to_json(code)::text || '}}' AS feature
+                 || ',"properties":{"layer":"section","id":' || to_json(id)::text || ',"name":' || to_json(name)::text || ',"code":' || to_json(code)::text || '}}' AS feature
           FROM cemetery.sections WHERE cemetery_id = @id
           UNION ALL
           SELECT updated_at,
                  '{"type":"Feature","id":' || to_json(id)::text || ',"geometry":' || COALESCE(ST_AsGeoJSON(outline), 'null')
-                 || ',"properties":{"layer":"site","id":' || to_json(id)::text || ',"code":' || to_json(code)::text
+                 || ',"properties":{"layer":"site","id":' || to_json(id)::text || ',"sectionId":' || to_json(section_id)::text || ',"code":' || to_json(code)::text
                  || ',"kind":' || to_json(kind)::text || ',"status":' || to_json(status)::text
                  || ',"used":' || used::text || ',"capacity":' || capacity::text
                  || ',"hidden":' || CASE WHEN hidden_from_public THEN 'true' ELSE 'false' END || '}}' AS feature

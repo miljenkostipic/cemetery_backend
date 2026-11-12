@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Cemetery.Api.IntegrationTests;
 
@@ -35,6 +36,16 @@ public sealed class Phase4EndpointTests(ApiFixture api) : ApiTest(api)
         var map = await world.Clerk.GetAsync($"/api/v1/cemeteries/{world.CemeteryId}/map", CancellationToken);
         Assert.Equal(HttpStatusCode.OK, map.StatusCode);
         Assert.False(string.IsNullOrEmpty(map.Headers.ETag?.Tag));
+        using (var mapJson = JsonDocument.Parse(await map.Content.ReadAsStringAsync(CancellationToken)))
+        {
+            var features = mapJson.RootElement.GetProperty("features").EnumerateArray().ToList();
+            var section = features.Single(feature => feature.GetProperty("properties").GetProperty("layer").GetString() == "section"
+                && feature.GetProperty("id").GetGuid() == world.SectionId);
+            Assert.Equal(world.SectionId, section.GetProperty("properties").GetProperty("id").GetGuid());
+            var site = features.Single(feature => feature.GetProperty("properties").GetProperty("layer").GetString() == "site"
+                && feature.GetProperty("id").GetGuid() == world.SiteId);
+            Assert.Equal(world.SectionId, site.GetProperty("properties").GetProperty("sectionId").GetGuid());
+        }
         using (var again = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/cemeteries/{world.CemeteryId}/map"))
         {
             again.Headers.TryAddWithoutValidation("If-None-Match", map.Headers.ETag!.Tag);
