@@ -99,6 +99,7 @@ public sealed class TenancyModelTests
         Assert.Contains("cemetery.stored_files", RowLevelSecurity.Rights, StringComparison.Ordinal);
         Assert.Contains("cemetery.entrances", RowLevelSecurity.Rights, StringComparison.Ordinal);
         Assert.Contains("cemetery.paths", RowLevelSecurity.Rights, StringComparison.Ordinal);
+        Assert.Contains("cemetery.grave_site_photos", RowLevelSecurity.Photos, StringComparison.Ordinal);
         Assert.Contains("SECURITY DEFINER", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("hidden_from_public", PublicCatalogSql.Up, StringComparison.Ordinal);
         Assert.Contains("LIMIT 50", PublicCatalogSql.Up, StringComparison.Ordinal);

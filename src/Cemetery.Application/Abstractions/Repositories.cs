@@ -73,6 +73,12 @@ public interface ILayoutRepository
     Task<int> CountGraveSitesAsync(CancellationToken cancellationToken);
 
     Task<int> NextSequenceAsync(Guid cemeteryId, CancellationToken cancellationToken);
+
+    /// <summary>Every grave code in the cemetery, closed graves included (codes are unique per cemetery).</summary>
+    Task<IReadOnlyList<string>> ListGraveSiteCodesAsync(Guid cemeteryId, CancellationToken cancellationToken);
+
+    /// <summary>Codes of the section's graves in the given row, or of its row-less graves when the row is null.</summary>
+    Task<IReadOnlyList<string>> ListRowCodesAsync(Guid sectionId, Guid? rowId, CancellationToken cancellationToken);
 }
 
 public interface IPublicCatalog

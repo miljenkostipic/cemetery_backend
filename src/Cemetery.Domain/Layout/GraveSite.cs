@@ -6,6 +6,9 @@ namespace Cemetery.Domain.Layout;
 public sealed class GraveSite : TenantEntity, IStampable
 {
     public const int CodeMaxLength = 32;
+    public const int OutlineMaxPoints = 200;
+    public const double MinAreaSquareMeters = 0.3;
+    public const double MaxAreaSquareMeters = 200;
 
     private GraveSite()
     {
@@ -148,6 +151,19 @@ public sealed class GraveSite : TenantEntity, IStampable
             if (candidate.InteriorOverlaps(site.Outline))
                 throw new DomainRuleException("grave_site.overlaps");
         }
+    }
+
+    /// <summary>
+    /// A hand-drawn outline (a new grave, or a grave moved, rotated or reshaped): at most
+    /// <see cref="OutlineMaxPoints"/> ring points and a believable grave size.
+    /// </summary>
+    public static void RejectDrawnShape(GeoPolygon outline)
+    {
+        if (outline.Ring.Count > OutlineMaxPoints)
+            throw new DomainRuleException("grave_site.outline_too_complex");
+        var area = outline.AreaSquareMeters();
+        if (area < MinAreaSquareMeters || area > MaxAreaSquareMeters)
+            throw new DomainRuleException("grave_site.size_invalid");
     }
 
     private GraveSite Copy(string code, GeoPolygon outline) =>

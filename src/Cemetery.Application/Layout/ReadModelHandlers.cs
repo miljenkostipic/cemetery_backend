@@ -2,6 +2,7 @@ using Cemetery.Application.Abstractions;
 using Cemetery.Application.Billing;
 using Cemetery.Application.Exceptions;
 using Cemetery.Application.Operations;
+using Cemetery.Application.Photos;
 using Cemetery.Application.Register;
 using Cemetery.Application.Rights;
 using Cemetery.Domain.Identity;
@@ -80,6 +81,7 @@ public sealed class GetDossierHandler(
     IRightsRepository rights,
     IBillingRepository billing,
     ICemeteryReadModel read,
+    IGraveSitePhotoRepository photos,
     TimeProvider clock) : IQueryHandler<GetDossier, DossierView>
 {
     public async Task<DossierView> Handle(GetDossier query, CancellationToken cancellationToken)
@@ -97,10 +99,10 @@ public sealed class GetDossierHandler(
     {
         var today = RegisterClock.Today(clock);
         var right = await rights.FindActiveRightAsync(site.Id, cancellationToken).ConfigureAwait(false);
-        var photo = await read.LatestPhotoAsync(site.Id, cancellationToken).ConfigureAwait(false);
+        var photo = await PrimaryPhoto(site.Id, cancellationToken).ConfigureAwait(false);
         var orders = await read.ListOpenWorkOrdersAsync(site.Id, cancellationToken).ConfigureAwait(false);
         var fee = await Fee(site, today, cancellationToken).ConfigureAwait(false);
-        return new DossierView(LayoutMaps.ToView(site), Slots(site, interments, cemetery, today), Burials(interments, names), await Holders(right, cancellationToken).ConfigureAwait(false), fee, Photo(photo), orders.Select(Order).ToArray());
+        return new DossierView(LayoutMaps.ToView(site), Slots(site, interments, cemetery, today), Burials(interments, names), await Holders(right, cancellationToken).ConfigureAwait(false), fee, photo, orders.Select(Order).ToArray());
     }
 
     private async Task<IReadOnlyDictionary<Guid, Deceased>> Names(IReadOnlyList<Interment> interments, CancellationToken cancellationToken)
@@ -162,6 +164,16 @@ public sealed class GetDossierHandler(
         var charges = await billing.ListChargesAsync(site.CemeteryId, cancellationToken).ConfigureAwait(false);
         var charge = charges.FirstOrDefault(item => item.GraveSiteId == site.Id && item.Year == today.Year);
         return charge is null ? null : charge.Status.ToString().ToLowerInvariant();
+    }
+
+    /// <summary>The grave's cover photo when it has one, otherwise the latest completed work-order photo.</summary>
+    private async Task<string?> PrimaryPhoto(Guid siteId, CancellationToken cancellationToken)
+    {
+        var cover = await photos.FindCoverAsync(siteId, cancellationToken).ConfigureAwait(false);
+        if (cover is not null)
+            return GraveSitePhotoMaps.ImageUrl(cover.Id);
+        var photo = await read.LatestPhotoAsync(siteId, cancellationToken).ConfigureAwait(false);
+        return Photo(photo);
     }
 
     private static string? Photo(WorkOrderPhoto? photo) =>

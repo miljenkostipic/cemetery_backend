@@ -10,6 +10,8 @@ public interface IFileStorage
     Task<string> PutAsync(Guid tenantId, byte[] content, CancellationToken cancellationToken);
 
     Task<byte[]?> OpenAsync(string key, CancellationToken cancellationToken);
+
+    Task DeleteAsync(string key, CancellationToken cancellationToken);
 }
 
 public interface IVirusScan

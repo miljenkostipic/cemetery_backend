@@ -86,4 +86,10 @@ internal sealed class LayoutRepository(CemeteryDbContext db) : ILayoutRepository
         var count = await db.GraveSites.CountAsync(entity => entity.CemeteryId == cemeteryId, cancellationToken).ConfigureAwait(false);
         return count + 1;
     }
+
+    public async Task<IReadOnlyList<string>> ListGraveSiteCodesAsync(Guid cemeteryId, CancellationToken cancellationToken) =>
+        await db.GraveSites.Where(entity => entity.CemeteryId == cemeteryId).Select(entity => entity.Code).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+    public async Task<IReadOnlyList<string>> ListRowCodesAsync(Guid sectionId, Guid? rowId, CancellationToken cancellationToken) =>
+        await db.GraveSites.Where(entity => entity.SectionId == sectionId && entity.RowId == rowId).Select(entity => entity.Code).ToListAsync(cancellationToken).ConfigureAwait(false);
 }
