@@ -6,6 +6,7 @@ using Cemetery.Infrastructure.Imaging;
 using Cemetery.Infrastructure.Jobs;
 using Cemetery.Infrastructure.Payments;
 using Cemetery.Infrastructure.Persistence;
+using Cemetery.Infrastructure.Storage;
 using Cemetery.Infrastructure.Tenancy;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -53,7 +54,7 @@ public static class DependencyInjection
         services.AddScoped<IPublicCatalog, PublicCatalogRepository>();
         services.AddScoped<IRightsRepository, RightsRepository>();
         services.AddScoped<ICemeteryReadModel, CemeteryReadModel>();
-        services.AddScoped<IFileStorage, DatabaseFileStorage>();
+        AddFileStorage(services, configuration);
         services.AddScoped<IVirusScan, NoOpVirusScan>();
         services.AddScoped<IGraveSitePhotoRepository, GraveSitePhotoRepository>();
         services.AddSingleton<IImageProcessor, SkiaImageProcessor>();
@@ -81,6 +82,21 @@ public static class DependencyInjection
         services.AddSingleton(account);
         services.AddHttpClient<IEmailSender, MailgunEmailSender>(client => client.Timeout = TimeSpan.FromSeconds(30))
             .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+    }
+
+    private static void AddFileStorage(IServiceCollection services, IConfiguration configuration)
+    {
+        var account = R2Settings.Read(configuration);
+        if (account is null)
+        {
+            services.AddScoped<IFileStorage, DatabaseFileStorage>();
+            return;
+        }
+
+        services.AddSingleton(account);
+        services.AddSingleton(_ => R2FileStorage.Client(account));
+        services.AddScoped<DatabaseFileStorage>();
+        services.AddScoped<IFileStorage, R2FileStorage>();
     }
 
     private static void ConfigureDb(IServiceProvider provider, DbContextOptionsBuilder options, IConfiguration configuration)
