@@ -93,6 +93,11 @@ internal sealed class OperationsRepository(CemeteryDbContext db) : IOperationsRe
         return Task.CompletedTask;
     }
 
+    public async Task<IReadOnlyList<WorkOrderPhoto>> ListPhotosAsync(Guid workOrderId, CancellationToken cancellationToken) =>
+        await db.WorkOrderPhotos.Where(photo => photo.WorkOrderId == workOrderId)
+            .OrderBy(photo => photo.Id)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
     public async Task<Page<WorkOrder>> PageWorkOrdersAsync(Guid cemeteryId, WorkOrderFilter filter, PageRequest page, CancellationToken cancellationToken)
     {
         var size = Pages.Size(page.Limit);

@@ -116,6 +116,7 @@ public sealed class AttachWorkOrderPhotoValidator : AbstractValidator<AttachWork
 public sealed class AttachWorkOrderPhotoHandler(
     ICallerContext caller,
     IOperationsRepository store,
+    IFileStorage storage,
     IUnitOfWork unitOfWork) : ICommandHandler<AttachWorkOrderPhoto, PhotoView>
 {
     public async Task<PhotoView> Handle(AttachWorkOrderPhoto command, CancellationToken cancellationToken)
@@ -123,7 +124,9 @@ public sealed class AttachWorkOrderPhotoHandler(
         var organizationId = caller.OrganizationId;
         var order = await store.FindWorkOrderAsync(command.WorkOrderId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("work_order.not_found");
-        var photo = WorkOrderPhoto.Record(organizationId, order.Id, command.ContentType, command.ContentBase64);
+        var decoded = PhotoBytes.Decode(command.ContentType, command.ContentBase64);
+        var fileId = await storage.PutAsync(organizationId, decoded.Content, cancellationToken).ConfigureAwait(false);
+        var photo = WorkOrderPhoto.Record(organizationId, order.Id, decoded.ContentType, fileId);
         await store.AddPhotoAsync(photo, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return new PhotoView(photo.Id, photo.WorkOrderId, photo.ContentType);

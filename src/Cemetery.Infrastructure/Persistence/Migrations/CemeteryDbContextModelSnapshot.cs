@@ -1210,16 +1210,17 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<byte[]>("Content")
-                        .IsRequired()
-                        .HasColumnType("bytea")
-                        .HasColumnName("content");
-
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("content_type");
+
+                    b.Property<string>("FileId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("file_id");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -1256,8 +1257,8 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("FullFileId")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("full_file_id");
 
                     b.Property<Guid>("GraveSiteId")
@@ -1286,8 +1287,8 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("ThumbFileId")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("thumb_file_id");
 
                     b.Property<int>("Width")
@@ -1764,8 +1765,8 @@ namespace Cemetery.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("StorageKey")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
                         .HasColumnName("storage_key");
 
                     b.Property<Guid>("TenantId")

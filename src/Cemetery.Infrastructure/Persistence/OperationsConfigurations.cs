@@ -102,7 +102,7 @@ public sealed class WorkOrderPhotoConfiguration : IEntityTypeConfiguration<WorkO
         builder.ToTable("work_order_photos");
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.ContentType).HasMaxLength(32);
-        builder.Property(entity => entity.Content).HasColumnType("bytea");
+        builder.Property(entity => entity.FileId).HasMaxLength(StorageKeys.MaxLength);
         builder.HasIndex(entity => new { entity.TenantId, entity.WorkOrderId });
         builder.HasOne<WorkOrder>().WithMany().HasForeignKey(entity => new { entity.TenantId, entity.WorkOrderId })
             .HasPrincipalKey(entity => new { entity.TenantId, entity.Id }).OnDelete(DeleteBehavior.Restrict);
