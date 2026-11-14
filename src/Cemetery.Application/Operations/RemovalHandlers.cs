@@ -63,6 +63,7 @@ public sealed class RemoveWorkOrderValidator : AbstractValidator<RemoveWorkOrder
 public sealed class RemoveWorkOrderHandler(
     ICallerContext caller,
     IOperationsRepository store,
+    IFileStorage storage,
     IUnitOfWork unitOfWork) : ICommandHandler<RemoveWorkOrder, bool>
 {
     public async Task<bool> Handle(RemoveWorkOrder command, CancellationToken cancellationToken)
@@ -70,7 +71,10 @@ public sealed class RemoveWorkOrderHandler(
         _ = caller.OrganizationId;
         var order = await store.FindWorkOrderAsync(command.WorkOrderId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("work_order.not_found");
+        var photos = await store.ListPhotosAsync(order.Id, cancellationToken).ConfigureAwait(false);
         await store.RemoveWorkOrderAsync(order, cancellationToken).ConfigureAwait(false);
+        foreach (var photo in photos)
+            await storage.DeleteAsync(photo.FileId, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return true;
     }

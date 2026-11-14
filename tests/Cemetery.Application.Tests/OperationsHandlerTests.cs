@@ -1,5 +1,6 @@
 using Cemetery.Application.Abstractions;
 using Cemetery.Application.Exceptions;
+using Cemetery.Application.Layout;
 using Cemetery.Application.Operations;
 using Cemetery.Domain.Identity;
 using Cemetery.Domain.Layout;
@@ -170,7 +171,7 @@ public sealed class OperationsHandlerTests
             .Handle(new ListFieldTasks(), CancellationToken.None);
         var completed = await new CompleteWorkOrderHandler(world.Caller, world.Store, world.Unit)
             .Handle(new CompleteWorkOrder(order.Id, new DateOnly(2026, 6, 1), "done"), CancellationToken.None);
-        var photo = await new AttachWorkOrderPhotoHandler(world.Caller, world.Store, world.Unit)
+        var photo = await new AttachWorkOrderPhotoHandler(world.Caller, world.Store, world.Storage, world.Unit)
             .Handle(new AttachWorkOrderPhoto(order.Id, "image/jpeg", Convert.ToBase64String([0xFF, 0xD8, 0xFF])), CancellationToken.None);
 
         Assert.Equal(world.Cemetery.Name, tasks[0].CemeteryName);
@@ -178,6 +179,76 @@ public sealed class OperationsHandlerTests
         Assert.NotNull(tasks[0].Location);
         Assert.Equal("completed", completed.Status);
         Assert.Equal("image/jpeg", photo.ContentType);
+    }
+
+    [Fact]
+    public async Task An_attached_photo_keeps_its_bytes_in_file_storage()
+    {
+        var world = new World();
+        var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, world.Site.Id, "digging", new DateOnly(2026, 6, 1), "");
+        world.Store.FindWorkOrderAsync(order.Id, Arg.Any<CancellationToken>()).Returns(order);
+        byte[] jpeg = [0xFF, 0xD8, 0xFF, 0x01];
+
+        await new AttachWorkOrderPhotoHandler(world.Caller, world.Store, world.Storage, world.Unit)
+            .Handle(new AttachWorkOrderPhoto(order.Id, "image/jpeg", Convert.ToBase64String(jpeg)), CancellationToken.None);
+
+        await world.Storage.Received(1).PutAsync(world.TenantId, Arg.Is<byte[]>(bytes => bytes.SequenceEqual(jpeg)), Arg.Any<CancellationToken>());
+        await world.Store.Received(1).AddPhotoAsync(Arg.Is<WorkOrderPhoto>(photo => photo.FileId == "photo-key" && photo.WorkOrderId == order.Id), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task A_photo_with_the_wrong_bytes_is_refused_before_storage()
+    {
+        var world = new World();
+        var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, world.Site.Id, "digging", new DateOnly(2026, 6, 1), "");
+        world.Store.FindWorkOrderAsync(order.Id, Arg.Any<CancellationToken>()).Returns(order);
+
+        var error = await Assert.ThrowsAsync<DomainRuleException>(() =>
+            new AttachWorkOrderPhotoHandler(world.Caller, world.Store, world.Storage, world.Unit)
+                .Handle(new AttachWorkOrderPhoto(order.Id, "image/png", Convert.ToBase64String([0xFF, 0xD8, 0xFF])), CancellationToken.None));
+
+        Assert.Equal("photo.type_invalid", error.Code);
+        await world.Storage.DidNotReceiveWithAnyArgs().PutAsync(default, default!, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task A_work_order_photo_is_served_from_file_storage_and_a_lost_file_is_not_found()
+    {
+        var world = new World();
+        var orderId = Guid.CreateVersion7();
+        var photo = WorkOrderPhoto.Record(world.TenantId, orderId, "image/png", "key-1");
+        var lost = WorkOrderPhoto.Record(world.TenantId, orderId, "image/jpeg", "key-2");
+        var read = Substitute.For<ICemeteryReadModel>();
+        read.FindPhotoAsync(orderId, photo.Id, Arg.Any<CancellationToken>()).Returns(photo);
+        read.FindPhotoAsync(orderId, lost.Id, Arg.Any<CancellationToken>()).Returns(lost);
+        world.Storage.OpenAsync("key-1", Arg.Any<CancellationToken>()).Returns([1, 2]);
+        world.Storage.OpenAsync("key-2", Arg.Any<CancellationToken>()).Returns((byte[]?)null);
+        var handler = new GetWorkOrderPhotoHandler(world.Caller, read, world.Storage);
+
+        var file = await handler.Handle(new GetWorkOrderPhoto(orderId, photo.Id), CancellationToken.None);
+        var missing = await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new GetWorkOrderPhoto(orderId, lost.Id), CancellationToken.None));
+
+        Assert.Equal([1, 2], file.Content);
+        Assert.Equal("image/png", file.ContentType);
+        Assert.Equal("photo.not_found", missing.Code);
+    }
+
+    [Fact]
+    public async Task Removing_a_work_order_deletes_its_photo_files()
+    {
+        var world = new World();
+        var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, world.Site.Id, "digging", new DateOnly(2026, 6, 1), "");
+        world.Store.FindWorkOrderAsync(order.Id, Arg.Any<CancellationToken>()).Returns(order);
+        var first = WorkOrderPhoto.Record(world.TenantId, order.Id, "image/jpeg", "key-1");
+        var second = WorkOrderPhoto.Record(world.TenantId, order.Id, "image/png", "key-2");
+        world.Store.ListPhotosAsync(order.Id, Arg.Any<CancellationToken>()).Returns([first, second]);
+
+        await new RemoveWorkOrderHandler(world.Caller, world.Store, world.Storage, world.Unit)
+            .Handle(new RemoveWorkOrder(order.Id), CancellationToken.None);
+
+        await world.Storage.Received(1).DeleteAsync("key-1", Arg.Any<CancellationToken>());
+        await world.Storage.Received(1).DeleteAsync("key-2", Arg.Any<CancellationToken>());
+        await world.Unit.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -208,7 +279,7 @@ public sealed class OperationsHandlerTests
             new CompleteWorkOrderHandler(world.Caller, world.Store, world.Unit)
                 .Handle(new CompleteWorkOrder(order.Id, new DateOnly(2026, 6, 1), ""), CancellationToken.None));
         var photo = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new AttachWorkOrderPhotoHandler(world.Caller, world.Store, world.Unit)
+            new AttachWorkOrderPhotoHandler(world.Caller, world.Store, world.Storage, world.Unit)
                 .Handle(new AttachWorkOrderPhoto(Guid.CreateVersion7(), "image/jpeg", "AA=="), CancellationToken.None));
 
         Assert.Equal("work_order.not_found", missing.Code);
@@ -293,10 +364,10 @@ public sealed class OperationsHandlerTests
 
         var order = WorkOrder.Open(world.TenantId, world.Cemetery.Id, world.Site.Id, "digging", new DateOnly(2026, 6, 1), "");
         world.Store.FindWorkOrderAsync(order.Id, Arg.Any<CancellationToken>()).Returns(order);
-        var removedOrder = await new RemoveWorkOrderHandler(world.Caller, world.Store, world.Unit)
+        var removedOrder = await new RemoveWorkOrderHandler(world.Caller, world.Store, world.Storage, world.Unit)
             .Handle(new RemoveWorkOrder(order.Id), CancellationToken.None);
         var missingOrder = await Assert.ThrowsAsync<NotFoundException>(() =>
-            new RemoveWorkOrderHandler(world.Caller, world.Store, world.Unit)
+            new RemoveWorkOrderHandler(world.Caller, world.Store, world.Storage, world.Unit)
                 .Handle(new RemoveWorkOrder(Guid.CreateVersion7()), CancellationToken.None));
 
         var permit = MonumentPermit.Issue(world.TenantId, world.Cemetery.Id, world.Site.Id, "Ana", new DateOnly(2026, 6, 1), new DateOnly(2026, 12, 1));
@@ -375,6 +446,9 @@ public sealed class OperationsHandlerTests
             Store.ListPermitsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Array.Empty<MonumentPermit>());
             Store.ListWorkOrdersAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Array.Empty<WorkOrder>());
             Store.ListOpenOnAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns(Array.Empty<WorkOrder>());
+            Store.ListPhotosAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Array.Empty<WorkOrderPhoto>());
+            Storage = Substitute.For<IFileStorage>();
+            Storage.PutAsync(Arg.Any<Guid>(), Arg.Any<byte[]>(), Arg.Any<CancellationToken>()).Returns("photo-key");
             Unit = Substitute.For<IUnitOfWork>();
         }
 
@@ -393,6 +467,8 @@ public sealed class OperationsHandlerTests
         public IRegisterRepository Register { get; }
 
         public IOperationsRepository Store { get; }
+
+        public IFileStorage Storage { get; }
 
         public IUnitOfWork Unit { get; }
     }

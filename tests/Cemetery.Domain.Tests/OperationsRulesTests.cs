@@ -276,12 +276,15 @@ public sealed class OperationsRulesTests
     [Fact]
     public void A_photo_accepts_jpeg_and_png_bytes()
     {
-        var jpeg = WorkOrderPhoto.Record(Tenant, Guid.CreateVersion7(), "image/jpeg", Convert.ToBase64String([0xFF, 0xD8, 0xFF, 0x00]));
+        var jpeg = PhotoBytes.Decode("image/jpeg", Convert.ToBase64String([0xFF, 0xD8, 0xFF, 0x00]));
         var png = PhotoBytes.Decode("image/png", Convert.ToBase64String([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]));
+        var photo = WorkOrderPhoto.Record(Tenant, Guid.CreateVersion7(), jpeg.ContentType, "file-key");
 
         Assert.Equal("image/jpeg", jpeg.ContentType);
         Assert.Equal(4, jpeg.Content.Length);
         Assert.Equal("image/png", png.ContentType);
+        Assert.Equal("file-key", photo.FileId);
+        Assert.Equal("image/jpeg", photo.ContentType);
     }
 
     [Theory]
@@ -302,12 +305,23 @@ public sealed class OperationsRulesTests
     {
         var huge = Assert.Throws<DomainRuleException>(() => PhotoBytes.Decode("image/jpeg", new string('A', 6_666_669)));
         var over = Assert.Throws<DomainRuleException>(() => PhotoBytes.Decode("image/jpeg", new string('A', 6_666_668)));
-        var missing = Assert.Throws<DomainRuleException>(() => WorkOrderPhoto.Record(Guid.Empty, Guid.CreateVersion7(), "image/jpeg", "AA=="));
-        var order = Assert.Throws<DomainRuleException>(() => WorkOrderPhoto.Record(Tenant, Guid.Empty, "image/jpeg", "AA=="));
+        var missing = Assert.Throws<DomainRuleException>(() => WorkOrderPhoto.Record(Guid.Empty, Guid.CreateVersion7(), "image/jpeg", "file-key"));
+        var order = Assert.Throws<DomainRuleException>(() => WorkOrderPhoto.Record(Tenant, Guid.Empty, "image/jpeg", "file-key"));
 
         Assert.Equal("photo.too_large", huge.Code);
         Assert.Equal("photo.too_large", over.Code);
         Assert.Equal("work_order.not_found", missing.Code);
         Assert.Equal("work_order.not_found", order.Code);
+    }
+
+    [Theory]
+    [InlineData("image/gif", "file-key", "photo.type_invalid")]
+    [InlineData("image/jpeg", "", "photo.empty")]
+    [InlineData("image/png", "  ", "photo.empty")]
+    public void A_photo_record_needs_an_image_type_and_a_stored_file(string contentType, string fileId, string code)
+    {
+        var error = Assert.Throws<DomainRuleException>(() => WorkOrderPhoto.Record(Tenant, Guid.CreateVersion7(), contentType, fileId));
+
+        Assert.Equal(code, error.Code);
     }
 }

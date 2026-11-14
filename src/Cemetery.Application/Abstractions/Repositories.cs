@@ -158,6 +158,8 @@ public interface IOperationsRepository
     Task RemovePermitAsync(MonumentPermit permit, CancellationToken cancellationToken);
 
     Task AddPhotoAsync(WorkOrderPhoto photo, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<WorkOrderPhoto>> ListPhotosAsync(Guid workOrderId, CancellationToken cancellationToken);
 }
 
 public interface IOfficeRequestRepository

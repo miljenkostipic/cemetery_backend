@@ -70,7 +70,7 @@ public sealed class SiteDocumentConfiguration : IEntityTypeConfiguration<SiteDoc
         builder.Property(entity => entity.Kind).HasConversion<string>(new SnakeCaseEnumConverter<DocumentKind>()).HasMaxLength(16);
         builder.Property(entity => entity.FileName).HasMaxLength(DocumentBytes.NameMaxLength);
         builder.Property(entity => entity.ContentType).HasMaxLength(64);
-        builder.Property(entity => entity.StorageKey).HasMaxLength(64);
+        builder.Property(entity => entity.StorageKey).HasMaxLength(StorageKeys.MaxLength);
         builder.HasOne<GraveSite>().WithMany().HasForeignKey(entity => new { entity.TenantId, entity.GraveSiteId }).HasPrincipalKey(site => new { site.TenantId, site.Id }).OnDelete(DeleteBehavior.Restrict);
     }
 }

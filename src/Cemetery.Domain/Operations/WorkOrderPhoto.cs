@@ -68,36 +68,38 @@ public static class PhotoBytes
     private static int MaxBase64Chars() => 4 * ((MaxBytes + 2) / 3);
 }
 
+/// <summary>A photo a field worker attached to a work order. The bytes live in file storage under <see cref="FileId"/>.</summary>
 public sealed class WorkOrderPhoto : TenantEntity
 {
     private WorkOrderPhoto()
     {
         ContentType = "";
-        Content = [];
+        FileId = "";
     }
 
     public Guid WorkOrderId { get; private set; }
 
     public string ContentType { get; private set; }
 
-    public byte[] Content { get; private set; }
+    public string FileId { get; private set; }
 
-    public static WorkOrderPhoto Record(Guid tenantId, Guid workOrderId, string? contentType, string? encoded)
+    /// <summary>Records a photo whose bytes were checked by <see cref="PhotoBytes.Decode"/> and stored under <paramref name="fileId"/>.</summary>
+    public static WorkOrderPhoto Record(Guid tenantId, Guid workOrderId, string contentType, string fileId)
     {
         if (tenantId == Guid.Empty || workOrderId == Guid.Empty)
             throw new DomainRuleException("work_order.not_found");
+        if (contentType is not ("image/jpeg" or "image/png"))
+            throw new DomainRuleException("photo.type_invalid");
+        if (string.IsNullOrWhiteSpace(fileId))
+            throw new DomainRuleException("photo.empty");
 
-        var decoded = PhotoBytes.Decode(contentType, encoded);
-        return Create(tenantId, workOrderId, decoded.ContentType, decoded.Content);
-    }
-
-    private static WorkOrderPhoto Create(Guid tenantId, Guid workOrderId, string contentType, byte[] content) =>
-        new()
+        return new WorkOrderPhoto
         {
             Id = Guid.CreateVersion7(),
             TenantId = tenantId,
             WorkOrderId = workOrderId,
             ContentType = contentType,
-            Content = content,
+            FileId = fileId,
         };
+    }
 }

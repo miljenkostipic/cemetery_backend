@@ -333,13 +333,15 @@ public sealed class RemovePathHandler(ICallerContext caller, ICemeteryReadModel 
 
 public sealed record GetWorkOrderPhoto(Guid WorkOrderId, Guid PhotoId);
 
-public sealed class GetWorkOrderPhotoHandler(ICallerContext caller, ICemeteryReadModel read) : IQueryHandler<GetWorkOrderPhoto, FileDownload>
+public sealed class GetWorkOrderPhotoHandler(ICallerContext caller, ICemeteryReadModel read, IFileStorage storage) : IQueryHandler<GetWorkOrderPhoto, FileDownload>
 {
     public async Task<FileDownload> Handle(GetWorkOrderPhoto query, CancellationToken cancellationToken)
     {
         _ = caller.OrganizationId;
         var photo = await read.FindPhotoAsync(query.WorkOrderId, query.PhotoId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException("photo.not_found");
-        return new FileDownload(photo.Content, photo.ContentType, "photo");
+        var content = await storage.OpenAsync(photo.FileId, cancellationToken).ConfigureAwait(false)
+            ?? throw new NotFoundException("photo.not_found");
+        return new FileDownload(content, photo.ContentType, "photo");
     }
 }
