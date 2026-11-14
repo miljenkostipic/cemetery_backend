@@ -38,6 +38,8 @@ A dev machine runs PostgreSQL with PostGIS in one of two ways. Check which one t
 - **Docker.** PostgreSQL 17 + PostGIS 3.5 from `docker-compose.yml` (`docker compose up -d`), database `cemetery`, port 5432, user and password `postgres`. `appsettings.Development.json` already points at it. Do not use other Postgres containers on the machine; they have no PostGIS.
 - **Installed directly.** PostgreSQL (17 or later) with the PostGIS extension, running as a Windows service on port 5432, database `cemetery`. Do not start `docker compose` on such a machine. When the owner password is not `postgres`, put `ConnectionStrings:Owner` and `ConnectionStrings:App` in .NET user secrets (`Cemetery.Api`); never put a real password in `appsettings`.
 
+File storage (documents, grave photos) uses the private Cloudflare R2 bucket `R2:BucketName` once `R2:AccessKey` is set. The keys are the same as Matica's: `R2:AccountId`, `R2:AccessKey`, `R2:SecretKey`, set in user secrets locally or as `R2__AccessKey` and so on in deployment. If `R2:AccessKey` is not set, files stay in the database (`stored_files`). If it is set but another R2 value is missing, the app refuses to start. Objects are keyed `{tenantId}/{uuid v7}`. Keys written before R2 (bare UUIDs) are still read from the database.
+
 Either way the app creates the `cemetery_app` role and applies migrations on startup (`DatabaseInitializer`).
 
 Integration tests always start their own PostGIS container through Testcontainers, the same as CI, so they need Docker. Without Docker they skip (`DockerProbe`), and CI is where they run; do not install Docker just for them unless asked.
